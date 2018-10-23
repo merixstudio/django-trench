@@ -15,7 +15,7 @@ import datetime
 
 import environ
 
-root = environ.Path(__file__) - 2
+root = environ.Path(__file__) - 1
 env = environ.Env(DEBUG=(bool, False), )
 environ.Env.read_env(env_file=root('.env'))
 
