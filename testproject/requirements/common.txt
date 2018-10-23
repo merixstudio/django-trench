@@ -1,8 +1,4 @@
-Django==1.11.15
-pyotp==2.2.6
 djangorestframework-jwt==1.11.0
-djangorestframework==3.8.2
-django-templated-mail==1.1.1
 djoser==1.2.1
 
 pytest==3.7.1
@@ -10,4 +6,3 @@ pytest-cov==2.5.1
 pytest-django==3.4.1
 django-environ==0.4.5
 django-cors-headers==2.4.0
-twilio==6.18.1
