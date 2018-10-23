@@ -3,7 +3,7 @@ language: python
 sudo: false
 
 env:
-  matrix:
+  global:
     - ALLOWED_HOSTS=['*']
 
 matrix:

@@ -32,7 +32,7 @@ SECRET_KEY = 'zvh+vsa)c7$)(z@z7+c!c%ex1k8lqm)*6eh4l#a(t-_m@-i_9&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', [])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 CORS_ORIGIN_ALLOW_ALL = env.bool('CORS_ORIGIN_ALLOW_ALL', default=False)
 # Application definition
