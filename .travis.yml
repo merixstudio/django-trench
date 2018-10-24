@@ -2,10 +2,6 @@ language: python
 
 sudo: false
 
-env:
-  global:
-    - ALLOWED_HOSTS=['*']
-
 matrix:
     fast_finish: true
     include:
