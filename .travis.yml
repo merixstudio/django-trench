@@ -28,5 +28,5 @@ script:
   - tox
 
 after_success:
-    - pip install codecov
+    - pip install --user codecov
     - codecov
