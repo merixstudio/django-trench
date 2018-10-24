@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from .utils import (
+from tests.utils import (
     login,
     get_username_from_jwt,
 )
