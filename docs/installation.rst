@@ -11,7 +11,7 @@ First steps
 
 or add it to your requirements file.
 
-2. Add ``django-trench`` library to INSTALLED_APPS in your app settings file:
+2. Add ``trench`` library to INSTALLED_APPS in your app settings file:
 
 .. code-block:: python
 
