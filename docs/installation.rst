@@ -20,7 +20,7 @@ or add it to your requirements file.
         'rest_framework',
         'rest_framework.authtoken',  # In case of implementing Token Based Authentication
         ...,
-        'django-trench',
+        'trench',
     )
 
 .. note:: If you're going to use ``djoser`` to handle user authentication make sure you have it installed and included in INSTALLED_APPS. You'll also need ``djangorestframework-jwt`` to support JSON Web Tokens.
