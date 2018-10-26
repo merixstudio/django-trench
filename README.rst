@@ -2,14 +2,11 @@
 django-trench
 =============
 
-.. image:: https://img.shields.io/pypi/
-  :target: https://pypi.org/project/
+.. image:: https://travis-ci.org/merixstudio/django-trench.svg?branch=master
+  :target: https://travis-ci.org/merixstudio/django-trench
 
-.. image:: https://img.shields.io/travis/
-  :target: https://travis-ci.org/
-
-.. image:: https://img.shields.io/codecov/
-  :target: https://codecov.io/gh/
+.. image:: https://codecov.io/gh/merixstudio/django-trench/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/merixstudio/django-trench/
 
 | **django-trench** provides a set of REST API endpoints to supplement `django-rest-framework`_ with multi-factor authentication (MFA, 2FA). It supports both standard built-in authentication methods, as well as JWT (JSON Web Token). **django-trench** follows the url pattern developed in `djoser`_ library and may act as its supplement.
 | We deliver a couple of sample secondary authentication methods including sending OTP based code by email, SMS/text as well as through 3rd party mobile apps. Developers can easily add own auth backend supporting any communication channel.
@@ -56,7 +53,7 @@ or add it to your requirements file.
         'rest_framework',
         'rest_framework.authtoken',  # In case of implementing Token Based Authentication
         ...,
-        'django-trench',
+        'trench',
     )
 
 3. Run migrations
