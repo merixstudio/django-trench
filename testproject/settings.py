@@ -136,7 +136,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'trench.authentication.TwoFactorJWTAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ]
 }
 

@@ -1,5 +1,8 @@
 from django.conf import settings
-from rest_framework.settings import APISettings, perform_import
+from rest_framework.settings import (
+    APISettings,
+    perform_import,
+)
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 
@@ -54,8 +57,7 @@ class TrenchAPISettings(APISettings):
 
 
 DEFAULTS = {
-    'FROM_EMAIL': '',
-    'OTP_SECRET': 'base32secret3232',
+    'FROM_EMAIL': getattr(settings, 'DEFAULT_FROM_EMAIL'),
     'USER_MFA_MODEL': 'trench.MFAMethod',
     'USER_ACTIVE_FIELD': 'is_active',
     'BACKUP_CODES_QUANTITY': 5,
