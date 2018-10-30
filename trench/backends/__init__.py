@@ -1,4 +1,7 @@
-from trench.utils import get_nested_attr_value, create_otp_code
+from trench.utils import (
+    get_nested_attr_value,
+    create_otp_code,
+)
 from trench.exceptions import MissingSourceFieldAttribute
 
 
