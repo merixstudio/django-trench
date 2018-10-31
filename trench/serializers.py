@@ -1,14 +1,25 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import (
+    authenticate,
+    get_user_model,
+)
 from django.db import models as django_models
 from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import fields, serializers
+from rest_framework import (
+    fields,
+    serializers,
+)
 
-from trench.models import MFAMethod
 from trench.settings import api_settings
-from trench.utils import (create_secret, get_mfa_model, get_nested_attr,
-                          set_nested_attr, user_token_generator, validate_code)
+from trench.utils import (
+    create_secret,
+    get_mfa_model,
+    get_nested_attr,
+    set_nested_attr,
+    user_token_generator,
+    validate_code,
+)
 
 User = get_user_model()
 MFAMethod = get_mfa_model()
@@ -16,6 +27,7 @@ MFAMethod = get_mfa_model()
 MFA_METHODS = [
     (k, v.get('VERBOSE_NAME', _(k))) for k, v in api_settings.MFA_METHODS.items()
 ]
+
 
 class RequestMFAMethodActivationSerializer(serializers.Serializer):
     serializer_field_mapping = {
@@ -90,7 +102,6 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
         Creates new MFAMethod object for given user, sets it as incative,
         and marks as primary if no other active MFAMethod exists for user.
         """
-
         return MFAMethod.objects.get_or_create(
             user=self.user,
             name=self.context['name'],
@@ -106,7 +117,6 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
 
 class ProtectedActionSerializer(serializers.Serializer):
     requires_mfa_code = None
-
     code = serializers.CharField(
         min_length=6,
         max_length=6,
@@ -137,12 +147,10 @@ class ProtectedActionSerializer(serializers.Serializer):
 
 
 class RequestMFAMethodActivationConfirmSerializer(ProtectedActionSerializer):
-
     requires_mfa_code = True
 
 
 class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
-
     requires_mfa_code = api_settings.CONFIRM_DISABLE_WITH_CODE
 
     default_error_messages = {
@@ -187,6 +195,7 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
 
     def validate_new_primary_method(self, value):
         method_to_deactivate = self.context.get('name')
+
         if method_to_deactivate == value:
             self.fail('new_primary_same_as_old')
 
@@ -199,10 +208,7 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(
-    ProtectedActionSerializer
-):
-
+class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
@@ -226,7 +232,6 @@ class LoginSerializer(serializers.Serializer):
     """
     Validates user's credentials.
     """
-
     password = serializers.CharField(
         style={'input_type': 'password'},
     )
@@ -293,11 +298,14 @@ class UserMFAMethodSerializer(serializers.ModelSerializer):
 
 
 class ChangePrimaryMethodSerializer(serializers.Serializer):
+    """
+    Serializes request to change default authentication method.
+    """
     code = serializers.CharField()
     method = serializers.ChoiceField(choices=MFA_METHODS)
 
     default_error_messages = {
-        'not_enabled': _('2 FA is not enabled.'),
+        'not_enabled': _('2FA is not enabled.'),
         'invalid_code': _('Invalid or expired code.'),
         'missing_method': _('Target method does not exist or is not active'),
     }

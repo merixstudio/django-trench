@@ -1,12 +1,11 @@
 from django.utils.translation import ugettext_lazy as _
-from templated_mail.mail import BaseEmailMessage
 
+from templated_mail.mail import BaseEmailMessage
 from trench.backends import AbstractMessageDispatcher
 from trench.settings import api_settings
 
 
 class TemplatedMailBackend(AbstractMessageDispatcher):
-
     EMAIL_SUBJECT = _('Your verification code')
 
     def dispatch_message(self, *args, **kwargs):
@@ -28,5 +27,4 @@ class TemplatedMailBackend(AbstractMessageDispatcher):
             to=[self.to],
             from_email=api_settings.FROM_EMAIL,
         )
-
         return {'message': _('Email message with MFA code had been sent.')}

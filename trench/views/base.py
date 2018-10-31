@@ -1,6 +1,10 @@
+from django.db import (
+    transaction,
+    IntegrityError,
+)
 from django.shortcuts import get_object_or_404
-from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
+
 from rest_framework import status
 from rest_framework.generics import (
     GenericAPIView,
@@ -12,9 +16,11 @@ from rest_framework.views import APIView
 
 from trench import serializers
 from trench.settings import api_settings
-from trench.utils import (generate_backup_codes, get_mfa_model,
-                          user_token_generator)
-from django.db import transaction, IntegrityError
+from trench.utils import (
+    generate_backup_codes,
+    get_mfa_model,
+    user_token_generator,
+)
 
 MFAMethod = get_mfa_model()
 
@@ -27,7 +33,6 @@ class MFACredentialsLoginMixin:
     serializer_class = serializers.LoginSerializer
 
     def handle_mfa_response(self, user, mfa_method, *args, **kwargs):
-
         data = {
             'ephemeral_token': user_token_generator.make_token(user),
             'method': mfa_method.name,
@@ -41,7 +46,6 @@ class MFACredentialsLoginMixin:
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         user = serializer.user
         auth_method = (
             user.mfa_methods
@@ -50,7 +54,6 @@ class MFACredentialsLoginMixin:
         )
         if auth_method:
             conf = api_settings.MFA_METHODS[auth_method.name]
-
             handler = conf['HANDLER'](
                 user=user,
                 obj=auth_method,
@@ -147,6 +150,7 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         backup_codes = generate_backup_codes()
+
         self.obj.is_active = True
         self.obj.backup_codes = backup_codes
         self.obj.is_primary = not MFAMethod.objects.filter(
@@ -213,7 +217,6 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
                 {'error': _('Failed to update MFA information')},  # pragma: no cover
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -248,7 +251,6 @@ class RequestMFAMethodBackupCodesRegenerationView(GenericAPIView):
         backup_codes = generate_backup_codes()
         self.obj.backup_codes = backup_codes
         self.obj.save(update_fields=['backup_codes'])
-
         return Response({'backup_codes': backup_codes.split(',')})
 
 
@@ -310,7 +312,6 @@ class RequestMFAMethodCode(GenericAPIView):
             conf=conf,
         )
         dispatcher_resp = handler.dispatch_message()
-
         return Response(dispatcher_resp)
 
 
@@ -320,7 +321,10 @@ class ChangePrimaryMethod(CreateAPIView):
     def post(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
 
-        return Response(serializers.UserMFAMethodSerializer(
-            request.user.mfa_methods.filter(is_active=True),
-            many=True,
-        ).data, status=status.HTTP_200_OK)
+        return Response(
+            serializers.UserMFAMethodSerializer(
+                request.user.mfa_methods.filter(is_active=True),
+                many=True,
+            ).data,
+            status=status.HTTP_200_OK,
+        )

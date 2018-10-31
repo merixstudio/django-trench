@@ -7,7 +7,6 @@ from twilio.rest import Client
 
 
 class TwilioBackend(AbstractMessageDispatcher):
-
     SMS_BODY = _('Your verification code is: ')
 
     def dispatch_message(self):
@@ -27,7 +26,6 @@ class TwilioBackend(AbstractMessageDispatcher):
                     'Your code is {}.'.format(e, self.to, code))
         else:
             self.send_sms(self.to, code)
-
         return {'message': _('SMS message with MFA code had been sent.')}  # pragma: no cover # noqa
 
     def send_sms(self, user_mobile, code):

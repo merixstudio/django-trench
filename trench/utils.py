@@ -1,14 +1,20 @@
 from datetime import datetime
-
 import pyotp
+
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import FieldDoesNotExist
-from django.utils.crypto import (constant_time_compare, get_random_string,
-                                 salted_hmac)
-from django.utils.http import base36_to_int, int_to_base36
+from django.utils.crypto import (
+    constant_time_compare,
+    get_random_string,
+    salted_hmac,
+)
+from django.utils.http import (
+    base36_to_int,
+    int_to_base36,
+)
 
 from trench.settings import api_settings
 
@@ -111,9 +117,9 @@ def create_qr_link(secret, user):
 
 
 def generate_backup_codes(
-        quantity=api_settings.BACKUP_CODES_QUANTITY,
-        length=api_settings.BACKUP_CODES_LENGTH,
-        allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
+    quantity=api_settings.BACKUP_CODES_QUANTITY,
+    length=api_settings.BACKUP_CODES_LENGTH,
+    allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
 ):
     """
     Generates random backup codes.
@@ -134,8 +140,11 @@ def generate_backup_codes(
     )
 
 
-def validate_code(code, secret,
-                  valid_window=api_settings.DEFAULT_VALIDITY_PERIOD):
+def validate_code(
+    code,
+    secret,
+    valid_window=api_settings.DEFAULT_VALIDITY_PERIOD,
+):
     return (
         pyotp
         .TOTP(secret)
@@ -154,7 +163,6 @@ def parse_dotted_path(path):
     """
     Extracts attribute name from dotted path.
     """
-
     try:
         objects, attr = path.rsplit('.', 1)
     except ValueError:
