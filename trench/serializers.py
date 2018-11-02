@@ -234,6 +234,7 @@ class LoginSerializer(serializers.Serializer):
     """
     password = serializers.CharField(
         style={'input_type': 'password'},
+        write_only=True,
     )
 
     def __init__(self, *args, **kwargs):
@@ -248,14 +249,15 @@ class LoginSerializer(serializers.Serializer):
             password=attrs.get('password')
         )
 
-        if self.user:
-            return attrs
         if not getattr(self.user, api_settings.USER_ACTIVE_FIELD, True):
             msg = _('User account is disabled.')  # pragma: no cover
             raise serializers.ValidationError(msg)  # pragma: no cover
 
-        msg = _('Unable to login with provided credentials.')
-        raise serializers.ValidationError(msg)
+        if not self.user:
+            msg = _('Unable to login with provided credentials.')
+            raise serializers.ValidationError(msg)
+
+        return {}
 
 
 class CodeLoginSerializer(serializers.Serializer):
