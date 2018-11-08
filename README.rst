@@ -19,22 +19,25 @@ Features
 --------
 
 * Easily plugable and compatible with `django-rest-framework`_ and `djoser`_
-* Allows user to pick an additional authentication method from range of backends defined by a developer. Read more: `backends`_.
+* Allows user to pick an additional authentication method from range of backends defined by a developer. Read more: `backends`_
 * Comes out of a box with email, SMS add mobile apps support
 
 Requirements
 ------------
 
 Supported versions
-*******************
+******************
+
 * Python 3.4, 3.5, 3.6, 3.7
 * Django 1.11, 2.0, 2.1
 * Django REST Framework 3.8
 
 | If you implement ``djoser`` for authentication:
+
 * `djoser`_ 1.15.0
 
 | If you are going to use JWT authentication:
+
 * `django-rest-framework-jwt`_ 1.11.0
 
 Quick Start

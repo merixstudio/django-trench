@@ -17,6 +17,7 @@ setup(
     license='MIT License',
     description='REST Multi-factor authentication package for Django',
     long_description=README,
+    long_description_content_type='text/x-rst',
     url='https://github.com/merixstudio/django-trench',
     author='Merixstudio',
     author_email='trench@merixstudio.com',
