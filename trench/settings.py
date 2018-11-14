@@ -81,6 +81,9 @@ DEFAULTS = {
             'TWILIO_ACCOUNT_SID': 'YOUR KEY',
             'TWILIO_AUTH_TOKEN': 'YOUR KEY',
             'TWILIO_VERIFIED_FROM_NUMBER': 'YOUR TWILIO REGISTERED NUMBER',
+
+            'SMSAPI_ACCESS_TOKEN': 'YOUR SMSAPI TOKEN',
+            'SMSAPI_FROM_NUMBER': 'YOUR REGISTERED NUMBER',
         },
         'email': {
             'VERBOSE_NAME': _('email'),
