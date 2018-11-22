@@ -1,13 +1,7 @@
-from djoser.views import (
-    TokenCreateView,
-    TokenDestroyView,
-)
+from djoser.views import TokenCreateView, TokenDestroyView
 from rest_framework.generics import GenericAPIView
 
-from trench.views.base import (
-    MFACredentialsLoginMixin,
-    MFACodeLoginMixin,
-)
+from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
 
 
 class ObtainAuthTokenMixin:

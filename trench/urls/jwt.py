@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from trench.views import jwt as views
 
+
 urlpatterns = [
     url(
         r'^login/$',

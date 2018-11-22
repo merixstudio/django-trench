@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
-import os
 import datetime
+import os
 
 import environ
+
 
 root = environ.Path(__file__) - 1
 env = environ.Env(DEBUG=(bool, False), )

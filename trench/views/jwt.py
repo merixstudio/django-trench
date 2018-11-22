@@ -6,10 +6,7 @@ from rest_framework_jwt.utils import (
     jwt_response_payload_handler,
 )
 
-from trench.views.base import (
-    MFACodeLoginMixin,
-    MFACredentialsLoginMixin,
-)
+from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
 
 
 class ObtainJSONWebTokenMixin:
