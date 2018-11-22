@@ -1,10 +1,8 @@
 from django.conf import settings
-from rest_framework.settings import (
-    APISettings,
-    perform_import,
-)
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
+
+from rest_framework.settings import APISettings, perform_import
 
 
 class TrenchAPISettings(APISettings):

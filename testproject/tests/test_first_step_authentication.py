@@ -1,12 +1,12 @@
 import pytest
+
 from django.contrib.auth import get_user_model
+
 from rest_framework.test import APIClient
 
-from tests.utils import (
-    login,
-    get_username_from_jwt,
-)
+from tests.utils import get_username_from_jwt, login
 from trench.utils import user_token_generator
+
 
 User = get_user_model()
 
