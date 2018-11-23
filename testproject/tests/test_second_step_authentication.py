@@ -1,13 +1,13 @@
 import pytest
 
-from twilio.base.exceptions import TwilioRestException, TwilioException
 from django.contrib.auth import get_user_model
+
 from rest_framework.test import APIClient
-from tests.utils import (
-    login,
-    get_username_from_jwt,
-)
+from twilio.base.exceptions import TwilioException, TwilioRestException
+
+from tests.utils import get_username_from_jwt, login
 from trench.utils import create_otp_code, generate_backup_codes
+
 
 User = get_user_model()
 

@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from trench.views import authtoken as views
 
+
 __all__ = [
     'urlpatterns',
 ]

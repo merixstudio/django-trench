@@ -1,8 +1,12 @@
 import pytest
+
 from django.contrib.auth import get_user_model
+
 from rest_framework.test import APIClient
+
 from tests.utils import login
-from trench.utils import create_secret, create_otp_code
+from trench.utils import create_otp_code, create_secret
+
 
 User = get_user_model()
 
