@@ -1,7 +1,8 @@
-import pytest
-import jwt
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+
+import jwt
+import pytest
 
 User = get_user_model()
 

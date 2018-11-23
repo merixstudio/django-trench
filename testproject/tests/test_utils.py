@@ -1,10 +1,6 @@
 import pytest
-
-from trench.utils import (
-    UserTokenGenerator,
-    create_qr_link,
-    get_innermost_object,
-)
+from trench.utils import (UserTokenGenerator, create_qr_link,
+                          get_innermost_object)
 
 
 @pytest.mark.django_db
