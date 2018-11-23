@@ -99,7 +99,7 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """
-        Creates new MFAMethod object for given user, sets it as incative,
+        Creates new MFAMethod object for given user, sets it as inactive,
         and marks as primary if no other active MFAMethod exists for user.
         """
         return MFAMethod.objects.get_or_create(

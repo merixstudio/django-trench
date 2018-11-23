@@ -97,7 +97,7 @@ def create_otp_code(secret):
 
 
 def create_qr_link(secret, user):
-    '''
+    """
     Creates QR link to set application OTP.
 
     :param secret: Secret used to generate OTP
@@ -107,7 +107,7 @@ def create_qr_link(secret, user):
 
     :returns: Link to generate QR code from
     :rtype: str
-    '''
+    """
 
     totp = pyotp.TOTP(secret)
     return totp.provisioning_uri(
