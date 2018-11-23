@@ -33,6 +33,30 @@ def active_user_with_email_otp():
 
 
 @pytest.fixture()
+def active_user_with_sms_otp():
+    user, created = User.objects.get_or_create(
+        username='imhotep',
+        email='imhotep@pyramids.eg',
+        phone_number='555-555-555'
+    )
+    if created:
+        user.set_password('secretkey'),
+        user.is_active = True
+        user.save()
+
+        MFAMethod = apps.get_model('trench.MFAMethod')
+        MFAMethod.objects.create(
+            user=user,
+            secret=create_secret(),
+            is_primary=True,
+            name='sms',
+            is_active=True,
+        )
+
+    return user
+
+
+@pytest.fixture()
 def active_user_with_email_and_inactive_other_methods_otp():
     user, created = User.objects.get_or_create(
         username='imhotep',
