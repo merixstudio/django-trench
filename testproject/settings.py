@@ -138,7 +138,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        ##'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
 }
 
@@ -150,10 +150,10 @@ JWT_AUTH = {
     ),
 }
 
-# SIMPLE_JWT = {
-#     'USER_ID_FIELD': 'username',
-#     'USER_ID_CLAIM': 'username',
-# }
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'username',
+    'USER_ID_CLAIM': 'username',
+}
 
 DJOSER = {
     'SERIALIZERS': {

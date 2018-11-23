@@ -760,3 +760,22 @@ def test_get_mfa_config():
         format='json',
     )
     assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
+    client = APIClient()
+    first_step = login(active_user_with_email_otp)
+    secret = active_user_with_email_otp.mfa_methods.first().secret
+    response = client.post(
+        path='/simplejwt-auth/login/code/',
+        data={
+            'token': first_step.data.get('ephemeral_token'),
+            'code': create_otp_code(secret),
+        },
+        format='json',
+    )
+    assert response.status_code == 200
+    assert get_username_from_jwt(response, 'access') == getattr(
+        active_user_with_email_otp,
+        User.USERNAME_FIELD,
+    )

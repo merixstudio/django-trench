@@ -2,6 +2,7 @@ djangorestframework-jwt==1.11.0
 django-environ==0.4.5
 django-cors-headers==2.4.0
 djoser==1.2.1
+djangorestframework_simplejwt==3.3.0
 
 pytest==3.7.1
 pytest-cov==2.5.1
