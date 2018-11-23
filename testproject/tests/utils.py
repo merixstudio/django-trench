@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 import jwt
 from rest_framework.test import APIClient
 
+
 User = get_user_model()
 
 header_template = 'JWT {}'
