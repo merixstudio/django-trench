@@ -94,6 +94,13 @@ DEFAULTS = {
             'USES_THIRD_PARTY_CLIENT': True,
             'HANDLER': 'trench.backends.application.ApplicationBackend',
         },
+        'yubi': {
+            'VERBOSE_NAME': _('yubi'),
+            'VALIDITY_PERIOD': 60 * 10,
+            'SOURCE_FIELD': 'yubikey_id',
+            'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
+            'YUBICLOUD_CLIENT_ID': 'YOUR KEY',
+        },
     },
 }
 
