@@ -193,7 +193,10 @@ TRENCH_AUTH = {
             'VERBOSE_NAME': 'yubi',
             'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
             'SOURCE_FIELD': 'yubikey_id',
-            'YUBICLOUD_CLIENT_ID': env('YUBICLOUD_CLIENT_ID'),
+            'YUBICLOUD_CLIENT_ID': env(
+                'YUBICLOUD_CLIENT_ID',
+                default=''
+            ),
         }
     }
 
