@@ -1,7 +1,8 @@
+import pytest
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 
-import pytest
 from trench.utils import create_secret, generate_backup_codes
 
 

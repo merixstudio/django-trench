@@ -1,11 +1,14 @@
-from django.contrib.auth import get_user_model
-
-from rest_framework.test import APIClient
-
-import jwt
 import pytest
 
-header_template ='JWT {}'
+from django.contrib.auth import get_user_model
+
+import jwt
+from rest_framework.test import APIClient
+
+User = get_user_model()
+
+header_template = 'JWT {}'
+token_field = 'token'
 
 # For simpleJWT
 # header_template ='Bearer {}'
