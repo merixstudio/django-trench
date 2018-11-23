@@ -1,7 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
-from tests.utils import login
+from tests.utils import (
+    login,
+    header_template,
+    get_token_from_response,
+)
 from trench.utils import create_secret, create_otp_code
 
 User = get_user_model()
@@ -11,8 +15,7 @@ User = get_user_model()
 def test_add_user_mfa(active_user):
     client = APIClient()
     login_request = login(active_user)
-    client.credentials(HTTP_AUTHORIZATION='JWT ' +
-                       login_request.data.get('token'))
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_request)))
     secret = create_secret()
     response = client.post(
         path='/auth/email/activate/',
@@ -54,7 +57,7 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
     assert second_step_response.status_code == 200
 
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + second_step_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(second_step_response))
     )
     active_methods_response = client.get(
         path='/auth/mfa/user-active-methods/',

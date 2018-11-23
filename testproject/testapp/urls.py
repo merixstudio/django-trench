@@ -21,5 +21,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^auth/', include('trench.urls')),
     url(r'^auth/', include('trench.urls.jwt')),
+    #url(r'^auth/', include('trench.urls.simplejwt')),
     url(r'^djoser/', include('djoser.urls')),
 ]
