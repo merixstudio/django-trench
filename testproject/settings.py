@@ -195,6 +195,15 @@ TRENCH_AUTH = {
             'VALIDITY_PERIOD': 60 * 10,
             'USES_THIRD_PARTY_CLIENT': True,
             'HANDLER': 'trench.backends.application.ApplicationBackend',
+        },
+        'yubi': {
+            'VERBOSE_NAME': 'yubi',
+            'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
+            'SOURCE_FIELD': 'yubikey_id',
+            'YUBICLOUD_CLIENT_ID': env(
+                'YUBICLOUD_CLIENT_ID',
+                default=''
+            ),
         }
     }
 

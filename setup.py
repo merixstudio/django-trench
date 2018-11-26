@@ -18,6 +18,7 @@ setup(
         'pyotp>=2.2.6',
         'django-templated-mail>=1.1.1',
         'twilio>=6.18.1',
+        'yubico-client>=1.10.0',
         'smsapi-client>=2.2.4',
     ],
     classifiers=[

@@ -114,8 +114,6 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
 class ProtectedActionSerializer(serializers.Serializer):
     requires_mfa_code = None
     code = serializers.CharField(
-        min_length=6,
-        max_length=6,
         required=False,
     )
 
@@ -133,8 +131,9 @@ class ProtectedActionSerializer(serializers.Serializer):
             or api_settings.DEFAULT_VALIDITY_PERIOD
         )
 
-        if validate_code(value, obj.secret, validity_period):
+        if validate_code(value, obj, validity_period):
             return value
+
         if value in obj.backup_codes.split(','):
             obj.remove_backup_code(value)
             return value
@@ -277,7 +276,7 @@ class CodeLoginSerializer(serializers.Serializer):
             self.fail('invalid_token')
 
         for auth_method in self.user.mfa_methods.filter(is_active=True):
-            if validate_code(code, auth_method.secret):
+            if validate_code(code, auth_method):
                 return attrs
             if code in auth_method.backup_codes.split(','):
                 auth_method.remove_backup_code(code)
@@ -325,7 +324,7 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
         except ObjectDoesNotExist:
             self.fail('missing_method')
         code = attrs.get('code')
-        if validate_code(code, current_method.secret):
+        if validate_code(code, current_method):
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
 

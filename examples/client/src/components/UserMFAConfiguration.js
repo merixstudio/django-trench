@@ -18,6 +18,7 @@ import { parseError } from '../utils';
 import { ApplicationRequest } from './methods/ApplicationRequest';
 import { EmailRequest } from './methods/EmailRequest';
 import { SMSRequest } from './methods/SMSRequest';
+import { YubiKeyRequest } from './methods/YubiKeyRequest';
 
 export class UserMFAConfiguration extends Component {
   constructor() {
@@ -35,10 +36,12 @@ export class UserMFAConfiguration extends Component {
 
     this.toggleEmailCode = this.toggleField.bind(this, 'email');
     this.toggleSMSCode = this.toggleField.bind(this, 'sms');
+    this.toggleYubiKeyAuth = this.toggleField.bind(this, 'yubi');
     this.toggleApplicationAuth = this.toggleField.bind(this, 'app');
 
     this.requestEmail2FA = this.requestEmail2FA.bind(this);
     this.requestSMS2FA = this.requestSMS2FA.bind(this);
+    this.requestYubiKey2FA = this.requestYubiKey2FA.bind(this);
     this.confirm2FAregistration = this.confirm2FAregistration.bind(this);
     this.regenerateBackupCodes = this.regenerateBackupCodes.bind(this);
     this.changePrimaryMethod = this.changePrimaryMethod.bind(this);
@@ -102,6 +105,23 @@ export class UserMFAConfiguration extends Component {
     });
 
     return request2FAregistration({ method: 'app' })
+    .catch((error) => {
+      this.props.showMessage(parseError(error));
+      this.resetRequests();
+    });
+  }
+
+  requestYubiKey2FA(data = {}) {
+    const { userData } = this.props;
+    this.resetRequests({
+      authBeingActivated: [{ name: 'yubi' }],
+      authWaitingForCode: ['yubi'],
+    });
+
+    return request2FAregistration({
+      method: 'yubi',
+      yubikey_id: data.yubikey_id || userData.yubikey_id,
+    })
     .catch((error) => {
       this.props.showMessage(parseError(error));
       this.resetRequests();
@@ -256,6 +276,7 @@ export class UserMFAConfiguration extends Component {
             activeAuthMethod={activeAuthMethod.find(auth => auth.name === 'email')}
             authBeingActivated={authBeingActivated.find(auth => auth.name === 'email')}
             verificationPending={authWaitingForCode.indexOf('email') !== -1}
+            isEnabled={enabledAuth.find(auth => auth.name === 'email')}
           />
           <ApplicationRequest
             switchToggle={this.toggleApplicationAuth}
@@ -265,6 +286,7 @@ export class UserMFAConfiguration extends Component {
             activeAuthMethod={activeAuthMethod.find(auth => auth.name === 'app')}
             authBeingActivated={authBeingActivated.find(auth => auth.name === 'app')}
             verificationPending={authWaitingForCode.indexOf('app') !== -1}
+            isEnabled={enabledAuth.find(auth => auth.name === 'app')}
           />
           <SMSRequest
             switchToggle={this.toggleSMSCode}
@@ -276,6 +298,17 @@ export class UserMFAConfiguration extends Component {
             verificationPending={authWaitingForCode.indexOf('sms') !== -1}
             isEnabled={enabledAuth.find(auth => auth.name === 'sms')}
             phoneNumber={userData.phone_number}
+          />
+          <YubiKeyRequest
+            switchToggle={this.toggleYubiKeyAuth}
+            togglePrimary={this.changePrimaryMethod}
+            requestRegistration={this.requestYubiKey2FA}
+            confirmRegistration={this.confirm2FAregistration}
+            activeAuthMethod={activeAuthMethod.find(auth => auth.name === 'yubi')}
+            authBeingActivated={authBeingActivated.find(auth => auth.name === 'yubi')}
+            verificationPending={authWaitingForCode.indexOf('yubi') !== -1}
+            isEnabled={enabledAuth.find(auth => auth.name === 'yubi')}
+            yubikey_id={userData.yubikey_id}
           />
         </div>
         <div>

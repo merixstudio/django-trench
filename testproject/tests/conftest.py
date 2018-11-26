@@ -153,6 +153,13 @@ def active_user_with_many_otp_methods():
             is_active=True,
             backup_codes=generate_backup_codes(),
         )
+        MFAMethod.objects.create(
+            user=user,
+            is_primary=False,
+            name='yubi',
+            is_active=True,
+            backup_codes=generate_backup_codes(),
+        )
 
     return user
 

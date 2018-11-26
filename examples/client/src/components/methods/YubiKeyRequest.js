@@ -9,12 +9,13 @@ import {
 } from '@material-ui/core';
 
 import { VerificationCodeForm } from '../VerificationCodeForm';
+import { YubiKeyRequestForm } from '../YubiKeyRequestForm';
 
-export class EmailRequest extends Component {
+export class YubiKeyRequest extends Component {
   render() {
     const {
       activeAuthMethod,
-      authBeingActivated,
+      isEnabled,
       verificationPending,
       disabled,
       togglePrimary,
@@ -29,11 +30,11 @@ export class EmailRequest extends Component {
                 <RadioGroup
                   name="primary"
                   onChange={togglePrimary}
-                  value={(activeAuthMethod && activeAuthMethod.is_primary) ? 'email' : ''}
+                  value={(activeAuthMethod && activeAuthMethod.is_primary) ? 'yubi' : ''}
                 >
                   <Radio
-                    value="email"
                     disabled={!activeAuthMethod}
+                    value="yubi"
                   />
                 </RadioGroup>
               }
@@ -45,15 +46,21 @@ export class EmailRequest extends Component {
                 <Switch
                   checked={!!activeAuthMethod}
                   onChange={this.props.switchToggle}
-                  value="email"
+                  value="yubi"
                   disabled={disabled}
                 />
               }
-              label={`${activeAuthMethod ? 'Disable' : 'Enable'} Email Auth`}
-              />
+              label={`${activeAuthMethod ? 'Disable' : 'Enable'} YubiKey Auth`}
+            />
           </FormGroup>
         </div>
-        {authBeingActivated && verificationPending && (
+        {activeAuthMethod && !verificationPending && !isEnabled && (
+          <YubiKeyRequestForm
+            onSubmit={this.props.requestRegistration}
+            initialValues={{ yubikey_id: this.props.yubikey_id }}
+          />
+        )}
+        {activeAuthMethod && verificationPending && (
           <Paper style={{ padding: 16, margin: '20px 0' }}>
             <VerificationCodeForm
               requestResend={this.props.requestRegistration}

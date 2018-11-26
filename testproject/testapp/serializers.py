@@ -9,4 +9,4 @@ class ExtendedUserSerializer(UserSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('id', 'email', 'username', 'phone_number')
+        fields = ('id', 'email', 'username', 'phone_number', 'yubikey_id')
