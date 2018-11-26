@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from trench import views
 
+
 __all__ = [
     'urlpatterns',
 ]

@@ -1,22 +1,15 @@
-import os
-from setuptools import (
-    find_packages,
-    setup,
-)
+from setuptools import find_packages, setup
 
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
-    README = readme.read()
-
-os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+from trench import __version__
 
 setup(
     name='django-trench',
-    version='0.1.0',
+    version=__version__,
     packages=find_packages(),
     include_package_data=True,
     license='MIT License',
     description='REST Multi-factor authentication package for Django',
-    long_description=README,
+    long_description=open('README.rst').read(),
     long_description_content_type='text/x-rst',
     url='https://github.com/merixstudio/django-trench',
     author='Merixstudio',
@@ -26,6 +19,7 @@ setup(
         'django-templated-mail>=1.1.1',
         'twilio>=6.18.1',
         'yubico-client>=1.10.0',
+        'smsapi-client>=2.2.4',
     ],
     classifiers=[
         'Framework :: Django',

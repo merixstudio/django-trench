@@ -11,14 +11,14 @@ from django.utils.crypto import (
     get_random_string,
     salted_hmac,
 )
-from django.utils.http import (
-    base36_to_int,
-    int_to_base36,
-)
+from django.utils.http import base36_to_int, int_to_base36
+
 from yubico_client.yubico import Yubico
 from yubico_client.yubico_exceptions import YubicoError
+import pyotp
 
 from trench.settings import api_settings
+
 
 User = get_user_model()
 
@@ -99,7 +99,7 @@ def create_otp_code(secret):
 
 
 def create_qr_link(secret, user):
-    '''
+    """
     Creates QR link to set application OTP.
 
     :param secret: Secret used to generate OTP
@@ -109,7 +109,7 @@ def create_qr_link(secret, user):
 
     :returns: Link to generate QR code from
     :rtype: str
-    '''
+    """
 
     totp = pyotp.TOTP(secret)
     return totp.provisioning_uri(

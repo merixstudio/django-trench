@@ -1,7 +1,6 @@
 from django.conf.urls import url
 
-from trench.views import jwt as views
-
+from trench.views import simplejwt as views
 
 urlpatterns = [
     url(

@@ -21,9 +21,11 @@ Supported versions
 * Django REST Framework 3.8
 
 | If you implement ``djoser`` for authentication:
+
 * `djoser`_ 1.15.0
 
 | If you are going to use JWT authentication:
+
 * `django-rest-framework-jwt`_ 1.11.0
 
 Quick Start
@@ -37,7 +39,7 @@ Quick Start
 
 or add it to your requirements file.
 
-2. Add ``django-trench`` library to INSTALLED_APPS in your app settings file:
+2. Add ``trench`` library to INSTALLED_APPS in your app settings file:
 
 .. code-block:: python
 
@@ -46,7 +48,7 @@ or add it to your requirements file.
         'rest_framework',
         'rest_framework.authtoken',  # In case of implementing Token Based Authentication
         ...,
-        'django-trench',
+        'trench',
     )
 
 3. Run migrations

@@ -1,15 +1,22 @@
 import pytest
 
-from twilio.base.exceptions import TwilioRestException, TwilioException
 from django.contrib.auth import get_user_model
+
 from rest_framework.test import APIClient
+from twilio.base.exceptions import TwilioException, TwilioRestException
+
+
 from tests.utils import (
-    login,
+    get_token_from_response,
     get_username_from_jwt,
+    header_template,
+    login,
 )
 from trench.utils import create_otp_code, generate_backup_codes
 
+
 User = get_user_model()
+
 
 
 @pytest.mark.django_db
@@ -103,7 +110,7 @@ def test_second_method_activation(active_user_with_email_otp):
     )
     assert response.status_code == 200
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
     )
 
     # This user should have 1 methods, so we check that it has 1 methods.
@@ -140,7 +147,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     )
     assert response.status_code == 200
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
     )
 
     # This user should have 1 methods, so we check that it has 1 methods.
@@ -178,7 +185,7 @@ def test_activation_otp(active_user):
     client = APIClient()
     first_step = login(active_user)
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + first_step.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(first_step))
     )
     response = client.post(
         path='/auth/email/activate/',
@@ -192,7 +199,7 @@ def test_activation_otp_confirm_wrong(active_user):
     client = APIClient()
     first_step = login(active_user)
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + first_step.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(first_step))
     )
     response = client.post(
         path='/auth/email/activate/',
@@ -213,7 +220,7 @@ def test_confirm_activation_otp(active_user):
     client = APIClient()
     login_response = login(active_user)
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     client.post(
         path='/auth/email/activate/',
@@ -255,7 +262,7 @@ def test_deactivation_otp(active_user_with_email_otp):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/email/deactivate/',
@@ -281,7 +288,7 @@ def test_deactivation_otp_already_disabled_method(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/sms/deactivate/',
@@ -309,7 +316,7 @@ def test_new_method_after_deactivation(active_user_with_many_otp_methods):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/email/deactivate/',
@@ -342,7 +349,7 @@ def test_new_method_after_deactivation_same_method_wrong(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/email/deactivate/',
@@ -374,7 +381,7 @@ def test_new_method_after_deactivation_user_doesnt_have_method(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/email/deactivate/',
@@ -404,7 +411,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/mfa/change-primary-method/',
@@ -441,7 +448,7 @@ def test_change_primary_method_with_backup_code(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/mfa/change-primary-method/',
@@ -476,7 +483,7 @@ def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_method
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/mfa/change-primary-method/',
@@ -508,7 +515,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/mfa/change-primary-method/',
@@ -538,7 +545,7 @@ def test_change_primary_disabled_method_wrong(active_user):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/mfa/change-primary-method/',
@@ -571,7 +578,7 @@ def test_confirm_activation_otp_with_backup_code(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
     )
     try:
         response = client.post(
@@ -616,7 +623,7 @@ def test_request_codes(active_user_with_email_otp):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
 
     response = client.post(
@@ -645,7 +652,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
 
     response = client.post(
@@ -672,7 +679,7 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
 
     response = client.post(
@@ -700,7 +707,7 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/email/codes/regenerate/',
@@ -735,7 +742,7 @@ def test_backup_codes_regeneration_disabled_method(
         format='json',
     )
     client.credentials(
-        HTTP_AUTHORIZATION='JWT ' + login_response.data.get('token')
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
     )
     response = client.post(
         path='/auth/sms/codes/regenerate/',
@@ -754,3 +761,22 @@ def test_get_mfa_config():
         format='json',
     )
     assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
+    client = APIClient()
+    first_step = login(active_user_with_email_otp)
+    secret = active_user_with_email_otp.mfa_methods.first().secret
+    response = client.post(
+        path='/simplejwt-auth/login/code/',
+        data={
+            'token': first_step.data.get('ephemeral_token'),
+            'code': create_otp_code(secret),
+        },
+        format='json',
+    )
+    assert response.status_code == 200
+    assert get_username_from_jwt(response, 'access') == getattr(
+        active_user_with_email_otp,
+        User.USERNAME_FIELD,
+    )

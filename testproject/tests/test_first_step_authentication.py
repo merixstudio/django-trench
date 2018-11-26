@@ -1,12 +1,12 @@
 import pytest
+
 from django.contrib.auth import get_user_model
+
 from rest_framework.test import APIClient
 
-from tests.utils import (
-    login,
-    get_username_from_jwt,
-)
+from tests.utils import get_username_from_jwt, login
 from trench.utils import user_token_generator
+
 
 User = get_user_model()
 
@@ -28,7 +28,6 @@ def test_get_jwt_without_otp(active_user):
         active_user,
         User.USERNAME_FIELD,
     )
-
 
 @pytest.mark.django_db
 def test_login_disabled_user(inactive_user):
@@ -90,4 +89,13 @@ def test_login_wrong_password(active_user):
     assert response.status_code == 400
     assert 'Unable to login with provided credentials.' in response.data.get(
         'non_field_errors'
+    )
+
+@pytest.mark.django_db
+def test_get_simplejwt_without_otp(active_user):
+    response = login(active_user, path='/simplejwt-auth/login/')
+    assert response.status_code == 200
+    assert get_username_from_jwt(response, 'access') == getattr(
+        active_user,
+        User.USERNAME_FIELD,
     )
