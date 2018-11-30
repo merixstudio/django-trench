@@ -1,6 +1,7 @@
-from django.utils.translation import ugettext_lazy as _
+from smtplib import SMTPException
 
-from templated_mail.mail import BaseEmailMessage
+from django.core.mail import send_mail
+from django.utils.translation import ugettext_lazy as _
 
 from trench.backends import AbstractMessageDispatcher
 from trench.settings import api_settings
@@ -17,15 +18,15 @@ class TemplatedMailBackend(AbstractMessageDispatcher):
 
         code = self.create_code()
 
-        BaseEmailMessage(
-            context={
-                'subject': self.EMAIL_SUBJECT,
-                'text_body': code,
-                'html_body': code,
-            },
-            template_name='email.html',
-        ).send(
-            to=[self.to],
-            from_email=api_settings.FROM_EMAIL,
-        )
+        try:
+            send_mail(
+                subject=self.EMAIL_SUBJECT,
+                message=code,
+                from_email=api_settings.FROM_EMAIL,
+                recipient_list=[self.to],
+                fail_silently=False,
+            )
+        except SMTPException:
+            return {'message': _('Email message with MFA code had not been sent.')}
+
         return {'message': _('Email message with MFA code had been sent.')}
