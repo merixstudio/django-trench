@@ -4,6 +4,7 @@ import pyotp
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import FieldDoesNotExist
 from django.utils.crypto import (
@@ -17,6 +18,7 @@ from yubico_client.yubico import Yubico
 from yubico_client.yubico_exceptions import YubicoError
 import pyotp
 
+from trench.models import MFAMethod
 from trench.settings import api_settings
 
 
@@ -124,7 +126,7 @@ def generate_backup_codes(
     allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
 ):
     """
-    Generates random backup codes.
+    Generates random hashed backup codes.
 
     :param quantity: How many codes should be generated
     :type quantity: int
@@ -133,12 +135,14 @@ def generate_backup_codes(
     :param allowed_chars: Characters to create backup codes from
     :type allowed_chars: str
 
-    :returns: Backup codes
+    :returns: Backup hashed codes
     :rtype: str
     """
 
     return ','.join(
-        get_random_string(length, allowed_chars) for _ in range(quantity)
+        make_password(
+            get_random_string(length, allowed_chars) for _ in range(quantity)
+        )
     )
 
 

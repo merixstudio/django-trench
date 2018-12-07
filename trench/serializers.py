@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models as django_models
 from django.db.utils import DatabaseError
@@ -134,8 +135,8 @@ class ProtectedActionSerializer(serializers.Serializer):
         if validate_code(value, obj, validity_period):
             return value
 
-        if value in obj.backup_codes.split(','):
-            obj.remove_backup_code(value)
+        if make_password(value) in obj.backup_codes.split(','):
+            obj.remove_backup_code(make_password(value))
             return value
 
         self.fail('code_invalid_or_expired')
@@ -278,8 +279,8 @@ class CodeLoginSerializer(serializers.Serializer):
         for auth_method in self.user.mfa_methods.filter(is_active=True):
             if validate_code(code, auth_method):
                 return attrs
-            if code in auth_method.backup_codes.split(','):
-                auth_method.remove_backup_code(code)
+            if make_password(code) in auth_method.backup_codes.split(','):
+                auth_method.remove_backup_code(make_password(code))
                 return attrs
 
         self.fail('invalid_code')
@@ -329,10 +330,10 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
             attrs.update(old_method=current_method)
 
             return attrs
-        elif code in current_method.backup_codes.split(','):
+        elif make_password(code) in current_method.backup_codes.split(','):
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-            current_method.remove_backup_code(code)
+            current_method.remove_backup_code(make_password(code))
             return attrs
         else:
             self.fail('invalid_code')

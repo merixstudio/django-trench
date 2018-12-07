@@ -18,7 +18,6 @@ from trench.utils import create_otp_code, generate_backup_codes
 User = get_user_model()
 
 
-
 @pytest.mark.django_db
 def test_ephemeral_token_verification(active_user_with_email_otp):
     client = APIClient()
