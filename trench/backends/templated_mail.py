@@ -27,6 +27,6 @@ class TemplatedMailBackend(AbstractMessageDispatcher):
                 fail_silently=False,
             )
         except SMTPException:
-            return {'message': _('Email message with MFA code had not been sent.')}
+            return {'message': _('Email message with MFA code have not been sent.')}
 
-        return {'message': _('Email message with MFA code had been sent.')}
+        return {'message': _('Email message with MFA code have been sent.')}
