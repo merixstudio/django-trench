@@ -1,13 +1,13 @@
+CHANGELOG
 =========
-Changelog
-=========
 
-All notable changes to this project will be documented in this file.
+0.1.1 (unreleased)
+------------------
 
-Released
-""""""""
+* Fixed problem with running tests
 
-`0.1.0` (08-11-2018)
-********************
 
-Stable init version.
+0.1.0 (2018-11-08)
+------------------
+
+* Stable init version
