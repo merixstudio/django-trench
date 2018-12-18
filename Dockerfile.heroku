@@ -1,0 +1,27 @@
+FROM python:3.6.6-alpine3.8
+ENV PYTHONUNBUFFERED 1
+
+RUN apk add --no-cache \
+            --upgrade \
+            --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
+       alpine-sdk \
+       postgresql-dev \
+       postgresql-client
+
+RUN mkdir /code
+WORKDIR /code
+
+ADD ./testproject/requirements /code/
+ADD ./trench /trench/trench
+ADD ./setup.py /trench/
+ADD ./README.rst /trench/
+
+RUN pip install -r heroku.txt
+RUN pip install -e /trench
+
+ADD ./testproject /code/
+
+RUN adduser -D trench
+USER trench
+
+CMD gunicorn --bind 0.0.0.0:$PORT wsgi
