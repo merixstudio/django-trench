@@ -28,7 +28,7 @@ class Request {
 
   clearAuthToken() {
     localStorage.removeItem('token');
-    axios.defaults.headers.common.Authorization = '';
+    delete axios.defaults.headers.common.Authorization;
   }
 
   parseError(error) {
