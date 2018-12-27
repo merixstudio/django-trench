@@ -27,7 +27,7 @@ class TwilioBackend(AbstractMessageDispatcher):
                     'Your code is {}.'.format(e, self.to, code))
         else:
             self.send_sms(self.to, code)
-        return {'message': _('SMS message with MFA code had been sent.')}  # pragma: no cover # noqa
+        return {'message': _('SMS message with MFA code has been sent.')}  # pragma: no cover # noqa
 
     def send_sms(self, user_mobile, code):
         client = self.provider_auth()

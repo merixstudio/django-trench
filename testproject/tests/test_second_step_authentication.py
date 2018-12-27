@@ -633,7 +633,7 @@ def test_request_codes(active_user_with_email_otp):
         },
         format='json',
     )
-    expected_msg = 'Email message with MFA code had been sent.'
+    expected_msg = 'Email message with MFA code has been sent.'
     assert response.status_code == 200
     assert response.data.get('message') == expected_msg
 

@@ -7,7 +7,7 @@ from trench.backends import AbstractMessageDispatcher
 from trench.settings import api_settings
 
 
-class TemplatedMailBackend(AbstractMessageDispatcher):
+class SendMailBackend(AbstractMessageDispatcher):
     EMAIL_SUBJECT = _('Your verification code')
 
     def dispatch_message(self, *args, **kwargs):
@@ -27,6 +27,6 @@ class TemplatedMailBackend(AbstractMessageDispatcher):
                 fail_silently=False,
             )
         except SMTPException:
-            return {'message': _('Email message with MFA code have not been sent.')}
+            return {'message': _('Email message with MFA code has not been sent.')}
 
-        return {'message': _('Email message with MFA code have been sent.')}
+        return {'message': _('Email message with MFA code has been sent.')}
