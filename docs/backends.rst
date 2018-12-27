@@ -8,7 +8,7 @@ Built-in backends
 """""""""""""""""
 Email
 *****
-| This basic method utilise `django-templated-mail`_. You'll need to have Email Backend setup. Check out `Django documentation`_.
+| This basic method utilise build-in Django backend. You'll need to have Email Backend setup. Check out `Django documentation`_.
 
 Text/SMS
 ********
@@ -88,6 +88,5 @@ Adding own authentication method
     }
 
 
-.. _`django-templated-mail`: https://github.com/sunscrapers/django-templated-mail
 .. _`Django documentation`: https://docs.djangoproject.com/en/2.1/topics/email/
 .. _`Twilio`: https://www.twilio.com/
