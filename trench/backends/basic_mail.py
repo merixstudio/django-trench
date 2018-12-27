@@ -26,7 +26,7 @@ class SendMailBackend(AbstractMessageDispatcher):
                 recipient_list=[self.to],
                 fail_silently=False,
             )
-        except SMTPException:
-            return {'message': _('Email message with MFA code has not been sent.')}
+        except SMTPException:  # pragma: no cover
+            return {'message': _('Email message with MFA code has not been sent.')}  # pragma: no cover
 
         return {'message': _('Email message with MFA code has been sent.')}
