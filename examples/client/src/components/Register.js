@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 
 import { Header } from './Header';
 import { RegisterForm } from './RegisterForm';
+import HttpsRedirect from 'react-https-redirect';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -19,14 +20,16 @@ const initialValues = { email: '', password: '', confirmPassword: '' };
 export class RegisterComponent extends Component {
   render() {
     return (
-      <div>
-        <Header name="Register" />
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          render={RegisterForm}
-        />
-      </div>
+        <HttpsRedirect>
+          <div>
+            <Header name="Register" />
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              render={RegisterForm}
+            />
+          </div>
+        </HttpsRedirect>
     );
   }
 }
