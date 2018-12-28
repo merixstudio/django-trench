@@ -18,7 +18,7 @@ setup(
         'pyotp>=2.2.6',
         'twilio>=6.18.1',
         'yubico-client>=1.10.0',
-        'smsapi-client>=2.2.4',
+        'smsapi-client>=2.2.5',
     ],
     classifiers=[
         'Framework :: Django',
