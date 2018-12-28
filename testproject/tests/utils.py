@@ -15,8 +15,10 @@ default_token_field = 'token'
 # header_template ='Bearer {}'
 # token_field = 'access'
 
+
 def get_token_from_response(response, token_field=default_token_field):
     return response.data.get(token_field)
+
 
 @pytest.mark.django_db
 def login(user, path='/auth/login/'):
@@ -32,6 +34,7 @@ def login(user, path='/auth/login/'):
         },
         format='json',
     )
+
 
 def get_username_from_jwt(response, token_field=default_token_field):
     return jwt.decode(

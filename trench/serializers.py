@@ -135,8 +135,8 @@ class ProtectedActionSerializer(serializers.Serializer):
         if validate_code(value, obj, validity_period):
             return value
 
-        if make_password(value) in obj.backup_codes.split(','):
-            obj.remove_backup_code(make_password(value))
+        if make_password(value) in obj.backup_codes:
+            obj.remove_backup_code(value)
             return value
 
         self.fail('code_invalid_or_expired')
@@ -279,8 +279,8 @@ class CodeLoginSerializer(serializers.Serializer):
         for auth_method in self.user.mfa_methods.filter(is_active=True):
             if validate_code(code, auth_method):
                 return attrs
-            if make_password(code) in auth_method.backup_codes.split(','):
-                auth_method.remove_backup_code(make_password(code))
+            if make_password(code) in auth_method.backup_codes:
+                auth_method.remove_backup_code(code)
                 return attrs
 
         self.fail('invalid_code')
@@ -330,10 +330,10 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
             attrs.update(old_method=current_method)
 
             return attrs
-        elif make_password(code) in current_method.backup_codes.split(','):
+        elif make_password(code) in current_method.backup_codes:
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-            current_method.remove_backup_code(make_password(code))
+            current_method.remove_backup_code(code)
             return attrs
         else:
             self.fail('invalid_code')

@@ -126,7 +126,7 @@ def generate_backup_codes(
     allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
 ):
     """
-    Generates random hashed backup codes.
+    Generates random encrypted backup codes.
 
     :param quantity: How many codes should be generated
     :type quantity: int
@@ -135,15 +135,11 @@ def generate_backup_codes(
     :param allowed_chars: Characters to create backup codes from
     :type allowed_chars: str
 
-    :returns: Backup hashed codes
-    :rtype: str
+    :returns: Encrypted backup codes
+    :rtype: list
     """
 
-    return ','.join(
-        make_password(
-            get_random_string(length, allowed_chars) for _ in range(quantity)
-        )
-    )
+    return [make_password(get_random_string(length, allowed_chars) for _ in range(quantity))]
 
 
 def validate_code(
