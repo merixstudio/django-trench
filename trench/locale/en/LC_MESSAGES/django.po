@@ -1,0 +1,164 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-31 08:37+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: backends/basic_mail.py:11
+msgid "Your verification code"
+msgstr ""
+
+#: backends/basic_mail.py:30
+msgid "Email message with MFA code has not been sent."
+msgstr ""
+
+#: backends/basic_mail.py:32
+msgid "Email message with MFA code has been sent."
+msgstr ""
+
+#: backends/sms_api.py:8 backends/twilio.py:11 backends/yubikey.py:7
+msgid "Your verification code is: "
+msgstr ""
+
+#: backends/sms_api.py:19 backends/twilio.py:30
+msgid "SMS message with MFA code has been sent."
+msgstr ""
+
+#: backends/yubikey.py:14
+msgid "Generate code using YubiKey"
+msgstr ""
+
+#: models.py:13
+msgid "user"
+msgstr ""
+
+#: models.py:17
+msgid "name"
+msgstr ""
+
+#: models.py:21
+msgid "secret"
+msgstr ""
+
+#: models.py:25
+msgid "is primary"
+msgstr ""
+
+#: models.py:29
+msgid "is active"
+msgstr ""
+
+#: models.py:33
+msgid "backup codes"
+msgstr ""
+
+#: models.py:39
+msgid "MFA Method"
+msgstr ""
+
+#: models.py:40
+msgid "MFA Methods"
+msgstr ""
+
+#: serializers.py:58
+msgid "Required field not provided"
+msgstr ""
+
+#: serializers.py:60
+msgid "Failed to update required User data. Try again."
+msgstr ""
+
+#: serializers.py:121
+msgid "OTP code not provided."
+msgstr ""
+
+#: serializers.py:122 serializers.py:159
+msgid "Code invalid or expired."
+msgstr ""
+
+#: serializers.py:162
+msgid "MFA Method to be deactivated cannot be chosen as new primary method."
+msgstr ""
+
+#: serializers.py:167
+msgid "Selected new primary MFA method is not registered for current user."
+msgstr ""
+
+#: serializers.py:171
+msgid "MFA Method selected as new primary method is not active"
+msgstr ""
+
+#: serializers.py:224 views/base.py:300
+msgid "Requested MFA method does not exists"
+msgstr ""
+
+#: serializers.py:255
+msgid "User account is disabled."
+msgstr ""
+
+#: serializers.py:259
+msgid "Unable to login with provided credentials."
+msgstr ""
+
+#: serializers.py:273
+msgid "Invalid or expired token."
+msgstr ""
+
+#: serializers.py:274 serializers.py:313
+msgid "Invalid or expired code."
+msgstr ""
+
+#: serializers.py:312
+msgid "2FA is not enabled."
+msgstr ""
+
+#: serializers.py:314
+msgid "Target method does not exist or is not active"
+msgstr ""
+
+#: settings.py:75
+msgid "sms"
+msgstr ""
+
+#: settings.py:87
+msgid "email"
+msgstr ""
+
+#: settings.py:93
+msgid "app"
+msgstr ""
+
+#: settings.py:99
+msgid "yubi"
+msgstr ""
+
+#: urls/djoser.py:15
+msgid ""
+"Djoser not found in INSTALLED_APPS. Make sure you've installed it, and add "
+"appropriate entry in settings."
+msgstr ""
+
+#: views/base.py:183
+msgid "Method already disabled."
+msgstr ""
+
+#: views/base.py:212
+msgid "Failed to update MFA information"
+msgstr ""
+
+#: views/base.py:239
+msgid "Method is disabled."
+msgstr ""
