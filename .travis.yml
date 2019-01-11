@@ -8,29 +8,29 @@ matrix:
       - { python: "3.6", env: TOX_ENV='flake8' }
       - { python: "3.6", env: TOX_ENV='isort' }
 
-      - { python: "3.4", env: DJANGO=1.11 DRF=3.7 }
-      - { python: "3.4", env: DJANGO=2.0 DRF=3.7 }
-      - { python: "3.4", env: DJANGO=1.11 DRF=3.8 }
-      - { python: "3.4", env: DJANGO=2.0 DRF=3.8 }
+      - { python: "3.4", env: DJANGO=111 DRF=37 }
+      - { python: "3.4", env: DJANGO=20 DRF=37 }
+      - { python: "3.4", env: DJANGO=111 DRF=38 }
+      - { python: "3.4", env: DJANGO=20 DRF=38 }
 
-      - { python: "3.5", env: DJANGO=1.11 DRF=3.7 }
-      - { python: "3.5", env: DJANGO=2.0 DRF=3.7 }
-      - { python: "3.5", env: DJANGO=2.1 DRF=3.7 }
-      - { python: "3.5", env: DJANGO=1.11 DRF=3.8 }
-      - { python: "3.5", env: DJANGO=2.0 DRF=3.8 }
-      - { python: "3.5", env: DJANGO=2.1 DRF=3.8 }
+      - { python: "3.5", env: DJANGO=111 DRF=37 }
+      - { python: "3.5", env: DJANGO=20 DRF=37 }
+      - { python: "3.5", env: DJANGO=21 DRF=37 }
+      - { python: "3.5", env: DJANGO=111 DRF=38 }
+      - { python: "3.5", env: DJANGO=20 DRF=38 }
+      - { python: "3.5", env: DJANGO=21 DRF=38 }
 
-      - { python: "3.6", env: DJANGO=1.11 DRF=3.7 }
-      - { python: "3.6", env: DJANGO=2.0 DRF=3.7 }
-      - { python: "3.6", env: DJANGO=2.1 DRF=3.7 }
-      - { python: "3.6", env: DJANGO=1.11 DRF=3.8 }
-      - { python: "3.6", env: DJANGO=2.0 DRF=3.8 }
-      - { python: "3.6", env: DJANGO=2.1 DRF=3.8 }
+      - { python: "3.6", env: DJANGO=111 DRF=37 }
+      - { python: "3.6", env: DJANGO=20 DRF=37 }
+      - { python: "3.6", env: DJANGO=21 DRF=37 }
+      - { python: "3.6", env: DJANGO=111 DRF=38 }
+      - { python: "3.6", env: DJANGO=20 DRF=38 }
+      - { python: "3.6", env: DJANGO=21 DRF=38 }
 
-      - { python: "3.7", env: DJANGO=2.0 DRF=3.7, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=2.1 DRF=3.7, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=2.0 DRF=3.8, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=2.1 DRF=3.8, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=20 DRF=37, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=21 DRF=37, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=20 DRF=38, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=21 DRF=38, dist: xenial, sudo: true }
 
 install:
   - pip install tox
