@@ -5,6 +5,10 @@ sudo: false
 matrix:
     fast_finish: true
     include:
+
+      - { python: "3.5", env: flake8 }
+      - { python: "3.5", env: isort }
+
       - { python: "3.4", env: DJANGO=1.11 }
       - { python: "3.4", env: DJANGO=2.0 }
 
