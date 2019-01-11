@@ -11,6 +11,7 @@ import {
   updateMe,
 } from '../actions';
 import request from '../request';
+import HttpsRedirect from 'react-https-redirect';
 
 export class UserDashboardComponent extends Component {
   constructor() {
@@ -64,7 +65,7 @@ export class UserDashboardComponent extends Component {
       return Promise.resolve();
     }
   }
-  
+
 
   render() {
     const {
@@ -74,41 +75,44 @@ export class UserDashboardComponent extends Component {
     } = this.state;
 
     return (
-      <div>
-        <Header name="User" />
-        <div style={{ padding: '16px 16px 48px' }}>
-          <Snackbar
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            color="primary"
-            open={!!this.state.message}
-            autoHideDuration={2000}
-            onClose={() => this.setState({ message: '' })}
-            message={<span>{this.state.message}</span>}
-          />
-          {userData && (
-            <UserMFAConfiguration
-              enabledAuth={enabledAuth}  
-              userData={userData}
-              MFAConfig={MFAConfig}
-              showMessage={message => this.setState({ message })}
-              changeEnabledAuth={enabledAuth => this.setState({ enabledAuth })}
-              getEnabledAuth={this.getEnabledAuth}
-              updateUser={this.updateUser}
+      <HttpsRedirect>
+
+        <div>
+          <Header name="User" />
+          <div style={{ padding: '16px 16px 48px' }}>
+            <Snackbar
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+              color="primary"
+              open={!!this.state.message}
+              autoHideDuration={2000}
+              onClose={() => this.setState({ message: '' })}
+              message={<span>{this.state.message}</span>}
             />
-          )}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={this.redirectToLogin}
-            style={{ marginTop: 30 }}
-          >
-            Logout
-          </Button>
+            {userData && (
+              <UserMFAConfiguration
+                enabledAuth={enabledAuth}
+                userData={userData}
+                MFAConfig={MFAConfig}
+                showMessage={message => this.setState({ message })}
+                changeEnabledAuth={enabledAuth => this.setState({ enabledAuth })}
+                getEnabledAuth={this.getEnabledAuth}
+                updateUser={this.updateUser}
+              />
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={this.redirectToLogin}
+              style={{ marginTop: 30 }}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
-      </div>
+      </HttpsRedirect>
     );
   }
 }
