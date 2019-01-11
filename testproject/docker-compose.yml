@@ -10,3 +10,5 @@ services:
       - ../trench:/trench/trench
     ports:
       - '8000:8000'
+    environment:
+      - PY_IGNORE_IMPORTMISMATCH=1
