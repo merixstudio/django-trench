@@ -2,6 +2,7 @@ from setuptools import find_packages, setup
 
 from trench import __version__
 
+
 setup(
     name='django-trench',
     version=__version__,

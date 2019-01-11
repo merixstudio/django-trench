@@ -20,8 +20,9 @@ from trench.utils import (
 User = get_user_model()
 MFAMethod = get_mfa_model()
 
+mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [
-    (k, v.get('VERBOSE_NAME', _(k))) for k, v in api_settings.MFA_METHODS.items()
+    (k, v.get('VERBOSE_NAME', _(k))) for k, v in mfa_methods_items
 ]
 
 
@@ -129,7 +130,7 @@ class ProtectedActionSerializer(serializers.Serializer):
         obj = self.context['obj']
         validity_period = (
             self.context['conf'].get('VALIDITY_PERIOD')
-            or api_settings.DEFAULT_VALIDITY_PERIOD
+            or api_settings.DEFAULT_VALIDITY_PERIOD  # noqa
         )
 
         if validate_code(value, obj, validity_period):
@@ -210,7 +211,9 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
+class RequestMFAMethodBackupCodesRegenerationSerializer(
+    ProtectedActionSerializer
+):
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
