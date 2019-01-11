@@ -5,8 +5,8 @@ sudo: false
 matrix:
     fast_finish: true
     include:
-      - { python: "3.5", env: flake8 }
-      - { python: "3.5", env: isort }
+      - { python: "3.6", env: TOX_ENV='flake8' }
+      - { python: "3.6", env: TOX_ENV='isort' }
 
       - { python: "3.4", env: DJANGO=1.11 }
       - { python: "3.4", env: DJANGO=2.0 }
@@ -24,9 +24,14 @@ matrix:
 
 install:
   - pip install tox-travis
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then export PY_VER=py34; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PY_VER=py35; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export PY_VER=py36; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then export PY_VER=py37; fi"
+  - "if [[ -v ${DJANGO} ]]; then export TOX_ENV=$PY_VER-$DJANGO; fi"
 
 script:
-  - tox
+  - tox -e $TOX_ENV
 
 after_success:
     - pip install codecov
