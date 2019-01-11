@@ -1,9 +1,11 @@
 import pytest
 
 from django.contrib.auth import get_user_model
+
 from smsapi.exception import ClientException, SendException
 
 from trench.backends.sms_api import SmsAPIBackend
+
 
 User = get_user_model()
 
@@ -44,5 +46,3 @@ def test_smsapi_backend_with_wrong_credentials(
         ).dispatch_message()
 
     assert 'Authorization failed' == exc_info.value.message
-
-

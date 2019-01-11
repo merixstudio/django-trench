@@ -33,7 +33,7 @@ matrix:
       - { python: "3.7", env: DJANGO=21 DRF=38, dist: xenial, sudo: true }
 
 install:
-  - pip install tox
+  - pip install tox-travis
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then export PY_VER=py34; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PY_VER=py35; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export PY_VER=py36; fi"

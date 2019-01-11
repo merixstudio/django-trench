@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 
-
 from tests.utils import get_token_from_response, header_template, login
 from trench.utils import create_otp_code, create_secret
 

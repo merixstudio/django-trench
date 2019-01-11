@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import pyotp
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -13,9 +12,9 @@ from django.utils.crypto import (
 )
 from django.utils.http import base36_to_int, int_to_base36
 
+import pyotp
 from yubico_client.yubico import Yubico
 from yubico_client.yubico_exceptions import YubicoError
-import pyotp
 
 from trench.settings import api_settings
 

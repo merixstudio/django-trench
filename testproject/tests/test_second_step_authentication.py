@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
-
 from tests.utils import (
     get_token_from_response,
     get_username_from_jwt,
@@ -16,7 +15,6 @@ from trench.utils import create_otp_code, generate_backup_codes
 
 
 User = get_user_model()
-
 
 
 @pytest.mark.django_db
@@ -213,6 +211,7 @@ def test_activation_otp_confirm_wrong(active_user):
     assert response.status_code == 400
     error_code = 'code_invalid_or_expired'
     assert response.data.get('non_field_errors')[0].code == error_code
+
 
 @pytest.mark.django_db
 def test_confirm_activation_otp(active_user):
@@ -769,6 +768,7 @@ def test_get_mfa_config():
         format='json',
     )
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):

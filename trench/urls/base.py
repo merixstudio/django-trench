@@ -43,7 +43,7 @@ urlpatterns = [
         views.ListUserActiveMFAMethods.as_view(),
         name='mfa-list-user-active-methods',
     ),
-     url(
+    url(
         r'^mfa/change-primary-method/$',
         views.ChangePrimaryMethod.as_view(),
         name='mfa-change-primary-method',
