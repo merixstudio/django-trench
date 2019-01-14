@@ -13,8 +13,8 @@ from trench.utils import (
     get_nested_attr,
     set_nested_attr,
     user_token_generator,
-    validate_code,
     validate_backup_code,
+    validate_code,
 )
 
 
