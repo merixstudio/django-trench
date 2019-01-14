@@ -31,7 +31,7 @@ class TwilioBackend(AbstractMessageDispatcher):
 
     def send_sms(self, user_mobile, code):
         client = self.provider_auth()
-        client.messages.create(
+        client.messages.create(  # pragma: no cover
             body=self.SMS_BODY + code,
             to=user_mobile,
             from_=self.conf.get('TWILIO_VERIFIED_FROM_NUMBER')
