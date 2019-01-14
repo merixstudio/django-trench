@@ -286,7 +286,10 @@ class CodeLoginSerializer(serializers.Serializer):
             self.fail('invalid_token')
 
         for auth_method in self.user.mfa_methods.filter(is_active=True):
-            validated_backup_code = validate_backup_code(code, auth_method.backup_codes)
+            validated_backup_code = validate_backup_code(
+                code,
+                auth_method.backup_codes,
+            )
             if validate_code(code, auth_method):
                 return attrs
             if validated_backup_code:
@@ -335,7 +338,10 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
         except ObjectDoesNotExist:
             self.fail('missing_method')
         code = attrs.get('code')
-        validated_backup_code = validate_backup_code(code, current_method.backup_codes)
+        validated_backup_code = validate_backup_code(
+            code,
+            current_method.backup_codes,
+        )
         if validate_code(code, current_method):
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
