@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+
 from smsapi.client import SmsApiPlClient
 
 from trench.backends import AbstractMessageDispatcher
@@ -16,7 +17,7 @@ class SmsAPIBackend(AbstractMessageDispatcher):
         self.send_sms(self.to, code)
 
         return {
-            'message': _('SMS message with MFA code had been sent.')
+            'message': _('SMS message with MFA code has been sent.')
         }  # pragma: no cover # noqa
 
     def send_sms(self, user_mobile, code):
@@ -24,7 +25,9 @@ class SmsAPIBackend(AbstractMessageDispatcher):
 
         kwargs = {}
         if self.conf.get('SMSAPI_FROM_NUMBER'):
-            kwargs['from_'] = self.conf.get('SMSAPI_FROM_NUMBER')  # pragma: no cover
+            kwargs['from_'] = self.conf.get(
+                'SMSAPI_FROM_NUMBER'
+            )  # pragma: no cover
 
         client.sms.send(
             message=self.SMS_BODY + code,

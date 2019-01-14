@@ -23,7 +23,7 @@ Additional settings
                 'VERBOSE_NAME': _('email'),
                 'VALIDITY_PERIOD': 60 * 10,
                 'FIELD': 'email',
-                'HANDLER': 'trench.backends.templated_mail.TemplatedMailBackend',
+                'HANDLER': 'trench.backends.basic_mail.SendMailBackend',
                 'SERIALIZER': 'trench.serializers.RequestMFACreateEmailSerializer',
                 'SOURCE_FIELD': 'email',
             },

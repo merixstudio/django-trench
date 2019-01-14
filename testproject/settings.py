@@ -187,7 +187,7 @@ TRENCH_AUTH = {
         'email': {
             'VERBOSE_NAME': 'email',
             'VALIDITY_PERIOD': 60 * 10,
-            'HANDLER': 'trench.backends.templated_mail.TemplatedMailBackend',
+            'HANDLER': 'trench.backends.basic_mail.SendMailBackend',
             'SOURCE_FIELD': 'email',
         },
         'app': {

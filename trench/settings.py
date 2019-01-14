@@ -71,22 +71,27 @@ DEFAULTS = {
     'CACHE_PREFIX': 'trench',
     'MAX_METHODS_PER_USER': 3,
     'MFA_METHODS': {
-        'sms': {
-            'VERBOSE_NAME': _('sms'),
+        'sms_twilio': {
+            'VERBOSE_NAME': _('sms_twilio'),
             'VALIDITY_PERIOD': 60 * 10,
             'HANDLER': 'trench.backends.twilio.TwilioBackend',
             'SOURCE_FIELD': 'phone_number',
             'TWILIO_ACCOUNT_SID': 'YOUR KEY',
             'TWILIO_AUTH_TOKEN': 'YOUR KEY',
             'TWILIO_VERIFIED_FROM_NUMBER': 'YOUR TWILIO REGISTERED NUMBER',
-
+        },
+        'sms_api': {
+            'VERBOSE_NAME': _('sms_api'),
+            'VALIDITY_PERIOD': 60 * 10,
+            'HANDLER': 'trench.backends.sms_api.SmsAPIBackend',
+            'SOURCE_FIELD': 'phone_number',
             'SMSAPI_ACCESS_TOKEN': 'YOUR SMSAPI TOKEN',
             'SMSAPI_FROM_NUMBER': 'YOUR REGISTERED NUMBER',
         },
         'email': {
             'VERBOSE_NAME': _('email'),
             'VALIDITY_PERIOD': 60 * 10,
-            'HANDLER': 'trench.backends.templated_mail.TemplatedMailBackend',
+            'HANDLER': 'trench.backends.basic_mail.SendMailBackend',
             'SOURCE_FIELD': 'email',
         },
         'app': {

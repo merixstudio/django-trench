@@ -21,8 +21,9 @@ from trench.utils import (
 User = get_user_model()
 MFAMethod = get_mfa_model()
 
+mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [
-    (k, v.get('VERBOSE_NAME', _(k))) for k, v in api_settings.MFA_METHODS.items()
+    (k, v.get('VERBOSE_NAME', _(k))) for k, v in mfa_methods_items
 ]
 
 
@@ -119,17 +120,18 @@ class ProtectedActionSerializer(serializers.Serializer):
     )
 
     default_error_messages = {
+        'otp_code_missing': _('OTP code not provided.'),
         'code_invalid_or_expired': _('Code invalid or expired.'),
     }
 
-    def validate_code(self, value):
-        if not self.requires_mfa_code:
-            return value  # pragma: no cover
+    def _validate_code(self, value):
+        if not value:
+            self.fail('otp_code_missing')
 
         obj = self.context['obj']
         validity_period = (
             self.context['conf'].get('VALIDITY_PERIOD')
-            or api_settings.DEFAULT_VALIDITY_PERIOD
+            or api_settings.DEFAULT_VALIDITY_PERIOD  # noqa
         )
         validated_backup_code = validate_backup_code(value, obj.backup_codes)
         if validate_code(value, obj, validity_period):
@@ -139,6 +141,12 @@ class ProtectedActionSerializer(serializers.Serializer):
             return value
 
         self.fail('code_invalid_or_expired')
+
+    def validate(self, data):
+        if self.requires_mfa_code:
+            self._validate_code(data.get('code'))
+
+        return super().validate(data)
 
 
 class RequestMFAMethodActivationConfirmSerializer(ProtectedActionSerializer):
@@ -203,7 +211,9 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
+class RequestMFAMethodBackupCodesRegenerationSerializer(
+    ProtectedActionSerializer
+):
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 

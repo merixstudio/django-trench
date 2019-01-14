@@ -67,6 +67,16 @@ or add it to your requirements file.
 
 | Read further in: `installation`_.
 
+Translation
+-----------
+
+Trench uses Transifex service to translate our package into other languages.
+
+We will appreciate your help with translation.
+
+https://www.transifex.com/merixstudio/django-trench/dashboard/
+
+
 Demo project
 ------------
 

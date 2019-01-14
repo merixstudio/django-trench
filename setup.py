@@ -2,10 +2,11 @@ from setuptools import find_packages, setup
 
 from trench import __version__
 
+
 setup(
     name='django-trench',
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=['testproject', 'testproject.*']),
     include_package_data=True,
     license='MIT License',
     description='REST Multi-factor authentication package for Django',
@@ -16,10 +17,9 @@ setup(
     author_email='trench@merixstudio.com',
     install_requires=[
         'pyotp>=2.2.6',
-        'django-templated-mail>=1.1.1',
         'twilio>=6.18.1',
         'yubico-client>=1.10.0',
-        'smsapi-client>=2.2.4',
+        'smsapi-client>=2.2.5',
     ],
     classifiers=[
         'Framework :: Django',

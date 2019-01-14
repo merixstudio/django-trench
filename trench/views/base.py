@@ -45,8 +45,8 @@ class MFACredentialsLoginMixin:
         user = serializer.user
         auth_method = (
             user.mfa_methods
-            .filter(is_primary=True, is_active=True)
-            .first()
+                .filter(is_primary=True, is_active=True)
+                .first()
         )
         if auth_method:
             conf = api_settings.MFA_METHODS[auth_method.name]
@@ -195,7 +195,7 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
                 if serializer.users_active_methods_count >= 2:
                     new_primary_obj = (
                         getattr(serializer, 'new_method')
-                        or MFAMethod.objects
+                        or MFAMethod.objects  # noqa
                         .filter(user=request.user, is_active=True)
                         .exclude(id=self.obj.id)
                         .first()
@@ -210,7 +210,9 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
                 self.obj.save(update_fields=default_update_fields)
         except IntegrityError:  # pragma: no cover
             return Response(  # pragma: no cover
-                {'error': _('Failed to update MFA information')},  # pragma: no cover
+                {
+                    'error': _('Failed to update MFA information')
+                },  # pragma: no cover
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)

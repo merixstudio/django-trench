@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
-
 from tests.utils import (
     get_token_from_response,
     get_username_from_jwt,
@@ -211,7 +210,7 @@ def test_activation_otp_confirm_wrong(active_user):
     )
     assert response.status_code == 400
     error_code = 'code_invalid_or_expired'
-    assert error_code == response.data.get('code')[0].code
+    assert response.data.get('non_field_errors')[0].code == error_code
 
 
 @pytest.mark.django_db
@@ -265,6 +264,9 @@ def test_deactivation_otp(active_user_with_email_otp):
     )
     response = client.post(
         path='/auth/email/deactivate/',
+        data={
+            'code': create_otp_code(secret),
+        },
         format='json',
     )
     assert response.status_code == 204
@@ -319,7 +321,10 @@ def test_new_method_after_deactivation(active_user_with_many_otp_methods):
     )
     response = client.post(
         path='/auth/email/deactivate/',
-        data={'new_primary_method': 'sms'},
+        data={
+            'code': create_otp_code(first_primary_method.secret),
+            'new_primary_method': 'sms',
+        },
         format='json',
     )
     new_primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
@@ -632,7 +637,7 @@ def test_request_codes(active_user_with_email_otp):
         },
         format='json',
     )
-    expected_msg = 'Email message with MFA code had been sent.'
+    expected_msg = 'Email message with MFA code has been sent.'
     assert response.status_code == 200
     assert response.data.get('message') == expected_msg
 
@@ -710,6 +715,9 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
     )
     response = client.post(
         path='/auth/email/codes/regenerate/',
+        data={
+            'code': create_otp_code(first_primary_method.secret),
+        },
         format='json',
     )
     new_backup_codes = \
@@ -760,6 +768,7 @@ def test_get_mfa_config():
         format='json',
     )
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):

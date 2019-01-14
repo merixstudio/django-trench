@@ -2,10 +2,10 @@ import pytest
 
 from trench.utils import (
     UserTokenGenerator,
+    create_otp_code,
     create_qr_link,
     get_innermost_object,
     validate_code,
-    create_otp_code,
 )
 
 
