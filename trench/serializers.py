@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models as django_models
 from django.db.utils import DatabaseError
@@ -15,6 +14,7 @@ from trench.utils import (
     set_nested_attr,
     user_token_generator,
     validate_code,
+    validate_backup_code,
 )
 
 
@@ -131,12 +131,11 @@ class ProtectedActionSerializer(serializers.Serializer):
             self.context['conf'].get('VALIDITY_PERIOD')
             or api_settings.DEFAULT_VALIDITY_PERIOD
         )
-
+        validated_backup_code = validate_backup_code(value, obj.backup_codes)
         if validate_code(value, obj, validity_period):
             return value
-
-        if make_password(value) in obj.backup_codes:
-            obj.remove_backup_code(value)
+        if validated_backup_code:
+            obj.remove_backup_code(validated_backup_code)
             return value
 
         self.fail('code_invalid_or_expired')
@@ -277,10 +276,11 @@ class CodeLoginSerializer(serializers.Serializer):
             self.fail('invalid_token')
 
         for auth_method in self.user.mfa_methods.filter(is_active=True):
+            validated_backup_code = validate_backup_code(code, auth_method.backup_codes)
             if validate_code(code, auth_method):
                 return attrs
-            if make_password(code) in auth_method.backup_codes:
-                auth_method.remove_backup_code(code)
+            if validated_backup_code:
+                auth_method.remove_backup_code(validated_backup_code)
                 return attrs
 
         self.fail('invalid_code')
@@ -325,15 +325,15 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
         except ObjectDoesNotExist:
             self.fail('missing_method')
         code = attrs.get('code')
+        validated_backup_code = validate_backup_code(code, current_method.backup_codes)
         if validate_code(code, current_method):
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-
             return attrs
-        elif make_password(code) in current_method.backup_codes:
+        elif validated_backup_code:
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-            current_method.remove_backup_code(code)
+            current_method.remove_backup_code(validated_backup_code)
             return attrs
         else:
             self.fail('invalid_code')

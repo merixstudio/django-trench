@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -51,10 +50,9 @@ class MFAMethod(models.Model):
     def backup_codes(self, codes):
         self._backup_codes = ','.join(codes)
 
-    def remove_backup_code(self, raw_code):
+    def remove_backup_code(self, utilised_code):
         codes = self.backup_codes
-        code = make_password(raw_code)
-        if code in codes:
-            codes.remove(code)
+        if utilised_code in codes:
+            codes.remove(utilised_code)
             self.backup_codes = codes
             self.save()

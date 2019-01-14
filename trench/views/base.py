@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
@@ -147,16 +148,16 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
         backup_codes = generate_backup_codes()
 
         self.obj.is_active = True
-        self.obj.backup_codes = backup_codes
+        self.obj.backup_codes = [make_password(backup_code) for backup_code in backup_codes]
         self.obj.is_primary = not MFAMethod.objects.filter(
             user=request.user,
             is_active=True,
         ).exists()
         self.obj.save(
-            update_fields=['is_active', 'backup_codes', 'is_primary']
+            update_fields=['is_active', '_backup_codes', 'is_primary']
         )
 
-        return Response({'backup_codes': backup_codes.split(',')})
+        return Response({'backup_codes': backup_codes})
 
 
 class RequestMFAMethodDeactivationView(GenericAPIView):
@@ -244,9 +245,9 @@ class RequestMFAMethodBackupCodesRegenerationView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         backup_codes = generate_backup_codes()
-        self.obj.backup_codes = backup_codes
-        self.obj.save(update_fields=['backup_codes'])
-        return Response({'backup_codes': backup_codes.split(',')})
+        self.obj.backup_codes = [make_password(backup_code) for backup_code in backup_codes]
+        self.obj.save(update_fields=['_backup_codes'])
+        return Response({'backup_codes': backup_codes})
 
 
 class GetMFAConfig(APIView):
