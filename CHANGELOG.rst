@@ -2,8 +2,8 @@
 Changelog
 =========
 
-(unreleased)
-============
+0.2.0 (2019-01-15)
+==================
 
 * Added auth backend for YubiKey
 * Changed default email backend to Django's built-in
