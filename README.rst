@@ -13,14 +13,14 @@ django-trench
 
 
 | **django-trench** provides a set of REST API endpoints to supplement `django-rest-framework`_ with multi-factor authentication (MFA, 2FA). It supports both standard built-in authentication methods, as well as JWT (JSON Web Token). **django-trench** follows the url pattern developed in `djoser`_ library and may act as its supplement.
-| We deliver a couple of sample secondary authentication methods including sending OTP based code by email, SMS/text as well as through 3rd party mobile apps. Developers can easily add own auth backend supporting any communication channel.
+| We deliver a couple of sample secondary authentication methods including sending OTP based code by email, SMS/text as well as through 3rd party mobile apps or utilising YubiKey. Developers can easily add own auth backend supporting any communication channel.
 
 Features
 --------
 
 * Easily plugable and compatible with `django-rest-framework`_ and `djoser`_
 * Allows user to pick an additional authentication method from range of backends defined by a developer. Read more: `backends`_
-* Comes out of a box with email, SMS add mobile apps support
+* Comes out of a box with email, SMS, mobile apps and YubiKey support
 
 Requirements
 ------------
@@ -34,11 +34,15 @@ Supported versions
 
 | If you implement ``djoser`` for authentication:
 
-* `djoser`_ 1.15.0
+* `djoser`_ >= 1.15.0
 
 | If you are going to use JWT authentication:
 
-* `django-rest-framework-jwt`_ 1.11.0
+* `django-rest-framework-jwt`_ >= 1.11.0
+
+| or
+
+* `djangorestframework-simplejwt`_ >= 3.3
 
 Quick Start
 -----------
@@ -80,7 +84,7 @@ https://www.transifex.com/merixstudio/django-trench/dashboard/
 Demo project
 ------------
 
-You can also check our `demo`_.
+You can also check our live `demo`_.
 
 .. _backends: https://django-trench.readthedocs.io/en/latest/backends.html
 .. _installation: https://django-trench.readthedocs.io/en/latest/installation.html
@@ -88,3 +92,4 @@ You can also check our `demo`_.
 .. _django-rest-framework: http://www.django-rest-framework.org
 .. _djoser: https://github.com/sunscrapers/djoser
 .. _django-rest-framework-jwt: https://github.com/GetBlimp/django-rest-framework-jwt
+.. _djangorestframework-simplejwt: https://github.com/davesque/django-rest-framework-simplejwt

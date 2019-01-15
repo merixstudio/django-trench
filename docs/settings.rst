@@ -1,7 +1,7 @@
 Additional settings
 ===================
 
-| You can customize settings by adding ``trench`` dict in your ``settings.py``:
+| You can customize settings by adding ``TRENCH_AUTH`` dict in your ``settings.py``:
 
 .. code-block:: python
 
@@ -13,6 +13,7 @@ Additional settings
         'BACKUP_CODES_CHARACTERS': (
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         ),
+        'ENCRYPT_BACKUP_CODES': True,
         'DEFAULT_VALIDITY_PERIOD': 30,
         'CONFIRM_DISABLE_WITH_CODE': False,
         'CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE': True,
@@ -51,6 +52,11 @@ Length of backup code.
 BACKUP_CODES_CHARACTERS
 """""""""""""""""""""""
 Range of characters to be used in backup code.
+
+ENCRYPT_BACKUP_CODES
+""""""""""""""""""""
+Backup codes to be encrypted before saving.
+Default: ``True``
 
 DEFAULT_VALIDITY_PERIOD
 """""""""""""""""""""""

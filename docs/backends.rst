@@ -12,14 +12,14 @@ Email
 
 Text/SMS
 ********
-| SMS backends sends out text messages with `Twilio`_. Credentials can be set in method's specific settings.
+| SMS backends sends out text messages with `Twilio`_ or `Smsapi.pl`_. Credentials can be set in method's specific settings.
 
 .. code-block:: python
 
     TRENCH_AUTH = {
         (...)
         'MFA_METHODS': {
-            'sms': {
+            'sms_twilio': {
                 'VERBOSE_NAME': 'sms',
                 'VALIDITY_PERIOD': 60 * 10,
                 'HANDLER': 'trench.backends.twilio.TwilioBackend',
@@ -49,6 +49,24 @@ Authentication apps
                 'USES_THIRD_PARTY_CLIENT': True,
                 'HANDLER': 'trench.backends.application.ApplicationBackend',
             },
+            ...,
+        },
+    }
+
+YubiKey
+*******
+
+.. code-block:: python
+
+    TRENCH_AUTH = {
+        (...)
+        'MFA_METHODS': {
+            'yubi': {
+                'VERBOSE_NAME': 'yubi',
+                'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
+                'SOURCE_FIELD': 'yubikey_id',
+                'YUBICLOUD_CLIENT_ID': '',
+            }
             ...,
         },
     }
@@ -90,3 +108,4 @@ Adding own authentication method
 
 .. _`Django documentation`: https://docs.djangoproject.com/en/2.1/topics/email/
 .. _`Twilio`: https://www.twilio.com/
+.. _`Smsapi.pl`: https://www.smsapi.pl/

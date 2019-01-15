@@ -60,6 +60,8 @@ Config
             'rest_framework.authentication.TokenAuthentication',
             # or / and
             'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+            # or / and
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
     }
 
