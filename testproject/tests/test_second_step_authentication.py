@@ -25,7 +25,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -46,7 +46,7 @@ def test_wrong_second_step_verification_with_empty_code(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': '',
         },
         format='json',
@@ -65,7 +65,7 @@ def test_wrong_second_step_verification_with_wrong_code(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': 'test',
         },
         format='json',
@@ -85,7 +85,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token') + 'wrong',
+            'ephemeral_token': first_step.data.get('ephemeral_token') + 'wrong',
             'code': create_otp_code(secret),
         },
         format='json',
@@ -101,7 +101,7 @@ def test_second_method_activation(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -138,7 +138,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -170,7 +170,7 @@ def test_use_backup_code(active_user_with_backup_codes):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
         },
         format='json',
@@ -236,7 +236,7 @@ def test_confirm_activation_otp(active_user):
     response = client.post(
         path='/auth/email/activate/confirm/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': code,
         },
         format='json',
@@ -254,7 +254,7 @@ def test_deactivation_otp(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -283,7 +283,7 @@ def test_deactivation_otp_already_disabled_method(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -311,7 +311,7 @@ def test_new_method_after_deactivation(active_user_with_many_otp_methods):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -347,7 +347,7 @@ def test_new_method_after_deactivation_same_method_wrong(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -379,7 +379,7 @@ def test_new_method_after_deactivation_user_doesnt_have_method(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -409,7 +409,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -446,7 +446,7 @@ def test_change_primary_method_with_backup_code(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -481,7 +481,7 @@ def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_method
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -513,7 +513,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -576,7 +576,7 @@ def test_confirm_activation_otp_with_backup_code(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
         },
         format='json',
@@ -603,7 +603,7 @@ def test_confirm_activation_otp_with_backup_code(
     response = client.post(
         path='/auth/sms/activate/confirm/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
         },
         format='json',
@@ -621,7 +621,7 @@ def test_request_codes(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -650,7 +650,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -677,7 +677,7 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -705,7 +705,7 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -743,7 +743,7 @@ def test_backup_codes_regeneration_disabled_method(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -778,7 +778,7 @@ def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
     response = client.post(
         path='/simplejwt-auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',

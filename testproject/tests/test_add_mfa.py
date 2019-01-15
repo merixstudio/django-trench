@@ -50,7 +50,7 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
     second_step_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',

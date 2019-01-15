@@ -269,7 +269,7 @@ class CodeLoginSerializer(serializers.Serializer):
     """
     Validates given token and OTP code.
     """
-    token = serializers.CharField()
+    ephemeral_token = serializers.CharField()
     code = serializers.CharField()
 
     default_error_messages = {
@@ -278,10 +278,10 @@ class CodeLoginSerializer(serializers.Serializer):
     }
 
     def validate(self, attrs):
-        token = attrs.get('token')
+        ephemeral_token = attrs.get('ephemeral_token')
         code = attrs.get('code')
 
-        self.user = user_token_generator.check_token(token)
+        self.user = user_token_generator.check_token(ephemeral_token)
         if not self.user:
             self.fail('invalid_token')
 
