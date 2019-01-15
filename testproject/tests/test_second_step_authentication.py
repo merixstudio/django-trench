@@ -742,7 +742,7 @@ def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
