@@ -248,6 +248,10 @@ def validate_backup_code(value, backup_codes):
     :param backup_codes:
     :return:
     """
-    validated_codes = [_ for _ in backup_codes if check_password(value, _)]
+    if api_settings.ENCRYPT_BACKUP_CODES:
+        validated_codes = [_ for _ in backup_codes if check_password(value, _)]
+    else:  # pragma: no cover
+        validated_codes = [_ for _ in backup_codes if value in backup_codes]
+
     if validated_codes:
         return validated_codes[0]
