@@ -92,7 +92,7 @@ Basic usage
 .. code-block:: text
 
     $ curl -X POST http://localhost:8000/auth/login/code/
-    -d 'code=[code from previous step]&token=[ephemeral_token from step before]'
+    -d 'code=[code from previous step]&ephemeral_token=[ephemeral_token from step before]'
 
     {
         "token": "JWT token",

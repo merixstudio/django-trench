@@ -27,6 +27,20 @@ MFA method activation
 * ``/code/request/`` ``[POST]``
     | Triggers sending out a code.
 
+Login
+"""""
+* ``/login/`` ``[POST]``
+    | First step, if 2FA is enable returns ``ephemeral_token`` required in next step as well as current auth ``method``, otherwise logs in user.
+    | Payload:
+        * ``username``
+        * ``password``
+
+* ``/login/code/`` ``[POST]``
+    | Requires token generated in previous step and OTP code, logs in user (returns ``token``)
+    | Payload:
+        * ``ephemeral_token``
+        * ``code``
+
 Backup codes
 """"""""""""
 * ``/mfa/codes/regenerate/`` ``[POST]``
@@ -43,3 +57,9 @@ Settings
 * ``/mfa/user-active-methods/`` ``[GET]``
     | Display methods activated by user
 
+* ``/mfa/change-primary-method/`` ``[POST]``
+    | Change default authentication method
+    | Payload:
+
+        * ``method`` MFA method name
+        * ``code`` auth code received by specified channel
