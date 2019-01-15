@@ -29,7 +29,7 @@ class MFAMethod(models.Model):
         _('is active'),
         default=False,
     )
-    backup_codes = models.CharField(
+    _backup_codes = models.CharField(
         _('backup codes'),
         max_length=255,
         blank=True,
@@ -42,9 +42,17 @@ class MFAMethod(models.Model):
     def __str__(self):
         return '{} (User id: {})'.format(self.name, self.user_id)
 
-    def remove_backup_code(self, code):
-        codes = self.backup_codes.split(',')
-        if code in codes:
-            codes.remove(code)
-            self.backup_codes = ','.join(codes)
+    @property
+    def backup_codes(self):
+        return self._backup_codes.split(',')
+
+    @backup_codes.setter
+    def backup_codes(self, codes):
+        self._backup_codes = ','.join(codes)
+
+    def remove_backup_code(self, utilised_code):
+        codes = self.backup_codes
+        if utilised_code in codes:
+            codes.remove(utilised_code)
+            self.backup_codes = codes
             self.save()

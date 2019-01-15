@@ -2,6 +2,7 @@ import pytest
 
 from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 
 from trench.utils import create_secret, generate_backup_codes
 
@@ -99,6 +100,8 @@ def active_user_with_backup_codes():
         username='cleopatra',
         email='cleopatra@pyramids.eg',
     )
+    backup_codes = generate_backup_codes()
+    encrypted_backup_codes = ','.join([make_password(_) for _ in backup_codes])
     if created:
         user.set_password('secretkey'),
         user.is_active = True
@@ -111,10 +114,10 @@ def active_user_with_backup_codes():
             is_primary=True,
             name='email',
             is_active=True,
-            backup_codes=generate_backup_codes(),
+            _backup_codes=encrypted_backup_codes,
         )
 
-    return user
+    return user, backup_codes[0]
 
 
 @pytest.fixture()
@@ -123,6 +126,8 @@ def active_user_with_many_otp_methods():
         username='ramses',
         email='ramses@thegreat.eg',
     )
+    backup_codes = generate_backup_codes()
+    encrypted_backup_codes = ','.join([make_password(_) for _ in backup_codes])
     if created:
         user.set_password('secretkey'),
         user.is_active = True
@@ -135,7 +140,7 @@ def active_user_with_many_otp_methods():
             is_primary=True,
             name='email',
             is_active=True,
-            backup_codes=generate_backup_codes(),
+            _backup_codes=encrypted_backup_codes,
         )
         MFAMethod.objects.create(
             user=user,
@@ -143,7 +148,7 @@ def active_user_with_many_otp_methods():
             is_primary=False,
             name='sms',
             is_active=True,
-            backup_codes=generate_backup_codes(),
+            _backup_codes=encrypted_backup_codes,
         )
         MFAMethod.objects.create(
             user=user,
@@ -151,17 +156,17 @@ def active_user_with_many_otp_methods():
             is_primary=False,
             name='app',
             is_active=True,
-            backup_codes=generate_backup_codes(),
+            _backup_codes=encrypted_backup_codes,
         )
         MFAMethod.objects.create(
             user=user,
             is_primary=False,
             name='yubi',
             is_active=True,
-            backup_codes=generate_backup_codes(),
+            _backup_codes=encrypted_backup_codes,
         )
 
-    return user
+    return user, backup_codes[0]
 
 
 @pytest.fixture()

@@ -36,11 +36,10 @@ def test_add_user_mfa(active_user):
 @pytest.mark.django_db
 def test_user_with_many_methods(active_user_with_many_otp_methods):
     client = APIClient()
-
-    initial_active_methods_count = active_user_with_many_otp_methods.mfa_methods.filter(is_active=True).count()
-
-    first_step = login(active_user_with_many_otp_methods)
-    primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
+    active_user, _ = active_user_with_many_otp_methods
+    initial_active_methods_count = active_user.mfa_methods.filter(is_active=True).count()
+    first_step = login(active_user)
+    primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )
     # As user has several methods get first and get sure only 1 is primary
