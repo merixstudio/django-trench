@@ -17,6 +17,8 @@ import {
 import request from '../request';
 import { VerificationCodeForm } from './VerificationCodeForm';
 import { parseError } from '../utils';
+import HttpsRedirect from 'react-https-redirect';
+
 
 const validationSchema = Yup.object().shape({
   username: Yup.string()
@@ -93,47 +95,49 @@ export class LoginComponent extends Component {
 
   render() {
     return (
-      <div>
-        <Header name="Login" />
-        <div
-          style={{ padding: '16px 16px 48px', maxWidth: 300, width: '100%', margin: '24px auto 0' }}
-        >
-          <Snackbar
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            color="primary"
-            open={!!this.state.message}
-            autoHideDuration={2000}
-            onClose={() => this.setState({ message: '' })}
-            message={<span>{this.state.message}</span>}
-          />
-          {!this.state.ephemeralToken ? (
-            <Formik
-              initialValues={initialValues}
-              validationSchema={validationSchema}
-              render={this.loginForm}
-              onSubmit={this.loginUser}
+      <HttpsRedirect>
+        <div>
+          <Header name="Login" />
+          <div
+            style={{ padding: '16px 16px 48px', maxWidth: 300, width: '100%', margin: '24px auto 0' }}
+          >
+            <Snackbar
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+              color="primary"
+              open={!!this.state.message}
+              autoHideDuration={2000}
+              onClose={() => this.setState({ message: '' })}
+              message={<span>{this.state.message}</span>}
             />
-          ) : (
-            <div>
-              <Typography
-                color="error"
-                style={{ marginBottom: 20 }}
-              >
-                {this.state.loginError}
-              </Typography>
-              <VerificationCodeForm
-                method={this.state.method}
-                alternativeMethods={this.state.otherMethods}
-                setMessage={message => this.setState({ message })}
-                onSubmit={this.secondStepLogin}
+            {!this.state.ephemeralToken ? (
+              <Formik
+                initialValues={initialValues}
+                validationSchema={validationSchema}
+                render={this.loginForm}
+                onSubmit={this.loginUser}
               />
-            </div>
-          )}
+            ) : (
+              <div>
+                <Typography
+                  color="error"
+                  style={{ marginBottom: 20 }}
+                >
+                  {this.state.loginError}
+                </Typography>
+                <VerificationCodeForm
+                  method={this.state.method}
+                  alternativeMethods={this.state.otherMethods}
+                  setMessage={message => this.setState({ message })}
+                  onSubmit={this.secondStepLogin}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </HttpsRedirect>
     );
   }
 }
