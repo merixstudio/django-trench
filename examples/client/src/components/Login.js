@@ -66,7 +66,7 @@ export class LoginComponent extends Component {
   secondStepLogin(data) {
     return loginCode({
       ...data,
-      token: this.state.ephemeralToken,
+      ephemeral_token: this.state.ephemeralToken,
     })
       .then((res) => {
         request.setAuthToken(res.data.token);
