@@ -12,7 +12,9 @@ from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
 class ObtainJSONWebTokenMixin:
     def handle_user_login(self, request, serializer, *args, **kwargs):
         token = jwt_encode_handler(jwt_payload_handler(serializer.user))
-        return Response(jwt_response_payload_handler(token, serializer.user, request))
+        return Response(
+            jwt_response_payload_handler(token, serializer.user, request)
+        )
 
 
 class JSONWebTokenLoginOrRequestMFACode(MFACredentialsLoginMixin,

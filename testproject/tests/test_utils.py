@@ -2,10 +2,10 @@ import pytest
 
 from trench.utils import (
     UserTokenGenerator,
+    create_otp_code,
     create_qr_link,
     get_innermost_object,
     validate_code,
-    create_otp_code,
 )
 
 
@@ -50,6 +50,7 @@ def test_validate_code(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_validate_code_yubikey(active_user_with_many_otp_methods):
-    yubi_method = active_user_with_many_otp_methods.mfa_methods.get(name='yubi')
+    active_user, _ = active_user_with_many_otp_methods
+    yubi_method = active_user.mfa_methods.get(name='yubi')
 
     assert validate_code("t" * 44, yubi_method) is False

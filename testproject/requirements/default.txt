@@ -1,4 +1,4 @@
 -r common.txt
 
-Django==1.11.15
+Django==1.11.18
 djangorestframework==3.8.2

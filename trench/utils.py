@@ -1,9 +1,9 @@
 from datetime import datetime
 
-import pyotp
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import FieldDoesNotExist
 from django.utils.crypto import (
@@ -13,9 +13,9 @@ from django.utils.crypto import (
 )
 from django.utils.http import base36_to_int, int_to_base36
 
+import pyotp
 from yubico_client.yubico import Yubico
 from yubico_client.yubico_exceptions import YubicoError
-import pyotp
 
 from trench.settings import api_settings
 
@@ -124,7 +124,7 @@ def generate_backup_codes(
     allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
 ):
     """
-    Generates random backup codes.
+    Generates random encrypted backup codes.
 
     :param quantity: How many codes should be generated
     :type quantity: int
@@ -133,13 +133,11 @@ def generate_backup_codes(
     :param allowed_chars: Characters to create backup codes from
     :type allowed_chars: str
 
-    :returns: Backup codes
-    :rtype: str
+    :returns: Encrypted backup codes
+    :rtype: list
     """
 
-    return ','.join(
-        get_random_string(length, allowed_chars) for _ in range(quantity)
-    )
+    return [get_random_string(length, allowed_chars) for _ in range(quantity)]
 
 
 def validate_code(
@@ -239,3 +237,21 @@ def get_nested_attr_value(obj, path):
         return None  # pragma: no cover
 
     return getattr(_obj, attr)
+
+
+def validate_backup_code(value, backup_codes):
+    """
+    Validates provided code against list of hashed backup codes.
+    Returns correct code.
+
+    :param value:
+    :param backup_codes:
+    :return:
+    """
+    if api_settings.ENCRYPT_BACKUP_CODES:
+        validated_codes = [_ for _ in backup_codes if check_password(value, _)]
+    else:  # pragma: no cover
+        validated_codes = [_ for _ in backup_codes if value in backup_codes]
+
+    if validated_codes:
+        return validated_codes[0]

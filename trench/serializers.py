@@ -13,6 +13,7 @@ from trench.utils import (
     get_nested_attr,
     set_nested_attr,
     user_token_generator,
+    validate_backup_code,
     validate_code,
 )
 
@@ -20,8 +21,9 @@ from trench.utils import (
 User = get_user_model()
 MFAMethod = get_mfa_model()
 
+mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [
-    (k, v.get('VERBOSE_NAME', _(k))) for k, v in api_settings.MFA_METHODS.items()
+    (k, v.get('VERBOSE_NAME', _(k))) for k, v in mfa_methods_items
 ]
 
 
@@ -129,14 +131,13 @@ class ProtectedActionSerializer(serializers.Serializer):
         obj = self.context['obj']
         validity_period = (
             self.context['conf'].get('VALIDITY_PERIOD')
-            or api_settings.DEFAULT_VALIDITY_PERIOD
+            or api_settings.DEFAULT_VALIDITY_PERIOD  # noqa
         )
-
+        validated_backup_code = validate_backup_code(value, obj.backup_codes)
         if validate_code(value, obj, validity_period):
             return value
-
-        if value in obj.backup_codes.split(','):
-            obj.remove_backup_code(value)
+        if validated_backup_code:
+            obj.remove_backup_code(validated_backup_code)
             return value
 
         self.fail('code_invalid_or_expired')
@@ -210,7 +211,9 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
+class RequestMFAMethodBackupCodesRegenerationSerializer(
+    ProtectedActionSerializer
+):
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
@@ -266,7 +269,7 @@ class CodeLoginSerializer(serializers.Serializer):
     """
     Validates given token and OTP code.
     """
-    token = serializers.CharField()
+    ephemeral_token = serializers.CharField()
     code = serializers.CharField()
 
     default_error_messages = {
@@ -275,18 +278,22 @@ class CodeLoginSerializer(serializers.Serializer):
     }
 
     def validate(self, attrs):
-        token = attrs.get('token')
+        ephemeral_token = attrs.get('ephemeral_token')
         code = attrs.get('code')
 
-        self.user = user_token_generator.check_token(token)
+        self.user = user_token_generator.check_token(ephemeral_token)
         if not self.user:
             self.fail('invalid_token')
 
         for auth_method in self.user.mfa_methods.filter(is_active=True):
+            validated_backup_code = validate_backup_code(
+                code,
+                auth_method.backup_codes,
+            )
             if validate_code(code, auth_method):
                 return attrs
-            if code in auth_method.backup_codes.split(','):
-                auth_method.remove_backup_code(code)
+            if validated_backup_code:
+                auth_method.remove_backup_code(validated_backup_code)
                 return attrs
 
         self.fail('invalid_code')
@@ -331,15 +338,18 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
         except ObjectDoesNotExist:
             self.fail('missing_method')
         code = attrs.get('code')
+        validated_backup_code = validate_backup_code(
+            code,
+            current_method.backup_codes,
+        )
         if validate_code(code, current_method):
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-
             return attrs
-        elif code in current_method.backup_codes.split(','):
+        elif validated_backup_code:
             attrs.update(new_method=new_primary_method)
             attrs.update(old_method=current_method)
-            current_method.remove_backup_code(code)
+            current_method.remove_backup_code(validated_backup_code)
             return attrs
         else:
             self.fail('invalid_code')

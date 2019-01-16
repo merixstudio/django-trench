@@ -29,6 +29,7 @@ def test_get_jwt_without_otp(active_user):
         User.USERNAME_FIELD,
     )
 
+
 @pytest.mark.django_db
 def test_login_disabled_user(inactive_user):
     """
@@ -90,6 +91,7 @@ def test_login_wrong_password(active_user):
     assert 'Unable to login with provided credentials.' in response.data.get(
         'non_field_errors'
     )
+
 
 @pytest.mark.django_db
 def test_get_simplejwt_without_otp(active_user):

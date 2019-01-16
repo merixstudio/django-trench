@@ -67,19 +67,25 @@ DEFAULTS = {
     'CONFIRM_DISABLE_WITH_CODE': False,
     'CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE': True,
     'ALLOW_BACKUP_CODES_REGENERATION': True,
+    'ENCRYPT_BACKUP_CODES': True,
     'APPLICATION_ISSUER_NAME': 'MyApplication',
     'CACHE_PREFIX': 'trench',
     'MAX_METHODS_PER_USER': 3,
     'MFA_METHODS': {
-        'sms': {
-            'VERBOSE_NAME': _('sms'),
+        'sms_twilio': {
+            'VERBOSE_NAME': _('sms_twilio'),
             'VALIDITY_PERIOD': 60 * 10,
             'HANDLER': 'trench.backends.twilio.TwilioBackend',
             'SOURCE_FIELD': 'phone_number',
             'TWILIO_ACCOUNT_SID': 'YOUR KEY',
             'TWILIO_AUTH_TOKEN': 'YOUR KEY',
             'TWILIO_VERIFIED_FROM_NUMBER': 'YOUR TWILIO REGISTERED NUMBER',
-
+        },
+        'sms_api': {
+            'VERBOSE_NAME': _('sms_api'),
+            'VALIDITY_PERIOD': 60 * 10,
+            'HANDLER': 'trench.backends.sms_api.SmsAPIBackend',
+            'SOURCE_FIELD': 'phone_number',
             'SMSAPI_ACCESS_TOKEN': 'YOUR SMSAPI TOKEN',
             'SMSAPI_FROM_NUMBER': 'YOUR REGISTERED NUMBER',
         },

@@ -2,10 +2,11 @@ from setuptools import find_packages, setup
 
 from trench import __version__
 
+
 setup(
     name='django-trench',
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=['testproject', 'testproject.*']),
     include_package_data=True,
     license='MIT License',
     description='REST Multi-factor authentication package for Django',

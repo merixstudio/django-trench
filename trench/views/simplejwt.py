@@ -1,12 +1,10 @@
 from django.utils.six import text_type
+
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from trench.views.base import (
-    MFACodeLoginMixin,
-    MFACredentialsLoginMixin,
-)
+from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
 
 
 class ObtainJSONWebTokenMixin:

@@ -1,10 +1,10 @@
 import pytest
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
-
 
 from tests.utils import (
     get_token_from_response,
@@ -18,7 +18,6 @@ from trench.utils import create_otp_code, generate_backup_codes
 User = get_user_model()
 
 
-
 @pytest.mark.django_db
 def test_ephemeral_token_verification(active_user_with_email_otp):
     client = APIClient()
@@ -27,7 +26,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -48,7 +47,7 @@ def test_wrong_second_step_verification_with_empty_code(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': '',
         },
         format='json',
@@ -67,7 +66,7 @@ def test_wrong_second_step_verification_with_wrong_code(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': 'test',
         },
         format='json',
@@ -87,7 +86,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token') + 'wrong',
+            'ephemeral_token': first_step.data.get('ephemeral_token') + 'wrong',
             'code': create_otp_code(secret),
         },
         format='json',
@@ -103,7 +102,7 @@ def test_second_method_activation(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -140,7 +139,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -165,14 +164,13 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_use_backup_code(active_user_with_backup_codes):
     client = APIClient()
-    first_step = login(active_user_with_backup_codes)
-    backup_code = active_user_with_backup_codes.mfa_methods.first(
-    ).backup_codes.split(',')[0]
+    active_user, backup_code = active_user_with_backup_codes
+    first_step = login(active_user)
 
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
         },
         format='json',
@@ -214,6 +212,7 @@ def test_activation_otp_confirm_wrong(active_user):
     error_code = 'code_invalid_or_expired'
     assert response.data.get('non_field_errors')[0].code == error_code
 
+
 @pytest.mark.django_db
 def test_confirm_activation_otp(active_user):
     client = APIClient()
@@ -237,7 +236,7 @@ def test_confirm_activation_otp(active_user):
     response = client.post(
         path='/auth/email/activate/confirm/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': code,
         },
         format='json',
@@ -255,7 +254,7 @@ def test_deactivation_otp(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -284,7 +283,7 @@ def test_deactivation_otp_already_disabled_method(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
@@ -304,15 +303,16 @@ def test_deactivation_otp_already_disabled_method(
 @pytest.mark.django_db
 def test_new_method_after_deactivation(active_user_with_many_otp_methods):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -328,7 +328,7 @@ def test_new_method_after_deactivation(active_user_with_many_otp_methods):
         },
         format='json',
     )
-    new_primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
+    new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
     assert response.status_code == 204
@@ -340,15 +340,16 @@ def test_new_method_after_deactivation_same_method_wrong(
     active_user_with_many_otp_methods
 ):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -372,15 +373,16 @@ def test_new_method_after_deactivation_user_doesnt_have_method(
     active_user_with_many_otp_methods
 ):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -402,15 +404,16 @@ def test_new_method_after_deactivation_user_doesnt_have_method(
 @pytest.mark.django_db
 def test_change_primary_method(active_user_with_many_otp_methods):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -426,7 +429,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
         },
         format='json',
     )
-    new_primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
+    new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
     assert response.status_code == 200
@@ -439,15 +442,16 @@ def test_change_primary_method_with_backup_code(
     active_user_with_many_otp_methods,
 ):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, backup_code = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -459,11 +463,11 @@ def test_change_primary_method_with_backup_code(
         path='/auth/mfa/change-primary-method/',
         data={
             'method': 'sms',
-            'code': first_primary_method.backup_codes.split(',')[0],
+            'code': backup_code,
         },
         format='json',
     )
-    new_primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
+    new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
     assert response.status_code == 200
@@ -474,15 +478,16 @@ def test_change_primary_method_with_backup_code(
 @pytest.mark.django_db
 def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_methods):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
     first_primary_method = \
-        active_user_with_many_otp_methods.mfa_methods.filter(
+        active_user.mfa_methods.filter(
             is_primary=True,
         )[0]
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -514,7 +519,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -570,14 +575,13 @@ def test_confirm_activation_otp_with_backup_code(
     active_user_with_backup_codes,
 ):
     client = APIClient()
-    first_step = login(active_user_with_backup_codes)
-    backup_code = active_user_with_backup_codes.mfa_methods.first(
-    ).backup_codes.split(',')[0]
+    active_user, backup_code = active_user_with_backup_codes
+    first_step = login(active_user)
 
     response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
         },
         format='json',
@@ -597,15 +601,16 @@ def test_confirm_activation_otp_with_backup_code(
         # twilio rises this exception in test, but the new mfa_method is
         # created anyway.
         pass
-    sms_method = active_user_with_backup_codes.mfa_methods.all()[1]
-    sms_method.backup_codes = generate_backup_codes()
+
+    backup_codes = generate_backup_codes()
+    sms_method = active_user.mfa_methods.all()[1]
+    sms_method.backup_codes = [make_password(_) for _ in backup_codes]
     sms_method.save()
-    backup_code = sms_method.backup_codes.split(',')[0]
     response = client.post(
         path='/auth/sms/activate/confirm/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
-            'code': backup_code,
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': backup_codes[0],
         },
         format='json',
     )
@@ -622,7 +627,7 @@ def test_request_codes(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -651,7 +656,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -678,7 +683,7 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -700,13 +705,14 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_backup_codes_regeneration(active_user_with_backup_codes):
     client = APIClient()
-    first_step = login(active_user_with_backup_codes)
-    first_primary_method = active_user_with_backup_codes.mfa_methods.first()
+    active_user, _ = active_user_with_backup_codes
+    first_step = login(active_user)
+    first_primary_method = active_user.mfa_methods.first()
     old_backup_codes = first_primary_method.backup_codes
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -722,9 +728,35 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
         format='json',
     )
     new_backup_codes = \
-        active_user_with_backup_codes.mfa_methods.first().backup_codes
+        active_user.mfa_methods.first().backup_codes
     assert response.status_code == 200
     assert old_backup_codes != new_backup_codes
+
+
+@pytest.mark.django_db
+def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
+    client = APIClient()
+    active_user, _ = active_user_with_backup_codes
+    first_step = login(active_user)
+    first_primary_method = active_user.mfa_methods.first()
+    login_response = client.post(
+        path='/auth/login/code/',
+        data={
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': create_otp_code(first_primary_method.secret),
+        },
+        format='json',
+    )
+    client.credentials(
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(login_response))
+    )
+    response = client.post(
+        path='/auth/email/codes/regenerate/',
+        format='json',
+    )
+    code_error ='otp_code_missing'
+    assert response.data.get('non_field_errors')[0].code == code_error
+    assert response.status_code == 400
 
 
 @pytest.mark.django_db
@@ -732,11 +764,12 @@ def test_backup_codes_regeneration_disabled_method(
     active_user_with_many_otp_methods,
 ):
     client = APIClient()
-    first_step = login(active_user_with_many_otp_methods)
-    first_primary_method = active_user_with_many_otp_methods.mfa_methods.filter(
+    active_user, _ = active_user_with_many_otp_methods
+    first_step = login(active_user)
+    first_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
-    sms_method = active_user_with_many_otp_methods.mfa_methods.get(
+    sms_method = active_user.mfa_methods.get(
         name='sms',
     )
     sms_method.is_active = False
@@ -744,7 +777,7 @@ def test_backup_codes_regeneration_disabled_method(
     login_response = client.post(
         path='/auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(first_primary_method.secret),
         },
         format='json',
@@ -770,6 +803,7 @@ def test_get_mfa_config():
     )
     assert response.status_code == 200
 
+
 @pytest.mark.django_db
 def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
     client = APIClient()
@@ -778,7 +812,7 @@ def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
     response = client.post(
         path='/simplejwt-auth/login/code/',
         data={
-            'token': first_step.data.get('ephemeral_token'),
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': create_otp_code(secret),
         },
         format='json',
