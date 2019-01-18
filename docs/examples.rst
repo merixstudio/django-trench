@@ -80,14 +80,8 @@ Basic usage
         "other_methods": []
     }
 
-| Right, we need an extra step to get logged in. Let's get a code:
-
-.. code-block:: text
-
-    $ curl -X POST http://localhost:8000/auth/code/request/ -d 'method=email'
-    -H 'Authorization: JWT [token provided]'
-
-| Now we only need pass on the code and token:
+| Right, the code has been dispatched by the primary method.
+| Now we only need pass on the code and ephemeral_token:
 
 .. code-block:: text
 
