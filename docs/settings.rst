@@ -14,6 +14,7 @@ Additional settings
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         ),
         'ENCRYPT_BACKUP_CODES': True,
+        'SECRET_KEY_LENGTH': 20,
         'DEFAULT_VALIDITY_PERIOD': 30,
         'CONFIRM_DISABLE_WITH_CODE': False,
         'CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE': True,
@@ -57,6 +58,11 @@ ENCRYPT_BACKUP_CODES
 """"""""""""""""""""
 Backup codes to be encrypted before saving.
 Default: ``True``
+
+SECRET_KEY_LENGTH
+"""""""""""""""""
+Length of the shared secret key.  Please note: Google Authenticator on iOS requires this to be 16.
+Default: ``20``
 
 DEFAULT_VALIDITY_PERIOD
 """""""""""""""""""""""
