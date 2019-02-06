@@ -14,7 +14,7 @@ Additional settings
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
         ),
         'ENCRYPT_BACKUP_CODES': True,
-        'SECRET_KEY_LENGTH': 20,
+        'SECRET_KEY_LENGTH': 16,
         'DEFAULT_VALIDITY_PERIOD': 30,
         'CONFIRM_DISABLE_WITH_CODE': False,
         'CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE': True,
@@ -61,8 +61,9 @@ Default: ``True``
 
 SECRET_KEY_LENGTH
 """""""""""""""""
-Length of the shared secret key.  Please note: Google Authenticator on iOS requires this to be 16.
-Default: ``20``
+Length of the shared secret key.  Please note: Google Authenticator requires a minimum length of 8 (16 on Android app) with a power of 2: 8, 16, 32...
+https://github.com/antonioribeiro/google2fa#google-authenticator-secret-key-compatibility
+Default: ``16``
 
 DEFAULT_VALIDITY_PERIOD
 """""""""""""""""""""""
