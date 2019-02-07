@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.db import models as django_models
 from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
@@ -93,6 +94,10 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
                     self.fail('required_field_update_failed')  # pragma: no cover  # noqa
             else:  # pragma: no cover
                 self.fail('required_field_missing')  # pragma: no cover
+
+        if api_settings.SECRET_KEY_LENGTH not in (16, 32):
+            raise ValidationError('The SECRET_KEY_LENGTH setting needs to be either 16 or 32.')
+
         return attrs
 
     def create(self, validated_data):

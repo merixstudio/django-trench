@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, verbose_name='name')),
-                ('secret', models.CharField(max_length=20, verbose_name='secret')),
+                ('secret', models.CharField(max_length=32, verbose_name='secret')),
                 ('is_primary', models.BooleanField(default=False, verbose_name='is primary')),
                 ('is_active', models.BooleanField(default=False, verbose_name='is active')),
                 ('backup_codes', models.CharField(blank=True, max_length=255, verbose_name='backup codes')),

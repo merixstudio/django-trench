@@ -19,7 +19,7 @@ class MFAMethod(models.Model):
     )
     secret = models.CharField(
         _('secret'),
-        max_length=20,
+        max_length=32,
     )
     is_primary = models.BooleanField(
         _('is primary'),
