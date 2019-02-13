@@ -95,9 +95,6 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
             else:  # pragma: no cover
                 self.fail('required_field_missing')  # pragma: no cover
 
-        if api_settings.SECRET_KEY_LENGTH not in (16, 32):
-            raise ValidationError('The SECRET_KEY_LENGTH setting needs to be either 16 or 32.')
-
         return attrs
 
     def create(self, validated_data):

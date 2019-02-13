@@ -61,7 +61,7 @@ Default: ``True``
 
 SECRET_KEY_LENGTH
 """""""""""""""""
-Length of the shared secret key.  Secret key can be either 16 or 32 characters long.
+Length of the shared secret key.  For compatibility with Google Authenticator minimum is 8 (16 on Android) and to a power of 2. https://github.com/antonioribeiro/google2fa#google-authenticator-secret-key-compatibility
 Default: ``16``
 
 DEFAULT_VALIDITY_PERIOD
