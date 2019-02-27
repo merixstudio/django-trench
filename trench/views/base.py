@@ -134,14 +134,14 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         try:
-            obj = self.obj
-        except AttributeError:
+            obj = self.obj  # pragma: no cover
+        except AttributeError:  # pragma: no cover
             # This awful piece of code is used to avoid a drf render error:
             # DRF tries to render the obj at get, but this obj only exists at
             # post. So we have to catch the error in get and pass, so in POST
             # the context will take the obj again. This problem only shows up
             # when using drf renders, no problem with calls from other sources.
-            obj = None
+            obj = None  # pragma: no cover
         context.update({
             'name': self.kwargs['method'],
             'obj': obj,
@@ -187,13 +187,13 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
         context = super().get_serializer_context()
         try:
             obj = self.obj
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             # This awful piece of code is used to avoid a drf render error:
             # DRF tries to render the obj at get, but this obj only exists at
             # post. So we have to catch the error in get and pass, so in POST
             # the context will take the obj again. This problem only shows up
             # when using drf renders, no problem with calls from other sources.
-            obj = None
+            obj = None  # pragma: no cover
         context.update({
             'name': self.kwargs['method'],
             'obj': obj,
