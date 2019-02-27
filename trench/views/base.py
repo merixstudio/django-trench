@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -74,6 +74,7 @@ class MFACodeLoginMixin:
     Checks against all active MFA methods.
     """
     serializer_class = serializers.CodeLoginSerializer
+    permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
