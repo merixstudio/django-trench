@@ -28,6 +28,7 @@ class MFACredentialsLoginMixin:
     is active and dispatches code if so. Else calls handle_user_login.
     """
     serializer_class = serializers.LoginSerializer
+    permission_classes = (AllowAny, )
 
     def handle_mfa_response(self, user, mfa_method, *args, **kwargs):
         data = {
@@ -128,13 +129,22 @@ class RequestMFAMethodActivationView(GenericAPIView):
 class RequestMFAMethodActivationConfirmView(GenericAPIView):
     serializer_class = serializers.RequestMFAMethodActivationConfirmSerializer
     permission_classes = (IsAuthenticated,)
-    http_method_names = ['post']
+    http_method_names = ['post', 'get']
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        try:
+            obj = self.obj
+        except AttributeError:
+            # This awful piece of code is used to avoid a drf render error:
+            # DRF tries to render the obj at get, but this obj only exists at
+            # post. So we have to catch the error in get and pass, so in POST
+            # the context will take the obj again. This problem only shows up
+            # when using drf renders, no problem with calls from other sources.
+            obj = None
         context.update({
             'name': self.kwargs['method'],
-            'obj': self.obj,
+            'obj': obj,
             'conf': api_settings.MFA_METHODS[self.kwargs['method']],
         })
         return context
@@ -175,9 +185,18 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        try:
+            obj = self.obj
+        except AttributeError:
+            # This awful piece of code is used to avoid a drf render error:
+            # DRF tries to render the obj at get, but this obj only exists at
+            # post. So we have to catch the error in get and pass, so in POST
+            # the context will take the obj again. This problem only shows up
+            # when using drf renders, no problem with calls from other sources.
+            obj = None
         context.update({
             'name': self.kwargs['method'],
-            'obj': self.obj,
+            'obj': obj,
             'conf': api_settings.MFA_METHODS[self.kwargs['method']],
         })
         return context
