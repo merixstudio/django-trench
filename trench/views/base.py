@@ -129,7 +129,7 @@ class RequestMFAMethodActivationView(GenericAPIView):
 class RequestMFAMethodActivationConfirmView(GenericAPIView):
     serializer_class = serializers.RequestMFAMethodActivationConfirmSerializer
     permission_classes = (IsAuthenticated,)
-    http_method_names = ['post', 'get']
+    http_method_names = ['post']
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
