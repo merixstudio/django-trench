@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from django.db import models as django_models
 from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
