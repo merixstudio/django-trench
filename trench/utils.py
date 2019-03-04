@@ -44,7 +44,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
 
         try:
             token = str(token)
-            user_pk, ts_b36, hash = token.split('-')
+            user_pk, ts_b36, hash = token.rsplit('-', 2)
             ts = base36_to_int(ts_b36)
             user = User._default_manager.get(pk=user_pk)
         except (ValueError, TypeError, User.DoesNotExist):
