@@ -17,4 +17,9 @@ class Migration(migrations.Migration):
             name='secret',
             field=models.CharField(max_length=255, verbose_name='secret'),
         ),
+        migrations.AlterField(
+            model_name='mfamethod',
+            name='_backup_codes',
+            field=models.TextField(blank=True, verbose_name='backup codes'),
+        ),
     ]
