@@ -93,6 +93,7 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
                     self.fail('required_field_update_failed')  # pragma: no cover  # noqa
             else:  # pragma: no cover
                 self.fail('required_field_missing')  # pragma: no cover
+
         return attrs
 
     def create(self, validated_data):

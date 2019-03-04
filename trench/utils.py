@@ -80,7 +80,7 @@ def create_secret():
     :rtype: str
     """
 
-    return pyotp.random_base32(length=20)
+    return pyotp.random_base32(length=api_settings.SECRET_KEY_LENGTH)
 
 
 def create_otp_code(secret):
