@@ -1,11 +1,20 @@
 from django.contrib.auth.hashers import make_password
-from django.db import IntegrityError, transaction
+from django.db import (
+    IntegrityError,
+    transaction,
+)
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.generics import (
+    CreateAPIView,
+    GenericAPIView,
+)
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -136,11 +145,13 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
         try:
             obj = self.obj  # pragma: no cover
         except AttributeError:  # pragma: no cover
-            # This awful piece of code is used to avoid a drf render error:
-            # DRF tries to render the obj at get, but this obj only exists at
-            # post. So we have to catch the error in get and pass, so in POST
-            # the context will take the obj again. This problem only shows up
-            # when using drf renders, no problem with calls from other sources.
+            """
+            This awful piece of code is used to avoid a drf render error:
+            DRF tries to render the obj at get, but this obj only exists at
+            post. So we have to catch the error in get and pass, so in POST
+            the context will take the obj again. This problem only shows up
+            when using drf renders, no problem with calls from other sources.
+            """
             obj = None  # pragma: no cover
         context.update({
             'name': self.kwargs['method'],
