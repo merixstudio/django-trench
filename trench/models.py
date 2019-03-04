@@ -29,9 +29,8 @@ class MFAMethod(models.Model):
         _('is active'),
         default=False,
     )
-    _backup_codes = models.CharField(
+    _backup_codes = models.TextField(
         _('backup codes'),
-        max_length=255,
         blank=True,
     )
 

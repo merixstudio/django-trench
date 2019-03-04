@@ -2,6 +2,13 @@
 Changelog
 =========
 
+
+0.2.1 (unreleased)
+==================
+
+* Changed _backup_codes to TextField
+
+
 0.2.0 (2019-01-15)
 ==================
 
