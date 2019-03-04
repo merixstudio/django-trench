@@ -1,11 +1,20 @@
 from django.contrib.auth.hashers import make_password
-from django.db import IntegrityError, transaction
+from django.db import (
+    IntegrityError,
+    transaction,
+)
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import (
+    CreateAPIView,
+    GenericAPIView,
+)
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -28,6 +37,7 @@ class MFACredentialsLoginMixin:
     is active and dispatches code if so. Else calls handle_user_login.
     """
     serializer_class = serializers.LoginSerializer
+    permission_classes = (AllowAny, )
 
     def handle_mfa_response(self, user, mfa_method, *args, **kwargs):
         data = {
@@ -74,6 +84,7 @@ class MFACodeLoginMixin:
     Checks against all active MFA methods.
     """
     serializer_class = serializers.CodeLoginSerializer
+    permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -131,9 +142,10 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        obj = getattr(self, 'obj', None)
         context.update({
             'name': self.kwargs['method'],
-            'obj': self.obj,
+            'obj': obj,
             'conf': api_settings.MFA_METHODS[self.kwargs['method']],
         })
         return context
@@ -174,9 +186,10 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
+        obj = getattr(self, 'obj', None)
         context.update({
             'name': self.kwargs['method'],
-            'obj': self.obj,
+            'obj': obj,
             'conf': api_settings.MFA_METHODS[self.kwargs['method']],
         })
         return context
