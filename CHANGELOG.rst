@@ -3,9 +3,12 @@ Changelog
 =========
 
 
-0.2.1 (unreleased)
+0.2.1 (2019-03-05)
 ==================
 
+* Added setting for secret_key_length and set it to default of 16
+* Replace split method on ephemeral_token with rsplit
+* Add AllowAny to the mixins for login views
 * Changed _backup_codes to TextField
 
 
