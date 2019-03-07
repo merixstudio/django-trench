@@ -1,21 +1,12 @@
 from django.contrib.auth.hashers import make_password
-from django.db import (
-    IntegrityError,
-    transaction,
-)
+from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.generics import (
-    CreateAPIView,
-    GenericAPIView,
-)
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-)
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 

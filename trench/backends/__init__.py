@@ -1,8 +1,5 @@
-from trench.utils import (
-    get_nested_attr_value,
-    create_otp_code,
-)
 from trench.exceptions import MissingSourceFieldAttribute
+from trench.utils import create_otp_code, get_nested_attr_value
 
 
 class AbstractMessageDispatcher:
