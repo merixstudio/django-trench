@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'corsheaders',
+    'rest_framework_swagger',
 
     'testapp',
     'trench',
