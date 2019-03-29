@@ -2,13 +2,31 @@ Authentication backends
 =======================
 
 | ``django-trench`` comes with three predefined authentication methods.
-| Custom backends can be easily added by inheritating ``AbstractMessageDispatcher`` class.
+| Custom backends can be easily added by inheriting ``AbstractMessageDispatcher`` class.
 
 Built-in backends
 """""""""""""""""
 Email
 *****
-| This basic method utilise build-in Django backend. You'll need to have Email Backend setup. Check out `Django documentation`_.
+| This basic method uses built-in Django email backend. Check out `Django documentation on this topic`_.
+
+.. code-block:: python
+
+    TRENCH_AUTH = {
+        (...)
+        'MFA_METHODS': {
+            'email': {
+                'VERBOSE_NAME': 'email',
+                'VALIDITY_PERIOD': 60 * 10,
+                'HANDLER': 'trench.backends.basic_mail.SendMailBackend',
+                'SOURCE_FIELD': 'email',
+                'EMAIL_SUBJECT': 'Your verification code',
+                'EMAIL_PLAIN_TEMPLATE': 'trench/backends/email/code.txt',
+                'EMAIL_HTML_TEMPLATE': 'trench/backends/email/code.html',
+            },
+            ...,
+        },
+    }
 
 Text/SMS
 ********
