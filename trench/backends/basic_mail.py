@@ -44,7 +44,7 @@ class SendMailBackend(AbstractMessageDispatcher):
     def get_context(self):
         """Returns context available to email templates."""
         return {
-            'code': self.create_code()
+            'code': self.create_code(),
         }
 
     @staticmethod
