@@ -42,11 +42,17 @@ class SendMailBackend(AbstractMessageDispatcher):
         return {'message': _('Email message with MFA code has been sent.')}
 
     def get_context(self):
+        """Returns context available to email templates."""
         return {
             'code': self.create_code()
         }
 
     @staticmethod
     def render_template(name, context):
+        """Loads template and renders it with given context.
+
+        :param name: Template path
+        :param context: Context passed to template
+        """
         template = get_template(name)
         return template.render(context)
