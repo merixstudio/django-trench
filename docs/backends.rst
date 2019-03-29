@@ -8,7 +8,9 @@ Built-in backends
 """""""""""""""""
 Email
 *****
-| This basic method uses built-in Django email backend. Check out `Django documentation on this topic`_.
+
+This basic method uses built-in Django email backend.
+Check out `Django documentation on this topic`_.
 
 .. code-block:: python
 
@@ -27,6 +29,12 @@ Email
             ...,
         },
     }
+
+``EMAIL_PLAIN_TEMPLATE`` and ``EMAIL_HTML_TEMPLATE`` are paths to templates
+that are used to render email content.
+
+These templates receive ``code`` variable in the context,
+which is the generated code.
 
 Text/SMS
 ********
