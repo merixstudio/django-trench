@@ -1,7 +1,7 @@
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from djoser.views import TokenCreateView, TokenDestroyView
+from djoser.views import TokenDestroyView
 from djoser import utils
 from djoser.conf import settings
 
@@ -22,7 +22,6 @@ class AuthTokenLoginOrRequestMFACode(MFACredentialsLoginMixin,
                                      ObtainAuthTokenMixin,
                                      GenericAPIView):
     pass
-
 
 
 class AuthTokenLoginWithMFACode(MFACodeLoginMixin,
