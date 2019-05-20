@@ -3,6 +3,7 @@ django-environ==0.4.5
 django-cors-headers==2.4.0
 djoser==1.2.1
 djangorestframework_simplejwt==3.3.0
+django-rest-swagger==2.1.2
 
 pytest==4.1.0
 pytest-cov==2.6.1
