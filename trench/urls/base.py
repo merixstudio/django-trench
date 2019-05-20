@@ -1,30 +1,33 @@
 from django.conf.urls import url
 
 from trench import views
+from trench.settings import api_settings
 
 
 __all__ = [
     'urlpatterns',
 ]
 
+mfa_methods_choices = '|'.join(api_settings.MFA_METHODS.keys())
+
 urlpatterns = [
     url(
-        r'^(?P<method>[-\w]+)/activate/$',
+        r'^(?P<method>({}))/activate/$'.format(mfa_methods_choices),
         views.RequestMFAMethodActivationView.as_view(),
         name='mfa-activate',
     ),
     url(
-        r'^(?P<method>[-\w]+)/activate/confirm/$',
+        r'^(?P<method>({}))/activate/confirm/$'.format(mfa_methods_choices),
         views.RequestMFAMethodActivationConfirmView.as_view(),
         name='mfa-activate-confirm',
     ),
     url(
-        r'^(?P<method>[-\w]+)/deactivate/$',
+        r'^(?P<method>({}))/deactivate/$'.format(mfa_methods_choices),
         views.RequestMFAMethodDeactivationView.as_view(),
         name='mfa-deactivate',
     ),
     url(
-        r'^(?P<method>[-\w]+)/codes/regenerate/$',
+        r'^(?P<method>({}))/codes/regenerate/$'.format(mfa_methods_choices),
         views.RequestMFAMethodBackupCodesRegenerationView.as_view(),
         name='mfa-regenerate-codes',
     ),
