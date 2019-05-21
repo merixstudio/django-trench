@@ -4,14 +4,13 @@ from rest_framework.generics import GenericAPIView
 from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
 
 
-class ObtainAuthTokenMixin:
+class ObtainAuthTokenMixin(TokenCreateView):
     def handle_user_login(self, serializer, *args, **kwargs):
         return self._action(serializer)
 
 
 class AuthTokenLoginOrRequestMFACode(MFACredentialsLoginMixin,
                                      ObtainAuthTokenMixin,
-                                     TokenCreateView,
                                      GenericAPIView):
     pass
 
