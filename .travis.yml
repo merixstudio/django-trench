@@ -19,6 +19,9 @@ matrix:
       - { python: "3.5", env: DJANGO=111 DRF=38 }
       - { python: "3.5", env: DJANGO=20 DRF=38 }
       - { python: "3.5", env: DJANGO=21 DRF=38 }
+      - { python: "3.5", env: DJANGO=21 DRF=39 }
+      - { python: "3.5", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
+      - { python: "3.5", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
 
       - { python: "3.6", env: DJANGO=111 DRF=37 }
       - { python: "3.6", env: DJANGO=20 DRF=37 }
@@ -26,11 +29,17 @@ matrix:
       - { python: "3.6", env: DJANGO=111 DRF=38 }
       - { python: "3.6", env: DJANGO=20 DRF=38 }
       - { python: "3.6", env: DJANGO=21 DRF=38 }
+      - { python: "3.6", env: DJANGO=21 DRF=39 }
+      - { python: "3.6", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
+      - { python: "3.6", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
 
       - { python: "3.7", env: DJANGO=20 DRF=37, dist: xenial, sudo: true }
       - { python: "3.7", env: DJANGO=21 DRF=37, dist: xenial, sudo: true }
       - { python: "3.7", env: DJANGO=20 DRF=38, dist: xenial, sudo: true }
       - { python: "3.7", env: DJANGO=21 DRF=38, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=21 DRF=39, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
 
 install:
   - pip install tox-travis
