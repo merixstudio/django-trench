@@ -3,6 +3,16 @@ Changelog
 =========
 
 
+0.2.2 (2019-05-21)
+==================
+
+* Fix missing _action method on Token Based Authentication views
+* Bump up supported djoser version
+* Add DRF 3.9 and Django 2.2 to test environment
+* Add locale directory to distribution package
+* Change url patterns and add exception handling for method activation views
+
+
 0.2.1 (2019-03-05)
 ==================
 
