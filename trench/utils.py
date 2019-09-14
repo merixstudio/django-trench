@@ -146,24 +146,13 @@ def validate_code(
     valid_window=api_settings.DEFAULT_VALIDITY_PERIOD,
 ):
 
-    if mfa_method.name == 'yubi':
-        conf = api_settings.MFA_METHODS['yubi']
-        client = Yubico(conf['YUBICLOUD_CLIENT_ID'])
-
-        try:
-            return client.verify(code, timestamp=True)
-
-        except (YubicoError, Exception):
-            return False
-
-    return (
-        pyotp
-        .TOTP(mfa_method.secret)
-        .verify(
-            code,
-            valid_window=int(valid_window / 30)
-        )
+    handler_class = api_settings.MFA_METHODS[mfa_method.name]
+    handler = handler_class(
+        user=mfa_method.user,
+        obj=mfa_method,
+        conf=api_settings.MFA_METHODS[mfa_method.name],
     )
+    return handler.validate_code(code=code, valid_window=valid_window)
 
 
 def get_mfa_model():

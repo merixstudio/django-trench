@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -159,6 +159,15 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        conf = api_settings.MFA_METHODS[self.mfa_method_name]
+        handler = conf['HANDLER'](
+            user=serializer.user,
+            obj=self.obj,
+            conf=conf,
+        )
+        if not handler.activate_mfa(serializer.data['code']):
+            raise ValidationError(_('YubiKey code problem'))
 
         backup_codes = generate_backup_codes()
 

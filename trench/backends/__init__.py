@@ -1,3 +1,5 @@
+import pyotp
+
 from trench.exceptions import MissingSourceFieldAttribute
 from trench.utils import create_otp_code, get_nested_attr_value
 
@@ -23,3 +25,12 @@ class AbstractMessageDispatcher:
 
     def create_code(self):
         return create_otp_code(self.obj.secret)
+
+    def activate_mfa(self, code):
+        return True
+
+    def validate_code(self, code, valid_window):
+        return pyotp.TOTP(self.obj.secret).verify(
+                code,
+                valid_window=int(valid_window / 30)
+            )
