@@ -59,9 +59,9 @@ DEFAULTS = {
     'USER_MFA_MODEL': 'trench.MFAMethod',
     'USER_ACTIVE_FIELD': 'is_active',
     'BACKUP_CODES_QUANTITY': 5,
-    'BACKUP_CODES_LENGTH': 6,  # keep (quantity * length) under 200
+    'BACKUP_CODES_LENGTH': 12,  # keep (quantity * length) under 200
     'BACKUP_CODES_CHARACTERS': (
-        '0123456789'
+        '0123456789-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     ),
     'SECRET_KEY_LENGTH': 16,
     'DEFAULT_VALIDITY_PERIOD': 30,
