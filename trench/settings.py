@@ -62,7 +62,7 @@ DEFAULTS = {
     'USER_ACTIVE_FIELD': 'is_active',
     'BACKUP_CODES_QUANTITY': 5,
     'BACKUP_CODES_LENGTH': 12,  # keep (quantity * length) under 200
-    'BACKUP_CODES_CHARACTERS': (string.ascii_letters + string.digits)
+    'BACKUP_CODES_CHARACTERS': (string.ascii_letters + string.digits),
     'SECRET_KEY_LENGTH': 16,
     'DEFAULT_VALIDITY_PERIOD': 30,
     'CONFIRM_DISABLE_WITH_CODE': False,
