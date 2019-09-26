@@ -143,12 +143,7 @@ def validate_code(
     mfa_method,
 ):
 
-    handler_class = api_settings.MFA_METHODS[mfa_method.name]['HANDLER']
-    handler = handler_class(
-        user=mfa_method.user,
-        obj=mfa_method,
-        conf=api_settings.MFA_METHODS[mfa_method.name],
-    )
+    handler = get_mfa_handler(mfa_method)
     return handler.validate_code(code)
 
 
