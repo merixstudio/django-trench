@@ -9,6 +9,7 @@ from rest_framework import fields, serializers
 from trench.settings import api_settings
 from trench.utils import (
     create_secret,
+    get_mfa_handler,
     get_mfa_model,
     get_nested_attr,
     set_nested_attr,
@@ -116,6 +117,8 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
 
 class ProtectedActionSerializer(serializers.Serializer):
     requires_mfa_code = None
+    handler_validation_method = 'validate_code'
+
     code = serializers.CharField(
         required=False,
     )
@@ -130,12 +133,10 @@ class ProtectedActionSerializer(serializers.Serializer):
             self.fail('otp_code_missing')
 
         obj = self.context['obj']
-        validity_period = (
-            self.context['conf'].get('VALIDITY_PERIOD')
-            or api_settings.DEFAULT_VALIDITY_PERIOD  # noqa
-        )
         validated_backup_code = validate_backup_code(value, obj.backup_codes)
-        if validate_code(value, obj, validity_period):
+        handler = get_mfa_handler(obj)
+        validate_method = getattr(handler, self.handler_validation_method)
+        if validate_method(value):
             return value
         if validated_backup_code:
             obj.remove_backup_code(validated_backup_code)
@@ -152,6 +153,7 @@ class ProtectedActionSerializer(serializers.Serializer):
 
 class RequestMFAMethodActivationConfirmSerializer(ProtectedActionSerializer):
     requires_mfa_code = True
+    handler_validation_method = 'validate_confirmation_code'
 
 
 class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):

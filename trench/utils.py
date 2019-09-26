@@ -14,8 +14,6 @@ from django.utils.crypto import (
 from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
-from yubico_client.yubico import Yubico
-from yubico_client.yubico_exceptions import YubicoError
 
 from trench.settings import api_settings
 
@@ -143,26 +141,23 @@ def generate_backup_codes(
 def validate_code(
     code,
     mfa_method,
-    valid_window=api_settings.DEFAULT_VALIDITY_PERIOD,
 ):
 
-    if mfa_method.name == 'yubi':
-        conf = api_settings.MFA_METHODS['yubi']
-        client = Yubico(conf['YUBICLOUD_CLIENT_ID'])
+    handler_class = api_settings.MFA_METHODS[mfa_method.name]['HANDLER']
+    handler = handler_class(
+        user=mfa_method.user,
+        obj=mfa_method,
+        conf=api_settings.MFA_METHODS[mfa_method.name],
+    )
+    return handler.validate_code(code)
 
-        try:
-            return client.verify(code, timestamp=True)
 
-        except (YubicoError, Exception):
-            return False
-
-    return (
-        pyotp
-        .TOTP(mfa_method.secret)
-        .verify(
-            code,
-            valid_window=int(valid_window / 30)
-        )
+def get_mfa_handler(mfa_method):
+    conf = api_settings.MFA_METHODS[mfa_method.name]
+    return conf['HANDLER'](
+        user=mfa_method.user,
+        obj=mfa_method,
+        conf=conf,
     )
 
 

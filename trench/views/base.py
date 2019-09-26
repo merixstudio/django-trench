@@ -14,6 +14,7 @@ from trench import serializers
 from trench.settings import api_settings
 from trench.utils import (
     generate_backup_codes,
+    get_mfa_handler,
     get_mfa_model,
     user_token_generator,
 )
@@ -159,6 +160,9 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        handler = get_mfa_handler(self.obj)
+        handler.confirm_activation(serializer.data['code'])
 
         backup_codes = generate_backup_codes()
 

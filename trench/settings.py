@@ -104,8 +104,6 @@ DEFAULTS = {
         },
         'yubi': {
             'VERBOSE_NAME': _('yubi'),
-            'VALIDITY_PERIOD': 60 * 10,
-            'SOURCE_FIELD': 'yubikey_id',
             'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
             'YUBICLOUD_CLIENT_ID': 'YOUR KEY',
         },

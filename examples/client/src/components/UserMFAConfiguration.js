@@ -112,7 +112,6 @@ export class UserMFAConfiguration extends Component {
   }
 
   requestYubiKey2FA(data = {}) {
-    const { userData } = this.props;
     this.resetRequests({
       authBeingActivated: [{ name: 'yubi' }],
       authWaitingForCode: ['yubi'],
@@ -120,7 +119,6 @@ export class UserMFAConfiguration extends Component {
 
     return request2FAregistration({
       method: 'yubi',
-      yubikey_id: data.yubikey_id || userData.yubikey_id,
     })
     .catch((error) => {
       this.props.showMessage(parseError(error));
@@ -152,6 +150,8 @@ export class UserMFAConfiguration extends Component {
       switch(method) {
         case 'email':
           return this.requestEmail2FA();
+        case 'yubi':
+          return this.requestYubiKey2FA();
         case 'app':
           return this.requestApplication2FA().then(res => res && res.data.qr_link);
         default:
@@ -308,7 +308,6 @@ export class UserMFAConfiguration extends Component {
             authBeingActivated={authBeingActivated.find(auth => auth.name === 'yubi')}
             verificationPending={authWaitingForCode.indexOf('yubi') !== -1}
             isEnabled={enabledAuth.find(auth => auth.name === 'yubi')}
-            yubikey_id={userData.yubikey_id}
           />
         </div>
         <div>
