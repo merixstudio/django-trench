@@ -1,3 +1,5 @@
+import string
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
@@ -59,10 +61,8 @@ DEFAULTS = {
     'USER_MFA_MODEL': 'trench.MFAMethod',
     'USER_ACTIVE_FIELD': 'is_active',
     'BACKUP_CODES_QUANTITY': 5,
-    'BACKUP_CODES_LENGTH': 6,  # keep (quantity * length) under 200
-    'BACKUP_CODES_CHARACTERS': (
-        '0123456789'
-    ),
+    'BACKUP_CODES_LENGTH': 12,  # keep (quantity * length) under 200
+    'BACKUP_CODES_CHARACTERS': (string.ascii_letters + string.digits),
     'SECRET_KEY_LENGTH': 16,
     'DEFAULT_VALIDITY_PERIOD': 30,
     'CONFIRM_DISABLE_WITH_CODE': False,
