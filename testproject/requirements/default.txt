@@ -1,4 +1,4 @@
 -r common.txt
 
 Django==1.11.23
-djangorestframework==3.8.2
+djangorestframework==3.9.1
