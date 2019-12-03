@@ -1,5 +1,3 @@
-from django.utils.six import text_type
-
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -12,8 +10,8 @@ class ObtainJSONWebTokenMixin:
         token = RefreshToken.for_user(serializer.user)
         return Response(
             {
-                'refresh': text_type(token),
-                'access': text_type(token.access_token)
+                'refresh': token,
+                'access': token.access_token
             }
         )
 
