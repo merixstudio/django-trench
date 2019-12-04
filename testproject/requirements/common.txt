@@ -8,6 +8,7 @@ django-rest-swagger==2.2.0
 pytest==4.1.0
 pytest-cov==2.6.1
 pytest-django==3.4.5
+attrs==17.4.0
 coverage==4.5.2
 
 isort
