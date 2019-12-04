@@ -10,8 +10,8 @@ class ObtainJSONWebTokenMixin:
         token = RefreshToken.for_user(serializer.user)
         return Response(
             {
-                'refresh': token,
-                'access': token.access_token
+                'refresh': str(token),
+                'access': str(token.access_token)
             }
         )
 
