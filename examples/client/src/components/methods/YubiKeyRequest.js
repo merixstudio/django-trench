@@ -9,13 +9,12 @@ import {
 } from '@material-ui/core';
 
 import { VerificationCodeForm } from '../VerificationCodeForm';
-import { YubiKeyRequestForm } from '../YubiKeyRequestForm';
 
 export class YubiKeyRequest extends Component {
   render() {
     const {
       activeAuthMethod,
-      isEnabled,
+      authBeingActivated,
       verificationPending,
       disabled,
       togglePrimary,
@@ -54,13 +53,7 @@ export class YubiKeyRequest extends Component {
             />
           </FormGroup>
         </div>
-        {activeAuthMethod && !verificationPending && !isEnabled && (
-          <YubiKeyRequestForm
-            onSubmit={this.props.requestRegistration}
-            initialValues={{ yubikey_id: this.props.yubikey_id }}
-          />
-        )}
-        {activeAuthMethod && verificationPending && (
+        {authBeingActivated && verificationPending && (
           <Paper style={{ padding: 16, margin: '20px 0' }}>
             <VerificationCodeForm
               requestResend={this.props.requestRegistration}
