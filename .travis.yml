@@ -8,11 +8,6 @@ matrix:
       - { python: "3.6", env: TOX_ENV='flake8' }
       - { python: "3.6", env: TOX_ENV='isort' }
 
-      - { python: "3.4", env: DJANGO=111 DRF=37 }
-      - { python: "3.4", env: DJANGO=20 DRF=37 }
-      - { python: "3.4", env: DJANGO=111 DRF=38 }
-      - { python: "3.4", env: DJANGO=20 DRF=38 }
-
       - { python: "3.5", env: DJANGO=111 DRF=37 }
       - { python: "3.5", env: DJANGO=20 DRF=37 }
       - { python: "3.5", env: DJANGO=21 DRF=37 }
@@ -43,7 +38,6 @@ matrix:
 
 install:
   - pip install tox-travis
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then export PY_VER=py34; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PY_VER=py35; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export PY_VER=py36; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then export PY_VER=py37; fi"

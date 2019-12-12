@@ -3,6 +3,13 @@ Changelog
 =========
 
 
+0.2.3 (unreleased)
+==================
+
+* Remove support for Python 3.4
+* Add typing
+
+
 0.2.2 (2019-05-21)
 ==================
 
