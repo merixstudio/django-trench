@@ -3,10 +3,10 @@ Changelog
 =========
 
 
-0.2.2 (2019-05-21)
+0.2.3 (unreleased)
 ==================
 
-* Replace ``djangorestframework-jwt`` by fork ``drf-jwt`` (see https://github.com/jpadilla/django-rest-framework-jwt/issues/484)
+* Replace ``djangorestframework-jwt`` by fork ``drf-jwt``
 
 
 0.2.2 (2019-05-21)
