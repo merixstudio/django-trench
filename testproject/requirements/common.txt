@@ -1,4 +1,4 @@
-djangorestframework-jwt==1.11.0
+drf-jwt==1.13.3
 django-environ==0.4.5
 django-cors-headers==2.4.0
 djoser==1.6.0

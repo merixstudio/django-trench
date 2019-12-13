@@ -28,7 +28,7 @@ Supported versions
 
 | If you are going to use JWT authentication:
 
-* `django-rest-framework-jwt`_ >= 1.11.0
+* `drf-jwt`_ >= 1.13.3
 
 | or
 
@@ -81,5 +81,5 @@ You can also check our live `demo`_.
 .. _demo: https://django-trench.readthedocs.io/en/latest/demo.html
 .. _django-rest-framework: http://www.django-rest-framework.org
 .. _djoser: https://github.com/sunscrapers/djoser
-.. _django-rest-framework-jwt: https://github.com/GetBlimp/django-rest-framework-jwt
+.. _drf-jwt: https://github.com/Styria-Digital/django-rest-framework-jwt
 .. _djangorestframework-simplejwt: https://github.com/davesque/django-rest-framework-simplejwt

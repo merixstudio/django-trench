@@ -46,7 +46,7 @@ Config
         url(r'^auth/', include('trench.urls')), # Base endpoints
         url(r'^auth/', include('djoser.urls')),
         url(r'^auth/', include('trench.urls.djoser')),  # for Token Based Authorization
-        url(r'^auth/', include('trench.urls.jwt')), # for django-rest-framework-jwt
+        url(r'^auth/', include('trench.urls.jwt')), # for drf-jwt
         url(r'^auth/', include('trench.urls.simplejwt')), # for djangorestframework-simplejwt
     ]
 
