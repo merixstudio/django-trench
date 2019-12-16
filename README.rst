@@ -11,6 +11,8 @@ django-trench
 .. image:: https://readthedocs.org/projects/django-trench/badge/?version=latest
    :target: https://django-trench.readthedocs.io/en/latest/?badge=latest
 
+.. image:: https://img.shields.io/pypi/v/django-trench
+   :target: https://pypi.org/project/django-trench/
 
 | **django-trench** provides a set of REST API endpoints to supplement `django-rest-framework`_ with multi-factor authentication (MFA, 2FA). It supports both standard built-in authentication methods, as well as JWT (JSON Web Token). **django-trench** follows the url pattern developed in `djoser`_ library and may act as its supplement.
 | We deliver a couple of sample secondary authentication methods including sending OTP based code by email, SMS/text as well as through 3rd party mobile apps or utilising YubiKey. Developers can easily add own auth backend supporting any communication channel.
@@ -28,9 +30,9 @@ Requirements
 Supported versions
 ******************
 
-* Python 3.4, 3.5, 3.6, 3.7
-* Django 1.11, 2.0, 2.1, 2.2
-* Django REST Framework 3.7, 3.8, 3.9
+* Python 3.5, 3.6, 3.7, 3.8
+* Django 1.11, 2.0, 2.1, 2.2, 3.0
+* Django REST Framework 3.10
 
 | If you implement Token Based Authentication:
 
@@ -42,7 +44,7 @@ Supported versions
 
 | or
 
-* `djangorestframework-simplejwt`_ >= 3.3
+* `djangorestframework-simplejwt`_ >= 4.3.0
 
 Quick Start
 -----------

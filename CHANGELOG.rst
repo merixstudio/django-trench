@@ -3,7 +3,7 @@ Changelog
 =========
 
 
-0.2.3 (unreleased)
+0.2.3 (2019-12-16)
 ==================
 
 * Add possibility to override default trench templates for ``SendMailBackend``.
@@ -11,6 +11,8 @@ Changelog
 * Store YubiKey ``device_id`` directly in MFAMethod model.
 * Make default backup codes more secure, increase backup codes length from 6 to 12 and extend backup codes characters from only digits to ascii_letters also.
 * Bump versions of packages.
+* Add support for Django 3.0, Python 3.8 and DRF 3.10.
+* Remove support for Python 3.4
 
 
 0.2.2 (2019-05-21)
