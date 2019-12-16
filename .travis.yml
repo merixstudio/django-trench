@@ -8,38 +8,23 @@ matrix:
       - { python: "3.6", env: TOX_ENV='flake8' }
       - { python: "3.6", env: TOX_ENV='isort' }
 
-      - { python: "3.4", env: DJANGO=111 DRF=37 }
-      - { python: "3.4", env: DJANGO=20 DRF=37 }
-      - { python: "3.4", env: DJANGO=111 DRF=38 }
-      - { python: "3.4", env: DJANGO=20 DRF=38 }
+      - { python: "3.8", env: DJANGO=30 DRF=310, dist: xenial, sudo: true }
+      - { python: "3.8", env: DJANGO=22 DRF=310, dist: xenial, sudo: true }
 
-      - { python: "3.5", env: DJANGO=111 DRF=37 }
-      - { python: "3.5", env: DJANGO=20 DRF=37 }
-      - { python: "3.5", env: DJANGO=21 DRF=37 }
-      - { python: "3.5", env: DJANGO=111 DRF=38 }
-      - { python: "3.5", env: DJANGO=20 DRF=38 }
-      - { python: "3.5", env: DJANGO=21 DRF=38 }
-      - { python: "3.5", env: DJANGO=21 DRF=39 }
-      - { python: "3.5", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
-      - { python: "3.5", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=111 DRF=310, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=20 DRF=310, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=21 DRF=310, dist: xenial, sudo: true }
+      - { python: "3.7", env: DJANGO=22 DRF=310, dist: xenial, sudo: true }
 
-      - { python: "3.6", env: DJANGO=111 DRF=37 }
-      - { python: "3.6", env: DJANGO=20 DRF=37 }
-      - { python: "3.6", env: DJANGO=21 DRF=37 }
-      - { python: "3.6", env: DJANGO=111 DRF=38 }
-      - { python: "3.6", env: DJANGO=20 DRF=38 }
-      - { python: "3.6", env: DJANGO=21 DRF=38 }
-      - { python: "3.6", env: DJANGO=21 DRF=39 }
-      - { python: "3.6", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
-      - { python: "3.6", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
+      - { python: "3.6", env: DJANGO=111 DRF=310 }
+      - { python: "3.6", env: DJANGO=20 DRF=310 }
+      - { python: "3.6", env: DJANGO=21 DRF=310 }
+      - { python: "3.6", env: DJANGO=22 DRF=310, dist: xenial, sudo: true }
 
-      - { python: "3.7", env: DJANGO=20 DRF=37, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=21 DRF=37, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=20 DRF=38, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=21 DRF=38, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=21 DRF=39, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=22 DRF=38, dist: xenial, sudo: true }
-      - { python: "3.7", env: DJANGO=22 DRF=39, dist: xenial, sudo: true }
+      - { python: "3.5", env: DJANGO=111 DRF=310 }
+      - { python: "3.5", env: DJANGO=20 DRF=310 }
+      - { python: "3.5", env: DJANGO=21 DRF=310 }
+      - { python: "3.5", env: DJANGO=22 DRF=310, dist: xenial, sudo: true }
 
 install:
   - pip install tox-travis
@@ -47,6 +32,7 @@ install:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then export PY_VER=py35; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then export PY_VER=py36; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then export PY_VER=py37; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.8' ]]; then export PY_VER=py38; fi"
   - "if [[ ${DJANGO}z != 'z' ]]; then export TOX_ENV=$PY_VER-django$DJANGO-drf$DRF; fi"
 
 script:

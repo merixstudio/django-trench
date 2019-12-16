@@ -3,6 +3,13 @@ Changelog
 =========
 
 
+0.2.3 (unreleased)
+==================
+
+* Add support for Django 3.0, Python 3.8 and DRF 3.10.
+* Remove support for Python 3.4
+
+
 0.2.2 (2019-05-21)
 ==================
 
