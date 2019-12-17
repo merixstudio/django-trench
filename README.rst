@@ -44,7 +44,7 @@ Supported versions
 
 | or
 
-* `djangorestframework-simplejwt`_ >= 3.3
+* `djangorestframework-simplejwt`_ >= 4.3.0
 
 Quick Start
 -----------
