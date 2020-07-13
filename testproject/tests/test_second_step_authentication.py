@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -822,3 +823,37 @@ def test_ephemeral_token_verification_simple_jwt(active_user_with_email_otp):
         active_user_with_email_otp,
         User.USERNAME_FIELD,
     )
+
+
+@pytest.mark.django_db
+def test_changing_default_time(
+    active_user_with_email_otp,
+    settings
+):
+    client = APIClient()
+    settings.TRENCH_AUTH['MFA_METHODS']['email']["VALIDITY_PERIOD"] = 3
+    first_step = login(active_user_with_email_otp)
+    secret = active_user_with_email_otp.mfa_methods.first().secret
+    code = create_otp_code(secret)
+    time.sleep(3)
+    response = client.post(
+        path='/auth/login/code/',
+        data={
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': code,
+        },
+        format='json',
+    )
+    assert response.status_code == 400
+
+    code = create_otp_code(secret)
+    response = client.post(
+        path='/auth/login/code/',
+        data={
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': code,
+        },
+        format='json',
+    )
+
+    assert response.status_code == 200

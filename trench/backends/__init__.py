@@ -1,8 +1,6 @@
-import pyotp
-
 from trench.exceptions import MissingSourceFieldAttribute
 from trench.settings import api_settings
-from trench.utils import create_otp_code, get_nested_attr_value
+from trench.utils import create_otp_code, get_nested_attr_value, get_otp_obj
 
 
 class AbstractMessageDispatcher:
@@ -36,7 +34,8 @@ class AbstractMessageDispatcher:
     def validate_code(self, code):
         validity_period = self.conf.get('VALIDITY_PERIOD') or \
             api_settings.DEFAULT_VALIDITY_PERIOD
-        return pyotp.TOTP(self.obj.secret).verify(
+        totp = get_otp_obj(self.obj.secret)
+        return totp.verify(
             code,
-            valid_window=int(validity_period / 30)
+            valid_window=validity_period-1
         )

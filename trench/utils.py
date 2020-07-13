@@ -81,9 +81,21 @@ def create_secret():
     return pyotp.random_base32(length=api_settings.SECRET_KEY_LENGTH)
 
 
+def get_otp_obj(secret):
+    """
+    Gets TOPT object with secret and interval.
+    Interval's set to 1 to use specific time provided by the user.
+
+    :param secret: Secret used to generate OTP
+    :type secret: str
+
+    :return: TOTP obj
+    """
+    return pyotp.TOTP(secret, interval=1)
+
 def create_otp_code(secret):
     """
-    Creates new OTP code.
+    Creates new, current time OTP code
 
     :param secret: Secret used to generate OTP
     :type secret: str
@@ -92,8 +104,7 @@ def create_otp_code(secret):
     :rtype: str
     """
 
-    totp = pyotp.TOTP(secret)
-    return totp.now()
+    return get_otp_obj(secret).now()
 
 
 def create_qr_link(secret, user):
@@ -109,7 +120,7 @@ def create_qr_link(secret, user):
     :rtype: str
     """
 
-    totp = pyotp.TOTP(secret)
+    totp = get_otp_obj(secret)
     return totp.provisioning_uri(
         getattr(user, User.USERNAME_FIELD),
         api_settings.APPLICATION_ISSUER_NAME,
