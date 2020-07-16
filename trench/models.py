@@ -43,11 +43,11 @@ class MFAMethod(models.Model):
 
     @property
     def backup_codes(self):
-        return self._backup_codes.split(',')
+        return self._backup_codes.split('-')
 
     @backup_codes.setter
     def backup_codes(self, codes):
-        self._backup_codes = ','.join(codes)
+        self._backup_codes = '-'.join(codes)
 
     def remove_backup_code(self, utilised_code):
         codes = self.backup_codes

@@ -101,7 +101,7 @@ def active_user_with_backup_codes():
         email='cleopatra@pyramids.eg',
     )
     backup_codes = generate_backup_codes()
-    encrypted_backup_codes = ','.join([make_password(_) for _ in backup_codes])
+    encrypted_backup_codes = '-'.join([make_password(_) for _ in backup_codes])
     if created:
         user.set_password('secretkey'),
         user.is_active = True
@@ -127,7 +127,7 @@ def active_user_with_many_otp_methods():
         email='ramses@thegreat.eg',
     )
     backup_codes = generate_backup_codes()
-    encrypted_backup_codes = ','.join([make_password(_) for _ in backup_codes])
+    encrypted_backup_codes = '-'.join([make_password(_) for _ in backup_codes])
     if created:
         user.set_password('secretkey'),
         user.is_active = True
