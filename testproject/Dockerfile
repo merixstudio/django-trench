@@ -2,6 +2,7 @@ FROM python:3.6.6-alpine3.8
 ENV PYTHONUNBUFFERED 1
 
 RUN apk update
+RUN apk add gcc musl-dev libffi-dev
 
 RUN mkdir /code
 WORKDIR /code
