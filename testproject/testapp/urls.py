@@ -19,15 +19,16 @@ from django.contrib import admin
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from trench import __version__
+
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Django-Trench",
-      default_version='v1',
-      description="Django-Trench",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@snippets.local"),
-      license=openapi.License(name="BSD License"),
+        title="django-trench",
+        default_version=__version__,
+        description="django-trench provides a set of REST API endpoints to supplement django-rest-framework with "
+                    "multi-factor authentication (MFA, 2FA)",
+        license=openapi.License(name="MIT License"),
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),
