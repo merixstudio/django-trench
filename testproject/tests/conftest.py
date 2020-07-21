@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
 from trench.utils import create_secret, generate_backup_codes
+from django.conf import settings
 
 
 User = get_user_model()
@@ -17,8 +18,8 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture()
-def set_hasher(request, settings):
+@pytest.fixture(scope="session", autouse=True)
+def set_hasher(request):
     parse_hasher: str = request.config.getoption("--hasher")
     hashers_list = settings.PASSWORD_HASHERS
     hashers_test: list = [hasher for hasher in hashers_list if re.search(parse_hasher, hasher, re.IGNORECASE)]
@@ -30,7 +31,7 @@ def set_hasher(request, settings):
 
 
 @pytest.fixture()
-def active_user_with_email_otp(set_hasher):
+def active_user_with_email_otp():
     user, created = User.objects.get_or_create(
         username='imhotep',
         email='imhotep@pyramids.eg',
@@ -53,7 +54,7 @@ def active_user_with_email_otp(set_hasher):
 
 
 @pytest.fixture()
-def active_user_with_sms_otp(set_hasher):
+def active_user_with_sms_otp():
     user, created = User.objects.get_or_create(
         username='imhotep',
         email='imhotep@pyramids.eg',
@@ -77,7 +78,7 @@ def active_user_with_sms_otp(set_hasher):
 
 
 @pytest.fixture()
-def active_user_with_email_and_inactive_other_methods_otp(set_hasher):
+def active_user_with_email_and_inactive_other_methods_otp():
     user, created = User.objects.get_or_create(
         username='imhotep',
         email='imhotep@pyramids.eg',
@@ -114,7 +115,7 @@ def active_user_with_email_and_inactive_other_methods_otp(set_hasher):
 
 
 @pytest.fixture()
-def active_user_with_backup_codes(set_hasher):
+def active_user_with_backup_codes():
     user, created = User.objects.get_or_create(
         username='cleopatra',
         email='cleopatra@pyramids.eg',
@@ -140,7 +141,7 @@ def active_user_with_backup_codes(set_hasher):
 
 
 @pytest.fixture()
-def active_user_with_many_otp_methods(set_hasher):
+def active_user_with_many_otp_methods():
     user, created = User.objects.get_or_create(
         username='ramses',
         email='ramses@thegreat.eg',
@@ -189,7 +190,7 @@ def active_user_with_many_otp_methods(set_hasher):
 
 
 @pytest.fixture()
-def active_user(set_hasher):
+def active_user():
     user, created = User.objects.get_or_create(
         username='hetephernebti',
         email='hetephernebti@pyramids.eg',
@@ -203,7 +204,7 @@ def active_user(set_hasher):
 
 
 @pytest.fixture()
-def inactive_user(set_hasher):
+def inactive_user():
     user, created = User.objects.get_or_create(
         username='djoser',
         email='djoser@pyramids.eg',
@@ -217,7 +218,7 @@ def inactive_user(set_hasher):
 
 
 @pytest.fixture()
-def admin_user(set_hasher):
+def admin_user():
     return User.objects.create_superuser(
         username='admin',
         email='admin@admin.com',
