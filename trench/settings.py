@@ -36,6 +36,11 @@ class TrenchAPISettings(APISettings):
                 'Cannot use , as a character for {}.'.format(attr),
             )
         if attr == 'MFA_METHODS':
+            # if user method settings are lacking, fill with defaults
+            for k, v in val.items():
+                if self.defaults[attr].get(k, None):
+                    val[k] = {**self.defaults[attr][k], **v}
+
             for method_name, method_config in val.items():
                 if 'HANDLER' not in method_config:
                     raise ImproperlyConfigured(
