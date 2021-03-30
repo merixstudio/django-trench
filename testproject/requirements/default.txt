@@ -1,4 +1,4 @@
 -r common.txt
 
-Django==3.0
+Django==3.0.12
 djangorestframework==3.11.0
