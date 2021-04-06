@@ -44,7 +44,10 @@ class TrenchAPISettings(APISettings):
     def _validate(cls, attribute: str, value: Any):
         if attribute == cls._FIELD_BACKUP_CODES_CHARACTERS:
             if any(char in value for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS):
-                raise RestrictedCharInBackupCodeError(attribute_name=attribute)
+                raise RestrictedCharInBackupCodeError(
+                    attribute_name=attribute,
+                    restricted_chars=cls._RESTRICTED_BACKUP_CODES_CHARACTERS,
+                )
         if attribute == cls._FIELD_MFA_METHODS:
             for method_name, method_config in value.items():
                 if cls._FIELD_HANDLER not in method_config:

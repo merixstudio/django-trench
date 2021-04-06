@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from django.core.exceptions import ImproperlyConfigured
 
 
@@ -26,8 +28,8 @@ class MethodNotAllowed(BaseMFAException):
 
 
 class MissingSourceFieldAttribute(BaseMFAException):
-    """Atrribute specified as required for given backend is missing"""
-    pass
+    def __init__(self, attribute_name: str):
+        super(f"Could not retrieve attribute '{attribute_name}' for given user.")
 
 
 class InvalidSettingError(ImproperlyConfigured):
@@ -36,8 +38,11 @@ class InvalidSettingError(ImproperlyConfigured):
 
 
 class RestrictedCharInBackupCodeError(ImproperlyConfigured):
-    def __init__(self, attribute_name: str):
-        super(f"Cannot use comma (,) as a character for {attribute_name}.")
+    def __init__(self, attribute_name: str, restricted_chars: Iterable[str]):
+        super(
+            f"Cannot use any of: {''.join(restricted_chars)} as a character "
+            f"for {attribute_name}."
+        )
 
 
 class MethodHandlerMissingError(ImproperlyConfigured):
