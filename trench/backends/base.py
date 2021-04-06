@@ -1,3 +1,7 @@
+from abc import abstractmethod
+
+import pyotp
+
 from trench.exceptions import MissingSourceFieldAttribute
 from trench.settings import api_settings
 from trench.utils import get_nested_attr_value, create_otp_code
@@ -19,6 +23,7 @@ class AbstractMessageDispatcher:
                 )
             self.to = value
 
+    @abstractmethod
     def dispatch_message(self):
         pass  # pragma: no cover
 
