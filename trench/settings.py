@@ -1,15 +1,14 @@
-import string
-from typing import Any
-
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+import string
 from rest_framework.settings import APISettings, perform_import
+from typing import Any
 
 from trench.exceptions import (
-    RestrictedCharInBackupCodeError,
-    MethodHandlerMissingError,
     InvalidSettingError,
+    MethodHandlerMissingError,
+    RestrictedCharInBackupCodeError,
 )
 
 

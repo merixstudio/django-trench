@@ -1,11 +1,10 @@
-from abc import abstractmethod
-from typing import Dict, Any
-
 import pyotp
+from abc import abstractmethod
+from typing import Any, Dict
 
 from trench.exceptions import MissingSourceFieldAttribute
 from trench.settings import api_settings
-from trench.utils import get_nested_attr_value, create_otp_code
+from trench.utils import create_otp_code, get_nested_attr_value
 
 
 class AbstractMessageDispatcher:
@@ -45,6 +44,5 @@ class AbstractMessageDispatcher:
             or api_settings.DEFAULT_VALIDITY_PERIOD
         )
         return pyotp.TOTP(self.obj.secret).verify(
-            code,
-            valid_window=int(validity_period / 30)
+            otp=code, valid_window=int(validity_period / 30)
         )
