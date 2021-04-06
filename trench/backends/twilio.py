@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
-from trench.backends import AbstractMessageDispatcher
+from trench.backends.base import AbstractMessageDispatcher
 
 
 class TwilioBackend(AbstractMessageDispatcher):

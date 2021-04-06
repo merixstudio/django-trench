@@ -4,7 +4,7 @@ from yubico_client import Yubico
 from yubico_client.otp import OTP
 from yubico_client.yubico_exceptions import YubicoError
 
-from trench.backends import AbstractMessageDispatcher
+from trench.backends.base import AbstractMessageDispatcher
 
 
 class YubiKeyBackend(AbstractMessageDispatcher):

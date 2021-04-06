@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 
 from smsapi.client import SmsApiPlClient
 
-from trench.backends import AbstractMessageDispatcher
+from trench.backends.base import AbstractMessageDispatcher
 
 
 class SmsAPIBackend(AbstractMessageDispatcher):

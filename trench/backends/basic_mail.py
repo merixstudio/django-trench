@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
-from trench.backends import AbstractMessageDispatcher
+from trench.backends.base import AbstractMessageDispatcher
 from trench.settings import api_settings
 
 
