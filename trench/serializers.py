@@ -4,7 +4,6 @@ from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
 
 from collections import OrderedDict
-from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 
@@ -62,11 +61,13 @@ class RequestMFAMethodActivationSerializer(Serializer):
         self.conf = api_settings.MFA_METHODS[context["name"]]
         self.source_field = self.conf.get("SOURCE_FIELD")
         if self.source_field:
-            value, field_name, klass = get_nested_attr(self.user, self.source_field)
+            value, field_name, klass = get_nested_attr(
+                self.user, self.source_field
+            )
             if not value:
-                self.fields[field_name] = self.get_serializer_field_mapping()[klass](
-                    required=True
-                )
+                self.fields[field_name] = self.get_serializer_field_mapping()[
+                    klass
+                ](required=True)
                 self.required_field_name = field_name
 
     def validate(self, attrs):
@@ -164,7 +165,9 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
             user=self.user, is_active=True
         ).count()
         if is_current_method_primary and self.users_active_methods_count > 2:
-            self.fields["new_primary_method"] = CharField(max_length=255, required=True)
+            self.fields["new_primary_method"] = CharField(
+                max_length=255, required=True
+            )
         else:
             self.new_method = None
 
@@ -183,8 +186,12 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
-    requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
+class RequestMFAMethodBackupCodesRegenerationSerializer(
+    ProtectedActionSerializer
+):
+    requires_mfa_code = (
+        api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE
+    )  # noqa
 
 
 class RequestMFAMethodCodeSerializer(RequestValidator):

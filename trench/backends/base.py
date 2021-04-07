@@ -18,7 +18,9 @@ class AbstractMessageDispatcher:
         self.to = ""
 
         if self._FIELD_SOURCE_FIELD in conf:
-            source = get_nested_attr_value(user, conf[self._FIELD_SOURCE_FIELD])
+            source = get_nested_attr_value(
+                user, conf[self._FIELD_SOURCE_FIELD]
+            )
             if source is None:
                 raise MissingSourceFieldAttribute(  # pragma: no cover
                     attribute_name=conf[self._FIELD_SOURCE_FIELD]

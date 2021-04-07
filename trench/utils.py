@@ -36,7 +36,9 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
     secret = settings.SECRET_KEY
 
     def make_token(self, user: User) -> str:
-        return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
+        return self._make_token_with_timestamp(
+            user, int(datetime.now().timestamp())
+        )
 
     def check_token(self, user: User, token: str) -> Optional[User]:
         if not token:
@@ -53,12 +55,16 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         if (datetime.now().timestamp() - ts) > (60 * 15):
             return None  # pragma: no cover
 
-        if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
+        if not constant_time_compare(
+            self._make_token_with_timestamp(user, ts), token
+        ):
             return None
 
         return user
 
-    def _make_token_with_timestamp(self, user: User, timestamp: int, **kwargs) -> str:
+    def _make_token_with_timestamp(
+        self, user: User, timestamp: int, **kwargs
+    ) -> str:
         ts_b36 = int_to_base36(timestamp)
         token_hash = salted_hmac(
             self.key_salt,

@@ -23,7 +23,9 @@ class TrenchAPISettings(APISettings):
     @property
     def user_settings(self):
         if not hasattr(self, self._FIELD_USER_SETTINGS):
-            self._user_settings = getattr(settings, self._FIELD_TRENCH_AUTH, {})
+            self._user_settings = getattr(
+                settings, self._FIELD_TRENCH_AUTH, {}
+            )
         return self._user_settings
 
     def __getattr__(self, attr):
@@ -42,7 +44,10 @@ class TrenchAPISettings(APISettings):
     @classmethod
     def _validate(cls, attribute: str, value: Any):
         if attribute == cls._FIELD_BACKUP_CODES_CHARACTERS:
-            if any(char in value for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS):
+            if any(
+                char in value
+                for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS
+            ):
                 raise RestrictedCharInBackupCodeError(
                     attribute_name=attribute,
                     restricted_chars=cls._RESTRICTED_BACKUP_CODES_CHARACTERS,

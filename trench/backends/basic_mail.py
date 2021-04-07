@@ -39,9 +39,13 @@ class SendMailBackend(AbstractMessageDispatcher):
             )
         except SMTPException:  # pragma: no cover
             return {
-                self._KEY_MESSAGE: _("Email message with MFA code has not been sent.")
+                self._KEY_MESSAGE: _(
+                    "Email message with MFA code has not been sent."
+                )
             }  # pragma: no cover
-        return {self._KEY_MESSAGE: _("Email message with MFA code has been sent.")}
+        return {
+            self._KEY_MESSAGE: _("Email message with MFA code has been sent.")
+        }
 
     def get_context(self) -> Dict[str, Any]:
         return {self._KEY_CODE: self.create_code()}

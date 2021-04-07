@@ -28,15 +28,25 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("name", models.CharField(max_length=255, verbose_name="name")),
-                ("secret", models.CharField(max_length=20, verbose_name="secret")),
+                (
+                    "name",
+                    models.CharField(max_length=255, verbose_name="name"),
+                ),
+                (
+                    "secret",
+                    models.CharField(max_length=20, verbose_name="secret"),
+                ),
                 (
                     "is_primary",
-                    models.BooleanField(default=False, verbose_name="is primary"),
+                    models.BooleanField(
+                        default=False, verbose_name="is primary"
+                    ),
                 ),
                 (
                     "is_active",
-                    models.BooleanField(default=False, verbose_name="is active"),
+                    models.BooleanField(
+                        default=False, verbose_name="is active"
+                    ),
                 ),
                 (
                     "backup_codes",

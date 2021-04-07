@@ -25,9 +25,13 @@ class SmsAPIBackend(AbstractMessageDispatcher):
 
         kwargs = {}
         if self.conf.get("SMSAPI_FROM_NUMBER"):
-            kwargs["from_"] = self.conf.get("SMSAPI_FROM_NUMBER")  # pragma: no cover
+            kwargs["from_"] = self.conf.get(
+                "SMSAPI_FROM_NUMBER"
+            )  # pragma: no cover
 
         client.sms.send(message=self.SMS_BODY + code, to=user_mobile, **kwargs)
 
     def provider_auth(self):
-        return SmsApiPlClient(access_token=self.conf.get("SMSAPI_ACCESS_TOKEN"))
+        return SmsApiPlClient(
+            access_token=self.conf.get("SMSAPI_ACCESS_TOKEN")
+        )

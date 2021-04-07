@@ -11,7 +11,9 @@ class BaseMFAException(Exception):
 
 class MissingSourceFieldAttribute(BaseMFAException):
     def __init__(self, attribute_name: str):
-        super(f"Could not retrieve attribute '{attribute_name}' for given user.")
+        super(
+            f"Could not retrieve attribute '{attribute_name}' for given user."
+        )
 
 
 class InvalidSettingError(ImproperlyConfigured):
@@ -35,13 +37,16 @@ class MethodHandlerMissingError(ImproperlyConfigured):
 class CodeInvalidOrExpiredValidationError(ValidationError):
     def __init__(self):
         super().__init__(
-            detail=_("Code invalid or expired."), code="code_invalid_or_expired"
+            detail=_("Code invalid or expired."),
+            code="code_invalid_or_expired",
         )
 
 
 class OTPCodeMissingValidationError(ValidationError):
     def __init__(self):
-        super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
+        super().__init__(
+            detail=_("OTP code not provided."), code="otp_code_missing"
+        )
 
 
 class MFAMethodDoesNotExistValidationError(ValidationError):
@@ -56,7 +61,8 @@ class MFAMethodNotRegisteredForUserValidationError(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_(
-                "Selected new primary MFA method is not registered for current user."
+                "Selected new primary MFA method is not registered for "
+                "current user."
             ),
             code="method_not_registered_for_user",
         )
@@ -65,7 +71,9 @@ class MFAMethodNotRegisteredForUserValidationError(ValidationError):
 class MFAPrimaryMethodInactiveValidationError(ValidationError):
     def __init__(self):
         super().__init__(
-            detail=_("MFA Method selected as new primary method is not active"),
+            detail=_(
+                "MFA Method selected as new primary method is not active"
+            ),
             code="new_primary_method_inactive",
         )
 
@@ -74,7 +82,8 @@ class MFANewPrimarySameAsOldValidationError(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_(
-                "MFA Method to be deactivated cannot be chosen as new primary method."
+                "MFA Method to be deactivated cannot be chosen as new "
+                "primary method."
             ),
             code="new_primary_same_as_old",
         )
@@ -87,12 +96,16 @@ class MFANotEnabledValidationError(ValidationError):
 
 class InvalidTokenValidationError(ValidationError):
     def __init__(self):
-        super().__init__(detail=_("Invalid or expired token."), code="invalid_token")
+        super().__init__(
+            detail=_("Invalid or expired token."), code="invalid_token"
+        )
 
 
 class InvalidCodeValidationError(ValidationError):
     def __init__(self):
-        super().__init__(detail=_("Invalid or expired code."), code="invalid_code")
+        super().__init__(
+            detail=_("Invalid or expired code."), code="invalid_code"
+        )
 
 
 class RequiredFieldMissingValidationError(ValidationError):
