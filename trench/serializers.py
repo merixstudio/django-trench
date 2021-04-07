@@ -1,11 +1,13 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models as django_models
 from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
 
 from collections import OrderedDict
-from rest_framework import fields, serializers
+
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import CharField, ChoiceField
+from rest_framework.serializers import ModelSerializer, Serializer
 
 from trench.settings import api_settings
 from trench.utils import (
@@ -27,33 +29,8 @@ mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
 
 
-class RequestMFAMethodActivationSerializer(serializers.Serializer):
-    serializer_field_mapping = {
-        django_models.AutoField: fields.IntegerField,
-        django_models.BigIntegerField: fields.IntegerField,
-        django_models.BooleanField: fields.BooleanField,
-        django_models.CharField: fields.CharField,
-        django_models.CommaSeparatedIntegerField: fields.CharField,
-        django_models.DateField: fields.DateField,
-        django_models.DateTimeField: fields.DateTimeField,
-        django_models.DecimalField: fields.DecimalField,
-        django_models.EmailField: fields.EmailField,
-        django_models.Field: fields.ModelField,
-        django_models.FileField: fields.FileField,
-        django_models.FloatField: fields.FloatField,
-        django_models.ImageField: fields.ImageField,
-        django_models.IntegerField: fields.IntegerField,
-        django_models.NullBooleanField: fields.NullBooleanField,
-        django_models.PositiveIntegerField: fields.IntegerField,
-        django_models.PositiveSmallIntegerField: fields.IntegerField,
-        django_models.SlugField: fields.SlugField,
-        django_models.SmallIntegerField: fields.IntegerField,
-        django_models.TextField: fields.CharField,
-        django_models.TimeField: fields.TimeField,
-        django_models.URLField: fields.URLField,
-        django_models.GenericIPAddressField: fields.IPAddressField,
-        django_models.FilePathField: fields.FilePathField,
-    }
+class RequestMFAMethodActivationSerializer(Serializer):
+    serializer_field_mapping = ModelSerializer.serializer_field_mapping
 
     default_error_messages = {
         "required_field_missing": _("Required field not provided"),
@@ -68,7 +45,6 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
 
         self.user = context["request"].user
         self.conf = api_settings.MFA_METHODS[context["name"]]
-
         self.source_field = self.conf.get("SOURCE_FIELD")
         if self.source_field:
             value, field_name, klass = get_nested_attr(self.user, self.source_field)
@@ -117,13 +93,11 @@ class RequestMFAMethodActivationSerializer(serializers.Serializer):
         return self.serializer_field_mapping
 
 
-class ProtectedActionSerializer(serializers.Serializer):
+class ProtectedActionSerializer(Serializer):
     requires_mfa_code = None
     handler_validation_method = "validate_code"
 
-    code = serializers.CharField(
-        required=False,
-    )
+    code = CharField(required=False)
 
     default_error_messages = {
         "otp_code_missing": _("OTP code not provided."),
@@ -190,7 +164,7 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
             user=self.user, is_active=True
         ).count()
         if is_current_method_primary and self.users_active_methods_count > 2:
-            self.fields["new_primary_method"] = serializers.CharField(
+            self.fields["new_primary_method"] = CharField(
                 max_length=255, required=True
             )
         else:
@@ -215,11 +189,8 @@ class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerialize
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
-class RequestMFAMethodCodeSerializer(serializers.Serializer):
-    method = serializers.CharField(
-        max_length=255,
-        required=False,
-    )
+class RequestMFAMethodCodeSerializer(Serializer):
+    method = CharField(max_length=255, required=False)
 
     default_error_messages = {
         "mfa_method_not_exists": _("Requested MFA method does not exists"),
@@ -231,20 +202,17 @@ class RequestMFAMethodCodeSerializer(serializers.Serializer):
         return value
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(Serializer):
     """
     Validates user's credentials.
     """
 
-    password = serializers.CharField(
-        style={"input_type": "password"},
-        write_only=True,
-    )
+    password = CharField(style={"input_type": "password"}, write_only=True)
 
     def __init__(self, *args, **kwargs):
         super(LoginSerializer, self).__init__(*args, **kwargs)
         self.user = None
-        self.fields[User.USERNAME_FIELD] = serializers.CharField()
+        self.fields[User.USERNAME_FIELD] = CharField()
 
     def validate(self, attrs):
         self.user = authenticate(
@@ -255,22 +223,22 @@ class LoginSerializer(serializers.Serializer):
 
         if not getattr(self.user, api_settings.USER_ACTIVE_FIELD, True):
             msg = _("User account is disabled.")  # pragma: no cover
-            raise serializers.ValidationError(msg)  # pragma: no cover
+            raise ValidationError(msg)  # pragma: no cover
 
         if not self.user:
             msg = _("Unable to login with provided credentials.")
-            raise serializers.ValidationError(msg)
+            raise ValidationError(msg)
 
         return {}
 
 
-class CodeLoginSerializer(serializers.Serializer):
+class CodeLoginSerializer(Serializer):
     """
     Validates given token and OTP code.
     """
 
-    ephemeral_token = serializers.CharField()
-    code = serializers.CharField()
+    ephemeral_token = CharField()
+    code = CharField()
 
     default_error_messages = {
         "invalid_token": _("Invalid or expired token."),
@@ -299,7 +267,7 @@ class CodeLoginSerializer(serializers.Serializer):
         self.fail("invalid_code")
 
 
-class UserMFAMethodSerializer(serializers.ModelSerializer):
+class UserMFAMethodSerializer(ModelSerializer):
     """
     Serializes active MFA method for user preview
     """
@@ -309,13 +277,13 @@ class UserMFAMethodSerializer(serializers.ModelSerializer):
         fields = ("name", "is_primary")
 
 
-class ChangePrimaryMethodSerializer(serializers.Serializer):
+class ChangePrimaryMethodSerializer(Serializer):
     """
     Serializes request to change default authentication method.
     """
 
-    code = serializers.CharField()
-    method = serializers.ChoiceField(choices=MFA_METHODS)
+    code = CharField()
+    method = ChoiceField(choices=MFA_METHODS)
 
     default_error_messages = {
         "not_enabled": _("2FA is not enabled."),
