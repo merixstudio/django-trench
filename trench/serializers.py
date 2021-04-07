@@ -9,6 +9,12 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 
+from trench.exceptions import CodeInvalidOrExpiredValidationError, \
+    OTPCodeMissingValidationError, MFAMethodDoesNotExistValidationError, \
+    MFAMethodNotRegisteredForUserValidationError, \
+    MFAPrimaryMethodInactiveValidationError, MFANewPrimarySameAsOldValidationError, \
+    InvalidTokenValidationError, InvalidCodeValidationError, MFANotEnabledValidationError, \
+    RequiredFieldMissingValidationError, RequiredFieldUpdateFailedValidationError
 from trench.settings import api_settings
 from trench.utils import (
     create_secret,
@@ -31,13 +37,6 @@ MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
 
 class RequestMFAMethodActivationSerializer(Serializer):
     serializer_field_mapping = ModelSerializer.serializer_field_mapping
-
-    default_error_messages = {
-        "required_field_missing": _("Required field not provided"),
-        "required_field_update_failed": _(
-            "Failed to update required User data. Try again."
-        ),
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,12 +62,10 @@ class RequestMFAMethodActivationSerializer(Serializer):
                         self.source_field,
                         attrs[self.required_field_name],
                     )
-                except (AttributeError, DatabaseError):  # pragma: no cover
-                    self.fail(
-                        "required_field_update_failed"
-                    )  # pragma: no cover  # noqa
-            else:  # pragma: no cover
-                self.fail("required_field_missing")  # pragma: no cover
+                except (AttributeError, DatabaseError):
+                    raise RequiredFieldUpdateFailedValidationError()
+            else:
+                raise RequiredFieldMissingValidationError()
 
         return attrs
 
@@ -99,14 +96,9 @@ class ProtectedActionSerializer(Serializer):
 
     code = CharField(required=False)
 
-    default_error_messages = {
-        "otp_code_missing": _("OTP code not provided."),
-        "code_invalid_or_expired": _("Code invalid or expired."),
-    }
-
-    def _validate_code(self, value):
+    def _validate_code(self, value: str) -> str:
         if not value:
-            self.fail("otp_code_missing")
+            raise OTPCodeMissingValidationError()
 
         obj = self.context["obj"]
         validated_backup_code = validate_backup_code(value, obj.backup_codes)
@@ -117,14 +109,19 @@ class ProtectedActionSerializer(Serializer):
         if validated_backup_code:
             obj.remove_backup_code(validated_backup_code)
             return value
-
-        self.fail("code_invalid_or_expired")
+        raise CodeInvalidOrExpiredValidationError()
 
     def validate(self, data):
         if self.requires_mfa_code:
             self._validate_code(data.get("code"))
 
         return super().validate(data)
+
+    def create(self, validated_data: OrderedDict):
+        pass
+
+    def update(self, instance, validated_data: OrderedDict):
+        pass
 
 
 class RequestMFAMethodActivationConfirmSerializer(ProtectedActionSerializer):
@@ -134,19 +131,6 @@ class RequestMFAMethodActivationConfirmSerializer(ProtectedActionSerializer):
 
 class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
     requires_mfa_code = api_settings.CONFIRM_DISABLE_WITH_CODE
-
-    default_error_messages = {
-        "code_invalid_or_expired": _("Code invalid or expired."),
-        "new_primary_same_as_old": _(
-            "MFA Method to be deactivated cannot be chosen" " as new primary method."
-        ),
-        "method_not_registered_for_user": _(
-            "Selected new primary MFA method" " is not registered for current user."
-        ),
-        "new_primary_method_inactive": _(
-            "MFA Method selected as new primary method is not active"
-        ),
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,14 +158,14 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         method_to_deactivate = self.context.get("name")
 
         if method_to_deactivate == value:
-            self.fail("new_primary_same_as_old")
+            raise MFANewPrimarySameAsOldValidationError()
 
         try:
             self.new_method = MFAMethod.objects.get(user=self.user, name=value)
         except MFAMethod.DoesNotExist:
-            self.fail("method_not_registered_for_user")
+            raise MFAMethodNotRegisteredForUserValidationError()
         if not self.new_method.is_active:
-            self.fail("new_primary_method_inactive")  # pragma: no cover
+            raise MFAPrimaryMethodInactiveValidationError()
         return value
 
 
@@ -192,13 +176,10 @@ class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerialize
 class RequestMFAMethodCodeSerializer(Serializer):
     method = CharField(max_length=255, required=False)
 
-    default_error_messages = {
-        "mfa_method_not_exists": _("Requested MFA method does not exists"),
-    }
-
-    def validate_method(self, value):
+    @staticmethod
+    def validate_method(value: str) -> str:
         if value and value not in api_settings.MFA_METHODS:
-            self.fail("mfa_method_not_exists")
+            raise MFAMethodDoesNotExistValidationError()
         return value
 
 
@@ -240,18 +221,13 @@ class CodeLoginSerializer(Serializer):
     ephemeral_token = CharField()
     code = CharField()
 
-    default_error_messages = {
-        "invalid_token": _("Invalid or expired token."),
-        "invalid_code": _("Invalid or expired code."),
-    }
-
     def validate(self, attrs):
         ephemeral_token = attrs.get("ephemeral_token")
         code = attrs.get("code")
 
         self.user = user_token_generator.check_token(ephemeral_token)
         if not self.user:
-            self.fail("invalid_token")
+            raise InvalidTokenValidationError()
 
         for auth_method in self.user.mfa_methods.filter(is_active=True):
             validated_backup_code = validate_backup_code(
@@ -263,8 +239,7 @@ class CodeLoginSerializer(Serializer):
             if validated_backup_code:
                 auth_method.remove_backup_code(validated_backup_code)
                 return attrs
-
-        self.fail("invalid_code")
+        raise InvalidCodeValidationError()
 
 
 class UserMFAMethodSerializer(ModelSerializer):
@@ -285,12 +260,6 @@ class ChangePrimaryMethodSerializer(Serializer):
     code = CharField()
     method = ChoiceField(choices=MFA_METHODS)
 
-    default_error_messages = {
-        "not_enabled": _("2FA is not enabled."),
-        "invalid_code": _("Invalid or expired code."),
-        "missing_method": _("Target method does not exist or is not active"),
-    }
-
     def validate(self, attrs):
         user = self.context.get("request").user
         try:
@@ -299,14 +268,14 @@ class ChangePrimaryMethodSerializer(Serializer):
                 is_active=True,
             )
         except ObjectDoesNotExist:
-            self.fail("not_enabled")
+            raise MFANotEnabledValidationError()
         try:
             new_primary_method = user.mfa_methods.get(
                 name=attrs.get("method"),
                 is_active=True,
             )
         except ObjectDoesNotExist:
-            self.fail("missing_method")
+            raise MFAMethodDoesNotExistValidationError()
         code = attrs.get("code")
         validated_backup_code = validate_backup_code(
             code,
@@ -322,7 +291,7 @@ class ChangePrimaryMethodSerializer(Serializer):
             current_method.remove_backup_code(validated_backup_code)
             return attrs
         else:
-            self.fail("invalid_code")
+            raise InvalidCodeValidationError()
 
     def save(self):
         new_method = self.validated_data.get("new_method")

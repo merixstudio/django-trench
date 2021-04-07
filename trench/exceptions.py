@@ -2,32 +2,11 @@ from django.core.exceptions import ImproperlyConfigured
 
 from typing import Iterable
 
+from django.utils.translation import ugettext as _
+from rest_framework.exceptions import ValidationError
+
 
 class BaseMFAException(Exception):
-    pass
-
-
-class MFADoesNotExist(BaseMFAException):
-    """User does not have MFA set up"""
-
-    pass
-
-
-class MFAAlreadyExist(BaseMFAException):
-    """User already have MFA set up"""
-
-    pass
-
-
-class InvalidOTPCode(BaseMFAException):
-    """Provided OTP code is not valid"""
-
-    pass
-
-
-class MethodNotAllowed(BaseMFAException):
-    """Given MFA method is not allowed"""
-
     pass
 
 
@@ -52,3 +31,82 @@ class RestrictedCharInBackupCodeError(ImproperlyConfigured):
 class MethodHandlerMissingError(ImproperlyConfigured):
     def __init__(self, method_name: str):
         super(f"Missing handler in {method_name} configuration.")
+
+
+class CodeInvalidOrExpiredValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("Code invalid or expired."), code="code_invalid_or_expired"
+        )
+
+
+class OTPCodeMissingValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
+
+
+class MFAMethodDoesNotExistValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("Requested MFA method does not exists"),
+            code="mfa_method_does_not_exist"
+        )
+
+
+class MFAMethodNotRegisteredForUserValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_(
+                "Selected new primary MFA method is not registered for current user."
+            ),
+            code="method_not_registered_for_user",
+        )
+
+
+class MFAPrimaryMethodInactiveValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("MFA Method selected as new primary method is not active"),
+            code="new_primary_method_inactive",
+        )
+
+
+class MFANewPrimarySameAsOldValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_(
+                "MFA Method to be deactivated cannot be chosen as new primary method."
+            ),
+            code="new_primary_same_as_old",
+        )
+
+
+class MFANotEnabledValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(detail=_("2FA is not enabled."), code="not_enabled")
+
+
+class InvalidTokenValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(detail=_("Invalid or expired token."), code="invalid_token")
+
+
+class InvalidCodeValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(detail=_("Invalid or expired code."), code="invalid_code")
+
+
+class RequiredFieldMissingValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("Required field not provided"),
+            code="required_field_missing",
+        )
+
+
+class RequiredFieldUpdateFailedValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("Failed to update required User data. Try again."),
+            code="required_field_update_failed",
+        )
