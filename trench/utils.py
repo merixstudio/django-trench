@@ -1,3 +1,5 @@
+from typing import Optional, List, Tuple
+
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -14,6 +16,8 @@ from django.utils.http import base36_to_int, int_to_base36
 import pyotp
 from datetime import datetime
 
+from trench.backends.base import AbstractMessageDispatcher
+from trench.models import MFAMethod
 from trench.settings import api_settings
 
 
@@ -31,16 +35,16 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
     key_salt = "django.contrib.auth.tokens.PasswordResetTokenGenerator"
     secret = settings.SECRET_KEY
 
-    def make_token(self, user):
+    def make_token(self, user: User) -> str:
         return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
 
-    def check_token(self, token):
+    def check_token(self, user: User, token: str) -> Optional[User]:
         if not token:
             return None
 
         try:
             token = str(token)
-            user_pk, ts_b36, hash = token.rsplit("-", 2)
+            user_pk, ts_b36, token_hash = token.rsplit("-", 2)
             ts = base36_to_int(ts_b36)
             user = User._default_manager.get(pk=user_pk)
         except (ValueError, TypeError, User.DoesNotExist):
@@ -54,14 +58,14 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
 
         return user
 
-    def _make_token_with_timestamp(self, user, timestamp):
+    def _make_token_with_timestamp(self, user: User, timestamp: int, **kwargs) -> str:
         ts_b36 = int_to_base36(timestamp)
-        hash = salted_hmac(
+        token_hash = salted_hmac(
             self.key_salt,
             self._make_hash_value(user, timestamp),
             secret=self.secret,
         ).hexdigest()
-        return "%s-%s-%s" % (user.pk, ts_b36, hash)
+        return "%s-%s-%s" % (user.pk, ts_b36, token_hash)
 
 
 user_token_generator = UserTokenGenerator()
@@ -74,7 +78,6 @@ def create_secret():
     :returns: Random secret
     :rtype: str
     """
-
     return pyotp.random_base32(length=api_settings.SECRET_KEY_LENGTH)
 
 
@@ -88,12 +91,11 @@ def create_otp_code(secret):
     :returns: OTP code
     :rtype: str
     """
-
     totp = pyotp.TOTP(secret)
     return totp.now()
 
 
-def create_qr_link(secret, user):
+def create_qr_link(secret: str, user: User) -> str:
     """
     Creates QR link to set application OTP.
 
@@ -105,7 +107,6 @@ def create_qr_link(secret, user):
     :returns: Link to generate QR code from
     :rtype: str
     """
-
     totp = pyotp.TOTP(secret)
     return totp.provisioning_uri(
         getattr(user, User.USERNAME_FIELD),
@@ -114,10 +115,10 @@ def create_qr_link(secret, user):
 
 
 def generate_backup_codes(
-    quantity=api_settings.BACKUP_CODES_QUANTITY,
-    length=api_settings.BACKUP_CODES_LENGTH,
-    allowed_chars=api_settings.BACKUP_CODES_CHARACTERS,
-):
+    quantity: int = api_settings.BACKUP_CODES_QUANTITY,
+    length: int = api_settings.BACKUP_CODES_LENGTH,
+    allowed_chars: str = api_settings.BACKUP_CODES_CHARACTERS,
+) -> List[str]:
     """
     Generates random encrypted backup codes.
 
@@ -129,22 +130,37 @@ def generate_backup_codes(
     :type allowed_chars: str
 
     :returns: Encrypted backup codes
-    :rtype: list
+    :rtype: list[str]
     """
-
     return [get_random_string(length, allowed_chars) for _ in range(quantity)]
 
 
-def validate_code(
-    code,
-    mfa_method,
-):
+def validate_code(code: str, mfa_method: MFAMethod) -> bool:
+    """
+    Validates MFA code
 
+    :param code: Code to be validated
+    :type code: str
+    :param mfa_method: MFA Method to be used to validate the code
+    :type mfa_method: MFAMethod
+
+    :returns: True if code is valid, False otherwise
+    :rtype: bool
+    """
     handler = get_mfa_handler(mfa_method)
     return handler.validate_code(code)
 
 
-def get_mfa_handler(mfa_method):
+def get_mfa_handler(mfa_method: MFAMethod) -> AbstractMessageDispatcher:
+    """
+    Provides MFA handler
+
+    :param mfa_method: MFA Method object to be used to retrieve the handler
+    :type mfa_method: MFAMethod
+
+    :returns: MFA handler
+    :rtype: AbstractMessageDispatcher
+    """
     conf = api_settings.MFA_METHODS[mfa_method.name]
     return conf["HANDLER"](
         user=mfa_method.user,
@@ -157,7 +173,7 @@ def get_mfa_model():
     return apps.get_model(api_settings.USER_MFA_MODEL)
 
 
-def parse_dotted_path(path):
+def parse_dotted_path(path: str) -> Tuple[Optional[str], str]:
     """
     Extracts attribute name from dotted path.
     """
@@ -170,7 +186,7 @@ def parse_dotted_path(path):
     return objects, attr
 
 
-def get_innermost_object(obj, dotted_path=None):
+def get_innermost_object(obj: object, dotted_path: str = None) -> object:
     """
     For given object return innermost object.
     """
@@ -181,7 +197,7 @@ def get_innermost_object(obj, dotted_path=None):
     return obj  # pragma: no cover
 
 
-def get_nested_attr(obj, path):
+def get_nested_attr(obj: object, path: str):
     """
     For attribute in dotted path notation retrieves its
     value, name, and field class.
@@ -190,12 +206,12 @@ def get_nested_attr(obj, path):
     try:
         _obj = get_innermost_object(obj, objects)
     except AttributeError:  # pragma: no cover
-        return (None, None, None)  # pragma: no cover
+        return None, None, None  # pragma: no cover
 
     try:
         field = _obj._meta.get_field(attr)
     except FieldDoesNotExist:  # pragma: no cover
-        return (None, None, None)  # pragma: no cover
+        return None, None, None  # pragma: no cover
 
     return (
         field.value_from_object(_obj),

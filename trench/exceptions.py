@@ -1,9 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
-
-from typing import Iterable
-
 from django.utils.translation import ugettext as _
+
 from rest_framework.exceptions import ValidationError
+from typing import Iterable
 
 
 class BaseMFAException(Exception):
@@ -49,7 +48,7 @@ class MFAMethodDoesNotExistValidationError(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Requested MFA method does not exists"),
-            code="mfa_method_does_not_exist"
+            code="mfa_method_does_not_exist",
         )
 
 
@@ -109,4 +108,19 @@ class RequiredFieldUpdateFailedValidationError(ValidationError):
         super().__init__(
             detail=_("Failed to update required User data. Try again."),
             code="required_field_update_failed",
+        )
+
+
+class UserAccountDisabledValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("User account is disabled."), code="user_account_disabled"
+        )
+
+
+class UnauthenticatedValidationError(ValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("Unable to login with provided credentials."),
+            code="unauthenticated",
         )

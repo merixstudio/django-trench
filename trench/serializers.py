@@ -4,17 +4,25 @@ from django.db.utils import DatabaseError
 from django.utils.translation import ugettext as _
 
 from collections import OrderedDict
-
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 
-from trench.exceptions import CodeInvalidOrExpiredValidationError, \
-    OTPCodeMissingValidationError, MFAMethodDoesNotExistValidationError, \
-    MFAMethodNotRegisteredForUserValidationError, \
-    MFAPrimaryMethodInactiveValidationError, MFANewPrimarySameAsOldValidationError, \
-    InvalidTokenValidationError, InvalidCodeValidationError, MFANotEnabledValidationError, \
-    RequiredFieldMissingValidationError, RequiredFieldUpdateFailedValidationError
+from trench.exceptions import (
+    CodeInvalidOrExpiredValidationError,
+    InvalidCodeValidationError,
+    InvalidTokenValidationError,
+    MFAMethodDoesNotExistValidationError,
+    MFAMethodNotRegisteredForUserValidationError,
+    MFANewPrimarySameAsOldValidationError,
+    MFANotEnabledValidationError,
+    MFAPrimaryMethodInactiveValidationError,
+    OTPCodeMissingValidationError,
+    RequiredFieldMissingValidationError,
+    RequiredFieldUpdateFailedValidationError,
+    UnauthenticatedValidationError,
+    UserAccountDisabledValidationError,
+)
 from trench.settings import api_settings
 from trench.utils import (
     create_secret,
@@ -33,6 +41,14 @@ MFAMethod = get_mfa_model()
 
 mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
+
+
+class RequestValidator(Serializer):
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass
 
 
 class RequestMFAMethodActivationSerializer(Serializer):
@@ -148,9 +164,7 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
             user=self.user, is_active=True
         ).count()
         if is_current_method_primary and self.users_active_methods_count > 2:
-            self.fields["new_primary_method"] = CharField(
-                max_length=255, required=True
-            )
+            self.fields["new_primary_method"] = CharField(max_length=255, required=True)
         else:
             self.new_method = None
 
@@ -173,7 +187,7 @@ class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerialize
     requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
-class RequestMFAMethodCodeSerializer(Serializer):
+class RequestMFAMethodCodeSerializer(RequestValidator):
     method = CharField(max_length=255, required=False)
 
     @staticmethod
@@ -183,7 +197,7 @@ class RequestMFAMethodCodeSerializer(Serializer):
         return value
 
 
-class LoginSerializer(Serializer):
+class LoginSerializer(RequestValidator):
     """
     Validates user's credentials.
     """
@@ -203,29 +217,34 @@ class LoginSerializer(Serializer):
         )
 
         if not getattr(self.user, api_settings.USER_ACTIVE_FIELD, True):
-            msg = _("User account is disabled.")  # pragma: no cover
-            raise ValidationError(msg)  # pragma: no cover
+            raise UserAccountDisabledValidationError()
 
         if not self.user:
-            msg = _("Unable to login with provided credentials.")
-            raise ValidationError(msg)
+            raise UnauthenticatedValidationError()
 
         return {}
 
 
-class CodeLoginSerializer(Serializer):
+class CodeLoginSerializer(RequestValidator):
     """
     Validates given token and OTP code.
     """
 
+    _FIELD_EPHEMERAL_TOKEN = "ephemeral_token"
+    _FIELD_CODE = "code"
+
     ephemeral_token = CharField()
     code = CharField()
 
-    def validate(self, attrs):
-        ephemeral_token = attrs.get("ephemeral_token")
-        code = attrs.get("code")
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
 
-        self.user = user_token_generator.check_token(ephemeral_token)
+    def validate(self, attrs):
+        ephemeral_token = attrs.get(self._FIELD_EPHEMERAL_TOKEN)
+        code = attrs.get(self._FIELD_CODE)
+
+        self.user = user_token_generator.check_token(token=ephemeral_token)
         if not self.user:
             raise InvalidTokenValidationError()
 
@@ -252,7 +271,7 @@ class UserMFAMethodSerializer(ModelSerializer):
         fields = ("name", "is_primary")
 
 
-class ChangePrimaryMethodSerializer(Serializer):
+class ChangePrimaryMethodSerializer(RequestValidator):
     """
     Serializes request to change default authentication method.
     """
