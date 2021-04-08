@@ -38,15 +38,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "is_primary",
-                    models.BooleanField(
-                        default=False, verbose_name="is primary"
-                    ),
+                    models.BooleanField(default=False, verbose_name="is primary"),
                 ),
                 (
                     "is_active",
-                    models.BooleanField(
-                        default=False, verbose_name="is active"
-                    ),
+                    models.BooleanField(default=False, verbose_name="is active"),
                 ),
                 (
                     "backup_codes",

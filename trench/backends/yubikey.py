@@ -15,9 +15,7 @@ class YubiKeyBackend(AbstractMessageDispatcher):
         Do nothing.
         """
 
-        return {
-            "message": _("Generate code using YubiKey")
-        }  # pragma: no cover # noqa
+        return {"message": _("Generate code using YubiKey")}  # pragma: no cover # noqa
 
     def confirm_activation(self, code):
         """

@@ -1,3 +1,6 @@
+from abc import ABC, abstractmethod
+
+from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
@@ -7,7 +10,9 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
 from trench import serializers
@@ -22,9 +27,10 @@ from trench.utils import (
 
 MFAMethod = get_mfa_model()
 requires_encryption = api_settings.ENCRYPT_BACKUP_CODES
+User = get_user_model()
 
 
-class MFACredentialsLoginMixin:
+class MFACredentialsLoginMixin(GenericAPIView):
     """
     Mixin handling user log in. Checks if primary MFA method
     is active and dispatches code if so. Else calls handle_user_login.
@@ -33,7 +39,7 @@ class MFACredentialsLoginMixin:
     serializer_class = serializers.LoginSerializer
     permission_classes = (AllowAny,)
 
-    def handle_mfa_response(self, user, mfa_method, *args, **kwargs):
+    def handle_mfa_response(self, user: User, mfa_method: MFAMethod, *args, **kwargs):
         data = {
             "ephemeral_token": user_token_generator.make_token(user),
             "method": mfa_method.name,
@@ -48,9 +54,7 @@ class MFACredentialsLoginMixin:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.user
-        auth_method = user.mfa_methods.filter(
-            is_primary=True, is_active=True
-        ).first()
+        auth_method = user.mfa_methods.filter(is_primary=True, is_active=True).first()
         if auth_method:
             conf = api_settings.MFA_METHODS[auth_method.name]
             handler = conf["HANDLER"](
@@ -66,7 +70,7 @@ class MFACredentialsLoginMixin:
         )
 
 
-class MFACodeLoginMixin:
+class MFACodeLoginMixin(GenericAPIView):
     """
     Mixin handling user login if MFA auth is enabled.
     Expects ephemeral token and valid MFA code.
@@ -98,7 +102,6 @@ class RequestMFAMethodActivationView(GenericAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-
         try:
             context["name"] = self.kwargs["method"]
         except KeyError:
@@ -176,9 +179,7 @@ class RequestMFAMethodActivationConfirmView(GenericAPIView):
             user=request.user,
             is_active=True,
         ).exists()
-        self.obj.save(
-            update_fields=["is_active", "_backup_codes", "is_primary"]
-        )
+        self.obj.save(update_fields=["is_active", "_backup_codes", "is_primary"])
 
         return Response({"backup_codes": backup_codes})
 
@@ -210,7 +211,6 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
         self.obj = get_object_or_404(
             MFAMethod, user=request.user, name=self.mfa_method_name
         )
-
         if not self.obj.is_active:
             return Response(
                 {"error": _("Method already disabled.")},
@@ -243,9 +243,7 @@ class RequestMFAMethodDeactivationView(GenericAPIView):
                 self.obj.save(update_fields=default_update_fields)
         except IntegrityError:  # pragma: no cover
             return Response(  # pragma: no cover
-                {
-                    "error": _("Failed to update MFA information")
-                },  # pragma: no cover
+                {"error": _("Failed to update MFA information")},  # pragma: no cover
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -307,8 +305,7 @@ class RequestMFAMethodBackupCodesRegenerationView(GenericAPIView):
 class GetMFAConfig(APIView):
     def get(self, request, *args, **kwargs):
         available_methods = [
-            (k, v.get("VERBOSE_NAME"))
-            for k, v in api_settings.MFA_METHODS.items()
+            (k, v.get("VERBOSE_NAME")) for k, v in api_settings.MFA_METHODS.items()
         ]
 
         return Response(
@@ -326,12 +323,8 @@ class ListUserActiveMFAMethods(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        active_mfa_methods = MFAMethod.objects.filter(
-            user=request.user, is_active=True
-        )
-        serializer = serializers.UserMFAMethodSerializer(
-            active_mfa_methods, many=True
-        )
+        active_mfa_methods = MFAMethod.objects.filter(user=request.user, is_active=True)
+        serializer = serializers.UserMFAMethodSerializer(active_mfa_methods, many=True)
         return Response(serializer.data)
 
 

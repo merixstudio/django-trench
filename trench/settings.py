@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 import string
 from rest_framework.settings import APISettings, perform_import
@@ -23,9 +23,7 @@ class TrenchAPISettings(APISettings):
     @property
     def user_settings(self):
         if not hasattr(self, self._FIELD_USER_SETTINGS):
-            self._user_settings = getattr(
-                settings, self._FIELD_TRENCH_AUTH, {}
-            )
+            self._user_settings = getattr(settings, self._FIELD_TRENCH_AUTH, {})
         return self._user_settings
 
     def __getattr__(self, attr):
@@ -33,7 +31,7 @@ class TrenchAPISettings(APISettings):
             raise InvalidSettingError(attribute_name=attr)
         try:
             val = self.user_settings[attr]
-        except KeyError:
+        except (KeyError, InvalidSettingError):
             val = self.defaults[attr]
         if attr in self.import_strings:
             val = perform_import(val, attr)
@@ -44,10 +42,7 @@ class TrenchAPISettings(APISettings):
     @classmethod
     def _validate(cls, attribute: str, value: Any):
         if attribute == cls._FIELD_BACKUP_CODES_CHARACTERS:
-            if any(
-                char in value
-                for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS
-            ):
+            if any(char in value for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS):
                 raise RestrictedCharInBackupCodeError(
                     attribute_name=attribute,
                     restricted_chars=cls._RESTRICTED_BACKUP_CODES_CHARACTERS,
@@ -75,7 +70,7 @@ DEFAULTS = {
     "BACKUP_CODES_QUANTITY": 5,
     "BACKUP_CODES_LENGTH": 12,  # keep (quantity * length) under 200
     "BACKUP_CODES_CHARACTERS": (string.ascii_letters + string.digits),
-    "SECRET_KEY_LENGTH": 16,
+    "SECRET_KEY_LENGTH": 32,
     "DEFAULT_VALIDITY_PERIOD": 30,
     "CONFIRM_DISABLE_WITH_CODE": False,
     "CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE": True,

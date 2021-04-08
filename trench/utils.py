@@ -1,5 +1,3 @@
-from typing import Optional, List, Tuple
-
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -15,9 +13,8 @@ from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
 from datetime import datetime
+from typing import List, Optional, Tuple
 
-from trench.backends.base import AbstractMessageDispatcher
-from trench.models import MFAMethod
 from trench.settings import api_settings
 
 
@@ -36,9 +33,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
     secret = settings.SECRET_KEY
 
     def make_token(self, user: User) -> str:
-        return self._make_token_with_timestamp(
-            user, int(datetime.now().timestamp())
-        )
+        return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
 
     def check_token(self, user: User, token: str) -> Optional[User]:
         if not token:
@@ -55,16 +50,12 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         if (datetime.now().timestamp() - ts) > (60 * 15):
             return None  # pragma: no cover
 
-        if not constant_time_compare(
-            self._make_token_with_timestamp(user, ts), token
-        ):
+        if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
             return None
 
         return user
 
-    def _make_token_with_timestamp(
-        self, user: User, timestamp: int, **kwargs
-    ) -> str:
+    def _make_token_with_timestamp(self, user: User, timestamp: int, **kwargs) -> str:
         ts_b36 = int_to_base36(timestamp)
         token_hash = salted_hmac(
             self.key_salt,
@@ -141,7 +132,7 @@ def generate_backup_codes(
     return [get_random_string(length, allowed_chars) for _ in range(quantity)]
 
 
-def validate_code(code: str, mfa_method: MFAMethod) -> bool:
+def validate_code(code: str, mfa_method) -> bool:
     """
     Validates MFA code
 
@@ -157,7 +148,7 @@ def validate_code(code: str, mfa_method: MFAMethod) -> bool:
     return handler.validate_code(code)
 
 
-def get_mfa_handler(mfa_method: MFAMethod) -> AbstractMessageDispatcher:
+def get_mfa_handler(mfa_method):
     """
     Provides MFA handler
 

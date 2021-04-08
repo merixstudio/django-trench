@@ -40,10 +40,6 @@ Supported versions
 
 | If you are going to use JWT authentication:
 
-* `django-rest-framework-jwt`_ >= 1.11.0
-
-| or
-
 * `djangorestframework-simplejwt`_ >= 4.3.0
 
 Quick Start

@@ -1,7 +1,7 @@
 from django.conf import settings
-from django.conf.urls import url
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import ugettext_lazy as _
+from django.urls import re_path
+from django.utils.translation import gettext_lazy as _
 
 from trench.views import authtoken as views
 
@@ -19,17 +19,17 @@ if "djoser" not in settings.INSTALLED_APPS:
     raise ImproperlyConfigured(msg)
 
 urlpatterns = [
-    url(
+    re_path(
         r"^login/$",
         views.AuthTokenLoginOrRequestMFACode.as_view(),
         name="mfa-authtoken-login",
     ),
-    url(
+    re_path(
         r"^login/code/",
         views.AuthTokenLoginWithMFACode.as_view(),
         name="mfa-authtoken-login-code",
     ),
-    url(
+    re_path(
         r"^logout/",
         views.AuthTokenLogoutView.as_view(),
         name="authtoken-logout",

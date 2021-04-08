@@ -1,15 +1,15 @@
-from django.conf.urls import url
+from django.urls import re_path
 
-from trench.views import jwt as views
+from trench.views import simplejwt as views
 
 
 urlpatterns = [
-    url(
+    re_path(
         r"^login/$",
         views.JSONWebTokenLoginOrRequestMFACode.as_view(),
         name="generate-code",
     ),
-    url(
+    re_path(
         r"^login/code/",
         views.JSONWebTokenLoginWithMFACode.as_view(),
         name="generate-token",

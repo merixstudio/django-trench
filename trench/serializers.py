@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import DatabaseError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from collections import OrderedDict
 from rest_framework.fields import CharField, ChoiceField
@@ -61,13 +61,11 @@ class RequestMFAMethodActivationSerializer(Serializer):
         self.conf = api_settings.MFA_METHODS[context["name"]]
         self.source_field = self.conf.get("SOURCE_FIELD")
         if self.source_field:
-            value, field_name, klass = get_nested_attr(
-                self.user, self.source_field
-            )
+            value, field_name, klass = get_nested_attr(self.user, self.source_field)
             if not value:
-                self.fields[field_name] = self.get_serializer_field_mapping()[
-                    klass
-                ](required=True)
+                self.fields[field_name] = self.get_serializer_field_mapping()[klass](
+                    required=True
+                )
                 self.required_field_name = field_name
 
     def validate(self, attrs):
@@ -156,18 +154,17 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         self.user = context["request"].user
 
         is_current_method_primary = (
-            MFAMethod.objects.filter(user=self.user, name=context["name"])
-            .get()
-            .is_primary
+            MFAMethod.objects
+            .filter(user=self.user, name=context["name"])
+            .values_list("is_primary", flat=True)
+            .first()
         )
 
         self.users_active_methods_count = MFAMethod.objects.filter(
             user=self.user, is_active=True
         ).count()
         if is_current_method_primary and self.users_active_methods_count > 2:
-            self.fields["new_primary_method"] = CharField(
-                max_length=255, required=True
-            )
+            self.fields["new_primary_method"] = CharField(max_length=255, required=True)
         else:
             self.new_method = None
 
@@ -186,12 +183,8 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         return value
 
 
-class RequestMFAMethodBackupCodesRegenerationSerializer(
-    ProtectedActionSerializer
-):
-    requires_mfa_code = (
-        api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE
-    )  # noqa
+class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
+    requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
 
 
 class RequestMFAMethodCodeSerializer(RequestValidator):
@@ -251,7 +244,7 @@ class CodeLoginSerializer(RequestValidator):
         ephemeral_token = attrs.get(self._FIELD_EPHEMERAL_TOKEN)
         code = attrs.get(self._FIELD_CODE)
 
-        self.user = user_token_generator.check_token(token=ephemeral_token)
+        self.user = user_token_generator.check_token(user=None, token=ephemeral_token)
         if not self.user:
             raise InvalidTokenValidationError()
 

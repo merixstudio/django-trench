@@ -3,6 +3,16 @@ Changelog
 =========
 
 
+0.3.0 (2021-04-30)
+==================
+
+* Support for Python >=3.6 only (older versions are not maintained anymore)
+* Abandoned support of the :code:`django-rest-framework-jwt` library as it is no longer maintained
+* Used :code:`black` tool for auto code formatting
+* Type hits added
+* Backwards-compatible code refactoring and cleanup for better maintenance experience
+
+
 0.2.3 (2019-12-16)
 ==================
 

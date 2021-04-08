@@ -1,5 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from rest_framework.exceptions import ValidationError
 from typing import Iterable
@@ -11,19 +11,17 @@ class BaseMFAException(Exception):
 
 class MissingSourceFieldAttribute(BaseMFAException):
     def __init__(self, attribute_name: str):
-        super(
-            f"Could not retrieve attribute '{attribute_name}' for given user."
-        )
+        super().__init__(f"Could not retrieve attribute '{attribute_name}' for given user.")
 
 
 class InvalidSettingError(ImproperlyConfigured):
     def __init__(self, attribute_name: str):
-        super(f"Invalid API setting: {attribute_name}")
+        super().__init__(f"Invalid API setting: {attribute_name}")
 
 
 class RestrictedCharInBackupCodeError(ImproperlyConfigured):
     def __init__(self, attribute_name: str, restricted_chars: Iterable[str]):
-        super(
+        super().__init__(
             f"Cannot use any of: {''.join(restricted_chars)} as a character "
             f"for {attribute_name}."
         )
@@ -31,7 +29,7 @@ class RestrictedCharInBackupCodeError(ImproperlyConfigured):
 
 class MethodHandlerMissingError(ImproperlyConfigured):
     def __init__(self, method_name: str):
-        super(f"Missing handler in {method_name} configuration.")
+        super().__init__(f"Missing handler in {method_name} configuration.")
 
 
 class CodeInvalidOrExpiredValidationError(ValidationError):
@@ -44,15 +42,13 @@ class CodeInvalidOrExpiredValidationError(ValidationError):
 
 class OTPCodeMissingValidationError(ValidationError):
     def __init__(self):
-        super().__init__(
-            detail=_("OTP code not provided."), code="otp_code_missing"
-        )
+        super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
 
 
 class MFAMethodDoesNotExistValidationError(ValidationError):
     def __init__(self):
         super().__init__(
-            detail=_("Requested MFA method does not exists"),
+            detail=_("Requested MFA method does not exist."),
             code="mfa_method_does_not_exist",
         )
 
@@ -61,8 +57,7 @@ class MFAMethodNotRegisteredForUserValidationError(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_(
-                "Selected new primary MFA method is not registered for "
-                "current user."
+                "Selected new primary MFA method is not registered for current user."
             ),
             code="method_not_registered_for_user",
         )
@@ -71,9 +66,7 @@ class MFAMethodNotRegisteredForUserValidationError(ValidationError):
 class MFAPrimaryMethodInactiveValidationError(ValidationError):
     def __init__(self):
         super().__init__(
-            detail=_(
-                "MFA Method selected as new primary method is not active"
-            ),
+            detail=_("MFA Method selected as new primary method is not active"),
             code="new_primary_method_inactive",
         )
 
@@ -96,16 +89,12 @@ class MFANotEnabledValidationError(ValidationError):
 
 class InvalidTokenValidationError(ValidationError):
     def __init__(self):
-        super().__init__(
-            detail=_("Invalid or expired token."), code="invalid_token"
-        )
+        super().__init__(detail=_("Invalid or expired token."), code="invalid_token")
 
 
 class InvalidCodeValidationError(ValidationError):
     def __init__(self):
-        super().__init__(
-            detail=_("Invalid or expired code."), code="invalid_code"
-        )
+        super().__init__(detail=_("Invalid or expired code."), code="invalid_code")
 
 
 class RequiredFieldMissingValidationError(ValidationError):
