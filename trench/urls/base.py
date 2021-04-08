@@ -1,14 +1,11 @@
 from django.urls import path
 
 from trench import views
-from trench.settings import api_settings
 
 
 __all__ = [
     "urlpatterns",
 ]
-
-# mfa_methods_choices = "|".join(api_settings.MFA_METHODS.keys())
 
 urlpatterns = [
     path(
@@ -31,8 +28,18 @@ urlpatterns = [
         views.RequestMFAMethodBackupCodesRegenerationView.as_view(),
         name="mfa-regenerate-codes",
     ),
-    path("code/request/", views.RequestMFAMethodCode.as_view(), name="mfa-request-code"),
+    path(
+        "code/request/", views.RequestMFAMethodCode.as_view(), name="mfa-request-code"
+    ),
     path("mfa/config/", views.GetMFAConfig.as_view(), name="mfa-config-info"),
-    path("mfa/user-active-methods/", views.ListUserActiveMFAMethods.as_view(), name="mfa-list-user-active-methods"),
-    path("mfa/change-primary-method/", views.ChangePrimaryMethod.as_view(), name="mfa-change-primary-method"),
+    path(
+        "mfa/user-active-methods/",
+        views.ListUserActiveMFAMethods.as_view(),
+        name="mfa-list-user-active-methods",
+    ),
+    path(
+        "mfa/change-primary-method/",
+        views.ChangePrimaryMethod.as_view(),
+        name="mfa-change-primary-method",
+    ),
 ]

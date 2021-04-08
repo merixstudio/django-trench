@@ -154,8 +154,7 @@ class RequestMFAMethodDeactivationSerializer(ProtectedActionSerializer):
         self.user = context["request"].user
 
         is_current_method_primary = (
-            MFAMethod.objects
-            .filter(user=self.user, name=context["name"])
+            MFAMethod.objects.filter(user=self.user, name=context["name"])
             .values_list("is_primary", flat=True)
             .first()
         )
