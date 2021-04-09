@@ -16,12 +16,12 @@ class MissingSourceFieldAttribute(BaseMFAException):
         )
 
 
-class InvalidSettingError(ImproperlyConfigured):
+class InvalidSetting(ImproperlyConfigured):
     def __init__(self, attribute_name: str):
         super().__init__(f"Invalid API setting: {attribute_name}")
 
 
-class RestrictedCharInBackupCodeError(ImproperlyConfigured):
+class RestrictedCharInBackupCode(ImproperlyConfigured):
     def __init__(self, attribute_name: str, restricted_chars: Iterable[str]):
         super().__init__(
             f"Cannot use any of: {''.join(restricted_chars)} as a character "
@@ -29,12 +29,12 @@ class RestrictedCharInBackupCodeError(ImproperlyConfigured):
         )
 
 
-class MethodHandlerMissingError(ImproperlyConfigured):
+class MethodHandlerMissing(ImproperlyConfigured):
     def __init__(self, method_name: str):
         super().__init__(f"Missing handler in {method_name} configuration.")
 
 
-class CodeInvalidOrExpiredValidationError(ValidationError):
+class CodeInvalidOrExpired(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Code invalid or expired."),
@@ -42,12 +42,12 @@ class CodeInvalidOrExpiredValidationError(ValidationError):
         )
 
 
-class OTPCodeMissingValidationError(ValidationError):
+class OTPCodeMissing(ValidationError):
     def __init__(self):
         super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
 
 
-class MFAMethodDoesNotExistValidationError(ValidationError):
+class MFAMethodDoesNotExist(ValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Requested MFA method does not exist."),

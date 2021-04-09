@@ -13,8 +13,9 @@ from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 
+from trench.exceptions import MFAMethodDoesNotExist
 from trench.settings import api_settings
 
 
@@ -255,3 +256,14 @@ def validate_backup_code(value, backup_codes):
 
     if validated_codes:
         return validated_codes[0]
+
+
+def get_method_config_by_name(name: str) -> Dict[str, Any]:
+    try:
+        return api_settings.MFA_METHODS[name]
+    except KeyError as cause:
+        raise MFAMethodDoesNotExist from cause
+
+
+def get_source_field_by_method_name(name: str) -> Optional[str]:
+    return get_method_config_by_name(name).get("SOURCE_FIELD")

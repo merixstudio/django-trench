@@ -1,5 +1,8 @@
+from typing import Any, Dict, Iterable
+
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Model
 from django.db.utils import DatabaseError
 from django.utils.translation import gettext as _
 
@@ -8,15 +11,15 @@ from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from trench.exceptions import (
-    CodeInvalidOrExpiredValidationError,
+    CodeInvalidOrExpired,
     InvalidCodeValidationError,
     InvalidTokenValidationError,
-    MFAMethodDoesNotExistValidationError,
+    MFAMethodDoesNotExist,
     MFAMethodNotRegisteredForUserValidationError,
     MFANewPrimarySameAsOldValidationError,
     MFANotEnabledValidationError,
     MFAPrimaryMethodInactiveValidationError,
-    OTPCodeMissingValidationError,
+    OTPCodeMissing,
     RequiredFieldMissingValidationError,
     RequiredFieldUpdateFailedValidationError,
     UnauthenticatedValidationError,
@@ -31,7 +34,7 @@ from trench.utils import (
     set_nested_attr,
     user_token_generator,
     validate_backup_code,
-    validate_code,
+    validate_code, get_method_config_by_name,
 )
 
 
@@ -40,6 +43,18 @@ MFAMethod = get_mfa_model()
 
 mfa_methods_items = api_settings.MFA_METHODS.items()
 MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
+
+ContextType = Dict[str, Any]
+
+
+def generate_model_serializer(name: str, model: Model, fields: Iterable[str]):
+    meta_subclass = type("Meta", (object,), {
+        "model": model,
+        "fields": fields,
+    })
+    return type(name, (ModelSerializer,), {
+        "Meta": meta_subclass
+    })
 
 
 class RequestValidator(Serializer):
@@ -50,61 +65,6 @@ class RequestValidator(Serializer):
         pass
 
 
-class RequestMFAMethodActivationSerializer(Serializer):
-    serializer_field_mapping = ModelSerializer.serializer_field_mapping
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        context = kwargs["context"]
-
-        self.user = context["request"].user
-        self.conf = api_settings.MFA_METHODS[context["name"]]
-        self.source_field = self.conf.get("SOURCE_FIELD")
-        if self.source_field:
-            value, field_name, klass = get_nested_attr(self.user, self.source_field)
-            if not value:
-                self.fields[field_name] = self.get_serializer_field_mapping()[klass](
-                    required=True
-                )
-                self.required_field_name = field_name
-
-    def validate(self, attrs):
-        if hasattr(self, "required_field_name"):
-            if self.required_field_name in attrs:
-                try:
-                    set_nested_attr(
-                        self.user,
-                        self.source_field,
-                        attrs[self.required_field_name],
-                    )
-                except (AttributeError, DatabaseError):
-                    raise RequiredFieldUpdateFailedValidationError()
-            else:
-                raise RequiredFieldMissingValidationError()
-
-        return attrs
-
-    def create(self, validated_data: OrderedDict) -> MFAMethod:
-        """
-        Creates new MFAMethod object for given user, sets it as inactive,
-        and marks as primary if no other active MFAMethod exists for user.
-        """
-        return MFAMethod.objects.get_or_create(
-            user=self.user,
-            name=self.context["name"],
-            defaults={
-                "secret": create_secret(),
-                "is_active": False,
-            },
-        )
-
-    def update(self, instance: MFAMethod, validated_data: OrderedDict):
-        pass
-
-    def get_serializer_field_mapping(self):
-        return self.serializer_field_mapping
-
-
 class ProtectedActionSerializer(Serializer):
     requires_mfa_code = None
     handler_validation_method = "validate_code"
@@ -113,7 +73,7 @@ class ProtectedActionSerializer(Serializer):
 
     def _validate_code(self, value: str) -> str:
         if not value:
-            raise OTPCodeMissingValidationError()
+            raise OTPCodeMissing()
 
         obj = self.context["obj"]
         validated_backup_code = validate_backup_code(value, obj.backup_codes)
@@ -124,7 +84,7 @@ class ProtectedActionSerializer(Serializer):
         if validated_backup_code:
             obj.remove_backup_code(validated_backup_code)
             return value
-        raise CodeInvalidOrExpiredValidationError()
+        raise CodeInvalidOrExpired()
 
     def validate(self, data):
         if self.requires_mfa_code:
@@ -192,7 +152,7 @@ class RequestMFAMethodCodeSerializer(RequestValidator):
     @staticmethod
     def validate_method(value: str) -> str:
         if value and value not in api_settings.MFA_METHODS:
-            raise MFAMethodDoesNotExistValidationError()
+            raise MFAMethodDoesNotExist()
         return value
 
 
@@ -293,7 +253,7 @@ class ChangePrimaryMethodSerializer(RequestValidator):
                 is_active=True,
             )
         except ObjectDoesNotExist:
-            raise MFAMethodDoesNotExistValidationError()
+            raise MFAMethodDoesNotExist()
         code = attrs.get("code")
         validated_backup_code = validate_backup_code(
             code,

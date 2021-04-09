@@ -6,9 +6,9 @@ from rest_framework.settings import APISettings, perform_import
 from typing import Any
 
 from trench.exceptions import (
-    InvalidSettingError,
-    MethodHandlerMissingError,
-    RestrictedCharInBackupCodeError,
+    InvalidSetting,
+    MethodHandlerMissing,
+    RestrictedCharInBackupCode,
 )
 
 
@@ -28,10 +28,10 @@ class TrenchAPISettings(APISettings):
 
     def __getattr__(self, attr):
         if attr not in self.defaults:
-            raise InvalidSettingError(attribute_name=attr)
+            raise InvalidSetting(attribute_name=attr)
         try:
             val = self.user_settings[attr]
-        except (KeyError, InvalidSettingError):
+        except (KeyError, InvalidSetting):
             val = self.defaults[attr]
         if attr in self.import_strings:
             val = perform_import(val, attr)
@@ -43,14 +43,14 @@ class TrenchAPISettings(APISettings):
     def _validate(cls, attribute: str, value: Any):
         if attribute == cls._FIELD_BACKUP_CODES_CHARACTERS:
             if any(char in value for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS):
-                raise RestrictedCharInBackupCodeError(
+                raise RestrictedCharInBackupCode(
                     attribute_name=attribute,
                     restricted_chars=cls._RESTRICTED_BACKUP_CODES_CHARACTERS,
                 )
         if attribute == cls._FIELD_MFA_METHODS:
             for method_name, method_config in value.items():
                 if cls._FIELD_HANDLER not in method_config:
-                    raise MethodHandlerMissingError(method_name=method_name)
+                    raise MethodHandlerMissing(method_name=method_name)
                 method_config[cls._FIELD_HANDLER] = perform_import(
                     method_config[cls._FIELD_HANDLER], cls._FIELD_HANDLER
                 )
