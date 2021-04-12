@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,8 +17,14 @@ from trench.command.deactivate_mfa_method import deactivate_mfa_method
 from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
+from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
+from trench.query.get_primary_active_mfa_method_name import (
+    get_primary_active_mfa_method_name_query,
+)
+from trench.query.list_active_mfa_methods import list_active_mfa_methods_query
 from trench.serializers import (
+    ChangePrimaryMethodValidator,
     MFAMethodActivationConfirmationValidator,
     MFAMethodBackupCodesGenerationValidator,
     MFAMethodDeactivationValidator,
@@ -205,29 +212,26 @@ class RequestMFAMethodBackupCodesRegenerationView(APIView):
 
 
 class GetMFAConfig(APIView):
-    def get(self, request, *args, **kwargs):
+    @staticmethod
+    def get(request: Request) -> Response:
         available_methods = [
             (k, v.get("VERBOSE_NAME")) for k, v in api_settings.MFA_METHODS.items()
         ]
-
         return Response(
-            {
+            data={
                 "methods": available_methods,
                 "confirm_disable_with_code": api_settings.CONFIRM_DISABLE_WITH_CODE,  # noqa
                 "confirm_regeneration_with_code": api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE,  # noqa
                 "allow_backup_codes_regeneration": api_settings.ALLOW_BACKUP_CODES_REGENERATION,  # noqa
             },
-            status=status.HTTP_200_OK,
         )
 
 
-class ListUserActiveMFAMethods(APIView):
-    permission_classes = (IsAuthenticated,)
+class ListUserActiveMFAMethods(ListAPIView):
+    serializer_class = serializers.UserMFAMethodSerializer
 
-    def get(self, request, *args, **kwargs):
-        active_mfa_methods = MFAMethod.objects.filter(user=request.user, is_active=True)
-        serializer = serializers.UserMFAMethodSerializer(active_mfa_methods, many=True)
-        return Response(serializer.data)
+    def get_queryset(self) -> QuerySet:
+        return list_active_mfa_methods_query(user_id=self.request.user.id)
 
 
 class RequestMFAMethodCode(GenericAPIView):
@@ -264,16 +268,23 @@ class RequestMFAMethodCode(GenericAPIView):
         return Response(dispatcher_resp)
 
 
-class ChangePrimaryMethod(CreateAPIView):
-    serializer_class = serializers.ChangePrimaryMethodSerializer
-
-    def post(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-
-        return Response(
-            serializers.UserMFAMethodSerializer(
-                request.user.mfa_methods.filter(is_active=True),
-                many=True,
-            ).data,
-            status=status.HTTP_200_OK,
+class ChangePrimaryMethod(APIView):
+    @staticmethod
+    def post(request: Request) -> Response:
+        mfa_method_name = get_primary_active_mfa_method_name_query(
+            user_id=request.user.id
         )
+        print(mfa_method_name)
+        serializer = ChangePrimaryMethodValidator(
+            user=request.user, mfa_method_name=mfa_method_name, data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        try:
+            set_primary_mfa_method_command(
+                user_id=request.user.id, name=serializer.validated_data["method"]
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except MFAValidationError as cause:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}
+            )

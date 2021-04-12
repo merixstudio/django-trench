@@ -1,12 +1,11 @@
 from django.contrib.auth import authenticate, get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Model
 from django.utils.translation import gettext as _
 
 from abc import abstractmethod
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Type
 
 from trench.exceptions import (
     CodeInvalidOrExpiredError,
@@ -39,7 +38,7 @@ MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
 ContextType = Dict[str, Any]
 
 
-def generate_model_serializer(name: str, model: Model, fields: Iterable[str]):
+def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) -> Type:
     meta_subclass = type(
         "Meta",
         (object,),
@@ -63,9 +62,8 @@ class ProtectedActionValidator(RequestBodyValidator):
     code = CharField(required=True)
 
     @staticmethod
-    @abstractmethod
     def _get_validation_method_name() -> str:
-        pass
+        return "validate_code"
 
     @staticmethod
     @abstractmethod
@@ -100,10 +98,6 @@ class ProtectedActionValidator(RequestBodyValidator):
 
 class MFAMethodDeactivationValidator(ProtectedActionValidator):
     @staticmethod
-    def _get_validation_method_name() -> str:
-        return "validate_code"
-
-    @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):
         if not mfa.is_active:
             raise MFANotEnabledError()
@@ -121,10 +115,6 @@ class MFAMethodActivationConfirmationValidator(ProtectedActionValidator):
 
 
 class MFAMethodBackupCodesGenerationValidator(ProtectedActionValidator):
-    @staticmethod
-    def _get_validation_method_name() -> str:
-        return "validate_code"
-
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):
         if not mfa.is_active:
@@ -206,60 +196,14 @@ class CodeLoginSerializer(RequestBodyValidator):
 
 
 class UserMFAMethodSerializer(ModelSerializer):
-    """
-    Serializes active MFA method for user preview
-    """
-
     class Meta:
         model = MFAMethod
         fields = ("name", "is_primary")
 
 
-class ChangePrimaryMethodSerializer(RequestBodyValidator):
-    """
-    Serializes request to change default authentication method.
-    """
-
-    code = CharField()
+class ChangePrimaryMethodValidator(ProtectedActionValidator):
     method = ChoiceField(choices=MFA_METHODS)
 
-    def validate(self, attrs):
-        user = self.context.get("request").user
-        try:
-            current_method = user.mfa_methods.get(
-                is_primary=True,
-                is_active=True,
-            )
-        except ObjectDoesNotExist:
-            raise MFANotEnabledError()
-        try:
-            new_primary_method = user.mfa_methods.get(
-                name=attrs.get("method"),
-                is_active=True,
-            )
-        except ObjectDoesNotExist:
-            raise MFAMethodDoesNotExistError()
-        code = attrs.get("code")
-        validated_backup_code = validate_backup_code(
-            code,
-            current_method.backup_codes,
-        )
-        if validate_code(code, current_method):
-            attrs.update(new_method=new_primary_method)
-            attrs.update(old_method=current_method)
-            return attrs
-        elif validated_backup_code:
-            attrs.update(new_method=new_primary_method)
-            attrs.update(old_method=current_method)
-            current_method.remove_backup_code(validated_backup_code)
-            return attrs
-        else:
-            raise InvalidCodeError()
-
-    def save(self):
-        new_method = self.validated_data.get("new_method")
-        old_method = self.validated_data.get("old_method")
-        new_method.is_primary = True
-        old_method.is_primary = False
-        new_method.save()
-        old_method.save()
+    @staticmethod
+    def _validate_mfa_method(mfa: MFAMethod):
+        pass
