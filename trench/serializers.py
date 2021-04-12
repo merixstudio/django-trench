@@ -4,7 +4,6 @@ from django.db.models import Model
 from django.utils.translation import gettext as _
 
 from abc import abstractmethod
-from collections import OrderedDict
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 from typing import Any, Dict, Iterable
@@ -121,42 +120,15 @@ class MFAMethodActivationConfirmationValidator(ProtectedActionValidator):
             raise MFAMethodAlreadyActiveError()
 
 
-class ProtectedActionSerializer(Serializer):
-    requires_mfa_code = None
-    _HANDLER_VALIDATION_METHOD = "validate_code"
+class MFAMethodBackupCodesGenerationValidator(ProtectedActionValidator):
+    @staticmethod
+    def _get_validation_method_name() -> str:
+        return "validate_code"
 
-    code = CharField(required=False)
-
-    def _validate_code(self, value: str) -> str:
-        if not value:
-            raise OTPCodeMissingError()
-
-        obj = self.context["obj"]
-        validated_backup_code = validate_backup_code(value, obj.backup_codes)
-        handler = get_mfa_handler(obj)
-        validate_method = getattr(handler, self._HANDLER_VALIDATION_METHOD)
-        if validate_method(value):
-            return value
-        if validated_backup_code:
-            obj.remove_backup_code(validated_backup_code)
-            return value
-        raise CodeInvalidOrExpiredError()
-
-    def validate(self, data):
-        if self.requires_mfa_code:
-            self._validate_code(data.get("code"))
-
-        return super().validate(data)
-
-    def create(self, validated_data: OrderedDict):
-        pass
-
-    def update(self, instance, validated_data: OrderedDict):
-        pass
-
-
-class RequestMFAMethodBackupCodesRegenerationSerializer(ProtectedActionSerializer):
-    requires_mfa_code = api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE  # noqa
+    @staticmethod
+    def _validate_mfa_method(mfa: MFAMethod):
+        if not mfa.is_active:
+            raise MFANotEnabledError()
 
 
 class RequestMFAMethodCodeSerializer(RequestBodyValidator):

@@ -1,0 +1,51 @@
+from django.contrib.auth.hashers import make_password
+
+from typing import Callable, Set
+from typing_extensions import Type
+
+from trench.command.generate_backup_codes import generate_backup_codes_command
+from trench.exceptions import MFAMethodDoesNotExistError
+from trench.models import MFAMethod
+from trench.settings import api_settings
+from trench.utils import get_mfa_model
+
+
+class RegenerateBackupCodesForMFAMethodCommand:
+    def __init__(
+        self,
+        requires_encryption: bool,
+        mfa_model: Type[MFAMethod],
+        code_hasher: Callable,
+        codes_generator: Callable,
+    ):
+        self._requires_encryption = requires_encryption
+        self._mfa_model = mfa_model
+        self._code_hasher = code_hasher
+        self._codes_generator = codes_generator
+
+    def execute(self, user_id: int, name: str) -> Set[str]:
+        backup_codes = self._codes_generator()
+        rows_affected = self._mfa_model.objects.filter(
+            user_id=user_id, name=name
+        ).update(
+            _backup_codes=[
+                self._code_hasher(backup_code) for backup_code in backup_codes
+            ]
+            if self._requires_encryption
+            else backup_codes,
+        )
+
+        if rows_affected < 1:
+            raise MFAMethodDoesNotExistError()
+
+        return backup_codes
+
+
+regenerate_backup_codes_for_mfa_method_command = (
+    RegenerateBackupCodesForMFAMethodCommand(
+        requires_encryption=api_settings.ENCRYPT_BACKUP_CODES,
+        mfa_model=get_mfa_model(),
+        code_hasher=make_password,
+        codes_generator=generate_backup_codes_command,
+    ).execute
+)

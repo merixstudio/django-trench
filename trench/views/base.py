@@ -1,10 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
-from rest_framework.exceptions import NotFound
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -15,15 +13,18 @@ from trench import serializers
 from trench.command.activate_mfa_method import activate_mfa_method_command
 from trench.command.create_mfa_method import create_mfa_method_command
 from trench.command.deactivate_mfa_method import deactivate_mfa_method
+from trench.command.replace_mfa_method_backup_codes import (
+    regenerate_backup_codes_for_mfa_method_command,
+)
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.serializers import (
     MFAMethodActivationConfirmationValidator,
+    MFAMethodBackupCodesGenerationValidator,
     MFAMethodDeactivationValidator,
     generate_model_serializer,
 )
 from trench.settings import api_settings
 from trench.utils import (
-    generate_backup_codes,
     get_method_config_by_name,
     get_mfa_model,
     get_source_field_by_method_name,
@@ -120,7 +121,6 @@ class RequestMFAMethodActivationView(APIView):
             )
             serializer = serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
-
         try:
             mfa = create_mfa_method_command(
                 user_id=request.user.id,
@@ -131,7 +131,6 @@ class RequestMFAMethodActivationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"error": str(cause)},
             )
-
         conf = get_method_config_by_name(name=method)
         handler = conf["HANDLER"](
             user=request.user,
@@ -157,18 +156,18 @@ class RequestMFAMethodActivationConfirmView(APIView):
                 name=method,
                 code=serializer.validated_data["code"],
             )
+            return Response({"backup_codes": backup_codes})
         except MFAValidationError as cause:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}
             )
 
-        return Response({"backup_codes": backup_codes})
-
 
 class RequestMFAMethodDeactivationView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request: Request, method: str) -> Response:
+    @staticmethod
+    def post(request: Request, method: str) -> Response:
         serializer = MFAMethodDeactivationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
@@ -183,57 +182,26 @@ class RequestMFAMethodDeactivationView(APIView):
             )
 
 
-class RequestMFAMethodBackupCodesRegenerationView(GenericAPIView):
-    serializer_class = (
-        serializers.RequestMFAMethodBackupCodesRegenerationSerializer
-    )  # noqa
+class RequestMFAMethodBackupCodesRegenerationView(APIView):
     permission_classes = (IsAuthenticated,)
-    http_method_names = ["post"]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-
+    @staticmethod
+    def post(request: Request, method: str) -> Response:
+        serializer = MFAMethodBackupCodesGenerationValidator(
+            mfa_method_name=method, user=request.user, data=request.data
+        )
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         try:
-            context.update(
-                {
-                    "name": self.kwargs["method"],
-                    "obj": self.obj,
-                    "conf": api_settings.MFA_METHODS[self.kwargs["method"]],
-                }
+            backup_codes = regenerate_backup_codes_for_mfa_method_command(
+                user_id=request.user.id,
+                name=method,
             )
-        except KeyError:
-            raise NotFound()
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        self.mfa_method_name = kwargs.get("method")
-        self.obj = get_object_or_404(
-            MFAMethod, user=request.user, name=self.mfa_method_name
-        )
-
-        if not self.obj.is_active:
+            return Response({"backup_codes": backup_codes})
+        except MFAValidationError as cause:
             return Response(
-                {"error": _("Method is disabled.")},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}
             )
-
-        serializer = self.get_serializer(
-            data=request.data,
-        )
-        serializer.is_valid(raise_exception=True)
-
-        backup_codes = generate_backup_codes()
-
-        if requires_encryption:
-            self.obj.backup_codes = [
-                make_password(backup_code) for backup_code in backup_codes
-            ]
-        else:  # pragma: no cover
-            self.obj.backup_codes = backup_codes
-
-        self.obj.save(update_fields=["_backup_codes"])
-        return Response({"backup_codes": backup_codes})
 
 
 class GetMFAConfig(APIView):

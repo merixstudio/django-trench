@@ -4,12 +4,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import FieldDoesNotExist
-from django.utils.crypto import constant_time_compare, get_random_string, salted_hmac
+from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.settings import api_settings
@@ -106,27 +106,6 @@ def create_qr_link(secret: str, user: User) -> str:
         getattr(user, User.USERNAME_FIELD),
         api_settings.APPLICATION_ISSUER_NAME,
     )
-
-
-def generate_backup_codes(
-    quantity: int = api_settings.BACKUP_CODES_QUANTITY,
-    length: int = api_settings.BACKUP_CODES_LENGTH,
-    allowed_chars: str = api_settings.BACKUP_CODES_CHARACTERS,
-) -> List[str]:
-    """
-    Generates random encrypted backup codes.
-
-    :param quantity: How many codes should be generated
-    :type quantity: int
-    :param length: How long codes should be
-    :type length: int
-    :param allowed_chars: Characters to create backup codes from
-    :type allowed_chars: str
-
-    :returns: Encrypted backup codes
-    :rtype: list[str]
-    """
-    return [get_random_string(length, allowed_chars) for _ in range(quantity)]
 
 
 def validate_code(code: str, mfa_method) -> bool:

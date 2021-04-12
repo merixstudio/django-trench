@@ -72,7 +72,9 @@ DEFAULTS = {
     "BACKUP_CODES_CHARACTERS": (string.ascii_letters + string.digits),
     "SECRET_KEY_LENGTH": 32,
     "DEFAULT_VALIDITY_PERIOD": 30,
+    # FIXME: currently this is not used + tests coverage!
     "CONFIRM_DISABLE_WITH_CODE": False,
+    # FIXME: currently this is not used + tests coverage!
     "CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE": True,
     "ALLOW_BACKUP_CODES_REGENERATION": True,
     "ENCRYPT_BACKUP_CODES": True,
