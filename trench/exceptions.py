@@ -1,27 +1,23 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext as _
 
-from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ValidationError
 from typing import Iterable
 
 
-class BaseMFAException(Exception):
-    pass
-
-
-class MissingSourceFieldAttribute(BaseMFAException):
+class MissingSourceFieldAttributeError(ImproperlyConfigured):
     def __init__(self, attribute_name: str):
         super().__init__(
             f"Could not retrieve attribute '{attribute_name}' for given user."
         )
 
 
-class InvalidSetting(ImproperlyConfigured):
+class InvalidSettingError(ImproperlyConfigured):
     def __init__(self, attribute_name: str):
         super().__init__(f"Invalid API setting: {attribute_name}")
 
 
-class RestrictedCharInBackupCode(ImproperlyConfigured):
+class RestrictedCharInBackupCodeError(ImproperlyConfigured):
     def __init__(self, attribute_name: str, restricted_chars: Iterable[str]):
         super().__init__(
             f"Cannot use any of: {''.join(restricted_chars)} as a character "
@@ -29,12 +25,17 @@ class RestrictedCharInBackupCode(ImproperlyConfigured):
         )
 
 
-class MethodHandlerMissing(ImproperlyConfigured):
+class MethodHandlerMissingError(ImproperlyConfigured):
     def __init__(self, method_name: str):
         super().__init__(f"Missing handler in {method_name} configuration.")
 
 
-class CodeInvalidOrExpired(ValidationError):
+class MFAValidationError(ValidationError):
+    def __str__(self):
+        return ", ".join(detail for detail in self.detail)
+
+
+class CodeInvalidOrExpiredError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Code invalid or expired."),
@@ -42,12 +43,12 @@ class CodeInvalidOrExpired(ValidationError):
         )
 
 
-class OTPCodeMissing(ValidationError):
+class OTPCodeMissingError(MFAValidationError):
     def __init__(self):
         super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
 
 
-class MFAMethodDoesNotExist(ValidationError):
+class MFAMethodDoesNotExistError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Requested MFA method does not exist."),
@@ -55,7 +56,7 @@ class MFAMethodDoesNotExist(ValidationError):
         )
 
 
-class MFAMethodNotRegisteredForUserValidationError(ValidationError):
+class MFAMethodNotRegisteredForUserError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_(
@@ -65,7 +66,7 @@ class MFAMethodNotRegisteredForUserValidationError(ValidationError):
         )
 
 
-class MFAPrimaryMethodInactiveValidationError(ValidationError):
+class MFAPrimaryMethodInactiveError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("MFA Method selected as new primary method is not active"),
@@ -73,7 +74,15 @@ class MFAPrimaryMethodInactiveValidationError(ValidationError):
         )
 
 
-class MFANewPrimarySameAsOldValidationError(ValidationError):
+class MFAMethodAlreadyActiveError(MFAValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_("MFA method already active."),
+            code="method_already_active",
+        )
+
+
+class MFANewPrimarySameAsOldError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_(
@@ -84,22 +93,32 @@ class MFANewPrimarySameAsOldValidationError(ValidationError):
         )
 
 
-class MFANotEnabledValidationError(ValidationError):
+class DeactivationOfPrimaryMFAMethodError(MFAValidationError):
+    def __init__(self):
+        super().__init__(
+            detail=_(
+                "Deactivation of MFA method that is set as primary is not allowed."
+            ),
+            code="deactivation_of_primary",
+        )
+
+
+class MFANotEnabledError(MFAValidationError):
     def __init__(self):
         super().__init__(detail=_("2FA is not enabled."), code="not_enabled")
 
 
-class InvalidTokenValidationError(ValidationError):
+class InvalidTokenError(MFAValidationError):
     def __init__(self):
         super().__init__(detail=_("Invalid or expired token."), code="invalid_token")
 
 
-class InvalidCodeValidationError(ValidationError):
+class InvalidCodeError(MFAValidationError):
     def __init__(self):
         super().__init__(detail=_("Invalid or expired code."), code="invalid_code")
 
 
-class RequiredFieldMissingValidationError(ValidationError):
+class RequiredFieldMissingError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Required field not provided"),
@@ -107,7 +126,7 @@ class RequiredFieldMissingValidationError(ValidationError):
         )
 
 
-class RequiredFieldUpdateFailedValidationError(ValidationError):
+class RequiredFieldUpdateFailedError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Failed to update required User data. Try again."),
@@ -115,14 +134,14 @@ class RequiredFieldUpdateFailedValidationError(ValidationError):
         )
 
 
-class UserAccountDisabledValidationError(ValidationError):
+class UserAccountDisabledError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("User account is disabled."), code="user_account_disabled"
         )
 
 
-class UnauthenticatedValidationError(ValidationError):
+class UnauthenticatedError(MFAValidationError):
     def __init__(self):
         super().__init__(
             detail=_("Unable to login with provided credentials."),

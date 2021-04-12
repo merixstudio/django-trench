@@ -1,8 +1,5 @@
-import logging
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
@@ -15,16 +12,22 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from trench import serializers
-from trench.command import upsert_mfa_method
-from trench.command.upsert_mfa_method import upsert_mfa_method_command
-from trench.exceptions import MFAMethodDoesNotExist
-from trench.serializers import generate_model_serializer
+from trench.command.activate_mfa_method import activate_mfa_method_command
+from trench.command.create_mfa_method import create_mfa_method_command
+from trench.command.deactivate_mfa_method import deactivate_mfa_method
+from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
+from trench.serializers import (
+    MFAMethodActivationConfirmationValidator,
+    MFAMethodDeactivationValidator,
+    generate_model_serializer,
+)
 from trench.settings import api_settings
 from trench.utils import (
     generate_backup_codes,
-    get_mfa_handler,
+    get_method_config_by_name,
     get_mfa_model,
-    user_token_generator, get_source_field_by_method_name, get_method_config_by_name,
+    get_source_field_by_method_name,
+    user_token_generator,
 )
 
 
@@ -92,171 +95,92 @@ class MFACodeLoginMixin(GenericAPIView):
         )
 
 
-class RequestMFAMethodActivationView(GenericAPIView):
+class RequestMFAMethodActivationView(APIView):
     """
     View handling new MFA method activation requests.
     If validation passes, new MFAMethod (inactive) object
-    is created.
+    is created. The method will be activated after confirmation.
     """
 
     permission_classes = (IsAuthenticated,)
-    http_method_names = ["post"]
 
-    def post(self, request: Request, method: str) -> Response:
+    @staticmethod
+    def post(request: Request, method: str) -> Response:
         try:
             source_field = get_source_field_by_method_name(name=method)
-        except MFAMethodDoesNotExist as cause:
-            logging.info(cause, exc_info=True)
+        except MFAMethodDoesNotExistError as cause:
             return Response(
-                status=status.HTTP_400_BAD_REQUEST, data={"errors": cause.detail}
+                status=status.HTTP_400_BAD_REQUEST, data={"errors": str(cause)}
             )
         if source_field is not None:
-            model_class = request.user.__class__
             serializer_class = generate_model_serializer(
                 name="MFAMethodActivationValidator",
-                model=model_class,
-                fields=(source_field,)
+                model=request.user.__class__,
+                fields=(source_field,),
             )
             serializer = serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
-        obj, created = upsert_mfa_method_command(
-            user_id=request.user.id,
-            name=method,
-            is_active=False,
-        )
 
-        if not created and obj.is_active:
+        try:
+            mfa = create_mfa_method_command(
+                user_id=request.user.id,
+                name=method,
+            )
+        except MFAValidationError as cause:
             return Response(
-                {"error": "MFA method already active."},
                 status=status.HTTP_400_BAD_REQUEST,
+                data={"error": str(cause)},
             )
 
         conf = get_method_config_by_name(name=method)
-
         handler = conf["HANDLER"](
             user=request.user,
-            obj=obj,
+            obj=mfa,
             conf=conf,
         )
         return Response(handler.dispatch_message(), status=status.HTTP_200_OK)
 
 
-class RequestMFAMethodActivationConfirmView(GenericAPIView):
-    serializer_class = serializers.RequestMFAMethodActivationConfirmSerializer
+class RequestMFAMethodActivationConfirmView(APIView):
     permission_classes = (IsAuthenticated,)
-    http_method_names = ["post"]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        obj = getattr(self, "obj", None)
-
-        try:
-            context.update(
-                {
-                    "name": self.kwargs["method"],
-                    "obj": obj,
-                    "conf": api_settings.MFA_METHODS[self.kwargs["method"]],
-                }
-            )
-        except KeyError:
-            raise NotFound()
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        self.mfa_method_name = self.kwargs["method"]
-        self.obj = get_object_or_404(
-            MFAMethod, user=request.user, name=self.mfa_method_name
+    @staticmethod
+    def post(request: Request, method: str) -> Response:
+        serializer = MFAMethodActivationConfirmationValidator(
+            mfa_method_name=method, user=request.user, data=request.data
         )
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        handler = get_mfa_handler(self.obj)
-        handler.confirm_activation(serializer.data["code"])
-
-        backup_codes = generate_backup_codes()
-
-        if requires_encryption:
-            self.obj.backup_codes = [
-                make_password(backup_code) for backup_code in backup_codes
-            ]
-        else:  # pragma: no cover
-            self.obj.backup_codes = backup_codes
-
-        self.obj.is_active = True
-        self.obj.is_primary = not MFAMethod.objects.filter(
-            user=request.user,
-            is_active=True,
-        ).exists()
-        self.obj.save(update_fields=["is_active", "_backup_codes", "is_primary"])
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+        try:
+            backup_codes = activate_mfa_method_command(
+                user_id=request.user.id,
+                name=method,
+                code=serializer.validated_data["code"],
+            )
+        except MFAValidationError as cause:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}
+            )
 
         return Response({"backup_codes": backup_codes})
 
 
-class RequestMFAMethodDeactivationView(GenericAPIView):
-    serializer_class = serializers.RequestMFAMethodDeactivationSerializer
+class RequestMFAMethodDeactivationView(APIView):
     permission_classes = (IsAuthenticated,)
-    http_method_names = ["post"]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        obj = getattr(self, "obj", None)
-
-        try:
-            context.update(
-                {
-                    "name": self.kwargs["method"],
-                    "obj": obj,
-                    "conf": api_settings.MFA_METHODS[self.kwargs["method"]],
-                }
-            )
-        except KeyError:
-            raise NotFound()
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        self.mfa_method_name = kwargs.get("method")
-        self.obj = get_object_or_404(
-            MFAMethod, user=request.user, name=self.mfa_method_name
+    def post(self, request: Request, method: str) -> Response:
+        serializer = MFAMethodDeactivationValidator(
+            mfa_method_name=method, user=request.user, data=request.data
         )
-        if not self.obj.is_active:
-            return Response(
-                {"error": _("Method already disabled.")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
         try:
-            with transaction.atomic():
-                default_update_fields = ["is_active"]
-
-                if serializer.users_active_methods_count >= 2:
-                    new_primary_obj = (
-                        getattr(serializer, "new_method")
-                        or MFAMethod.objects.filter(  # noqa
-                            user=request.user, is_active=True
-                        )
-                        .exclude(id=self.obj.id)
-                        .first()
-                    )
-
-                    new_primary_obj.is_primary = True
-                    new_primary_obj.save(update_fields=["is_primary"])
-
-                default_update_fields.append("is_primary")
-                self.obj.is_primary = False
-                self.obj.is_active = False
-                self.obj.save(update_fields=default_update_fields)
-        except IntegrityError:  # pragma: no cover
-            return Response(  # pragma: no cover
-                {"error": _("Failed to update MFA information")},  # pragma: no cover
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            deactivate_mfa_method(mfa_method_name=method, user_id=request.user.id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except MFAValidationError as cause:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}
             )
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class RequestMFAMethodBackupCodesRegenerationView(GenericAPIView):

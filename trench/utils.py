@@ -4,18 +4,14 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import FieldDoesNotExist
-from django.utils.crypto import (
-    constant_time_compare,
-    get_random_string,
-    salted_hmac,
-)
+from django.utils.crypto import constant_time_compare, get_random_string, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
 from datetime import datetime
-from typing import List, Optional, Tuple, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple
 
-from trench.exceptions import MFAMethodDoesNotExist
+from trench.exceptions import MFAMethodDoesNotExistError
 from trench.settings import api_settings
 
 
@@ -218,17 +214,6 @@ def get_nested_attr(obj: object, path: str):
     )
 
 
-def set_nested_attr(obj, path, value):
-    """
-    Sets value on attribute specified by path.
-    Raises AttributeError, DatabaseError
-    """
-    objects, attr = parse_dotted_path(path)
-    _obj = get_innermost_object(obj, objects)
-    setattr(_obj, attr, value)
-    _obj.save(update_fields=[attr])
-
-
 def get_nested_attr_value(obj, path):
     objects, attr = parse_dotted_path(path)
 
@@ -262,7 +247,7 @@ def get_method_config_by_name(name: str) -> Dict[str, Any]:
     try:
         return api_settings.MFA_METHODS[name]
     except KeyError as cause:
-        raise MFAMethodDoesNotExist from cause
+        raise MFAMethodDoesNotExistError from cause
 
 
 def get_source_field_by_method_name(name: str) -> Optional[str]:
