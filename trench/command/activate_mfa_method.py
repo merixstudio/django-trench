@@ -7,7 +7,7 @@ from trench.command.replace_mfa_method_backup_codes import (
 )
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
-from trench.query.get_mfa_method import get_mfa_method
+from trench.query.get_mfa_method import get_mfa_method_query
 from trench.query.primary_mfa_method_exists import primary_mfa_method_exists_query
 from trench.utils import get_mfa_handler, get_mfa_model
 
@@ -18,7 +18,7 @@ class ActivateMFAMethodCommand:
         self._backup_codes_generator = backup_codes_generator
 
     def execute(self, user_id: int, name: str, code: str) -> List[str]:
-        mfa = get_mfa_method(user_id=user_id, name=name)
+        mfa = get_mfa_method_query(user_id=user_id, name=name)
         handler = get_mfa_handler(mfa)
         handler.confirm_activation(code)
 

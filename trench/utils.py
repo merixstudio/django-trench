@@ -3,7 +3,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import FieldDoesNotExist
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
 
@@ -26,8 +25,9 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         - longer hash (40 instead of 20)
     """
 
-    key_salt = "django.contrib.auth.tokens.PasswordResetTokenGenerator"
-    secret = settings.SECRET_KEY
+    KEY_SALT = "django.contrib.auth.tokens.PasswordResetTokenGenerator"
+    SECRET = settings.SECRET_KEY
+    EXPIRY_TIME = 60 * 15
 
     def make_token(self, user: User) -> str:
         return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
@@ -35,7 +35,6 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
     def check_token(self, user: User, token: str) -> Optional[User]:
         if not token:
             return None
-
         try:
             token = str(token)
             user_pk, ts_b36, token_hash = token.rsplit("-", 2)
@@ -44,7 +43,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         except (ValueError, TypeError, User.DoesNotExist):
             return None
 
-        if (datetime.now().timestamp() - ts) > (60 * 15):
+        if (datetime.now().timestamp() - ts) > self.EXPIRY_TIME:
             return None  # pragma: no cover
 
         if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
@@ -55,11 +54,11 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
     def _make_token_with_timestamp(self, user: User, timestamp: int, **kwargs) -> str:
         ts_b36 = int_to_base36(timestamp)
         token_hash = salted_hmac(
-            self.key_salt,
+            self.KEY_SALT,
             self._make_hash_value(user, timestamp),
-            secret=self.secret,
+            secret=self.SECRET,
         ).hexdigest()
-        return "%s-%s-%s" % (user.pk, ts_b36, token_hash)
+        return f"{user.pk}-{ts_b36}-{token_hash}"
 
 
 user_token_generator = UserTokenGenerator()
@@ -168,29 +167,6 @@ def get_innermost_object(obj: object, dotted_path: str = None) -> object:
     for o in dotted_path.split("."):
         obj = getattr(obj, o)
     return obj  # pragma: no cover
-
-
-def get_nested_attr(obj: object, path: str):
-    """
-    For attribute in dotted path notation retrieves its
-    value, name, and field class.
-    """
-    objects, attr = parse_dotted_path(path)
-    try:
-        _obj = get_innermost_object(obj, objects)
-    except AttributeError:  # pragma: no cover
-        return None, None, None  # pragma: no cover
-
-    try:
-        field = _obj._meta.get_field(attr)
-    except FieldDoesNotExist:  # pragma: no cover
-        return None, None, None  # pragma: no cover
-
-    return (
-        field.value_from_object(_obj),
-        field.get_attname(),
-        field.__class__,
-    )
 
 
 def get_nested_attr_value(obj, path):

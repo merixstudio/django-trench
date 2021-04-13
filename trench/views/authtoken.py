@@ -1,24 +1,21 @@
-from djoser.views import TokenCreateView, TokenDestroyView
 from rest_framework.generics import GenericAPIView
 
-from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
-
-
-class ObtainAuthTokenMixin(TokenCreateView):
-    def handle_user_login(self, serializer, *args, **kwargs):
-        return self._action(serializer)
+from trench.views.base import (
+    MFACodeLoginMixin,
+    MFACredentialsLoginMixin,
+    MFALoginView,
+    MFALogoutView,
+)
 
 
 class AuthTokenLoginOrRequestMFACode(
-    MFACredentialsLoginMixin, ObtainAuthTokenMixin, GenericAPIView
+    MFACredentialsLoginMixin, MFALoginView, GenericAPIView
 ):
     pass
 
 
-class AuthTokenLoginWithMFACode(
-    MFACodeLoginMixin, ObtainAuthTokenMixin, GenericAPIView
-):
+class AuthTokenLoginWithMFACode(MFACodeLoginMixin, MFALoginView, GenericAPIView):
     pass
 
 
-AuthTokenLogoutView = TokenDestroyView
+AuthTokenLogoutView = MFALogoutView

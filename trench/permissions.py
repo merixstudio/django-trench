@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from trench.backends.base import AbstractMessageDispatcher
 from trench.exceptions import CodeInvalidOrExpiredError
-from trench.query.get_mfa_method import get_mfa_method
+from trench.query.get_mfa_method import get_mfa_method_query
 from trench.utils import get_mfa_handler, validate_backup_code
 
 
@@ -25,7 +25,7 @@ class RequiresMFA(BasePermission):
         method_name = view.kwargs["method"]
         user = request.user
 
-        mfa = get_mfa_method(user_id=user.id, name=method_name)
+        mfa = get_mfa_method_query(user_id=user.id, name=method_name)
 
         validated_backup_code = validate_backup_code(
             value=code, backup_codes=mfa.backup_codes

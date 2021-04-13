@@ -1,8 +1,9 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 from django.db.models import Model
 from django.utils.translation import gettext as _
 
 from abc import abstractmethod
+from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 from typing import Any, Dict, Iterable, Type
@@ -15,10 +16,8 @@ from trench.exceptions import (
     MFAMethodDoesNotExistError,
     MFANotEnabledError,
     OTPCodeMissingError,
-    UnauthenticatedError,
-    UserAccountDisabledError,
 )
-from trench.query.get_mfa_method import get_mfa_method
+from trench.query.get_mfa_method import get_mfa_method_query
 from trench.settings import api_settings
 from trench.utils import (
     get_mfa_handler,
@@ -79,7 +78,7 @@ class ProtectedActionValidator(RequestBodyValidator):
         if not value:
             raise OTPCodeMissingError()
 
-        mfa = get_mfa_method(user_id=self._user.id, name=self._mfa_method_name)
+        mfa = get_mfa_method_query(user_id=self._user.id, name=self._mfa_method_name)
         self._validate_mfa_method(mfa)
 
         validated_backup_code = validate_backup_code(value, mfa.backup_codes)
@@ -136,27 +135,11 @@ class LoginSerializer(RequestBodyValidator):
     Validates user's credentials.
     """
 
-    password = CharField(style={"input_type": "password"}, write_only=True)
+    password = CharField(write_only=True)
 
     def __init__(self, *args, **kwargs):
-        super(LoginSerializer, self).__init__(*args, **kwargs)
-        self.user = None
+        super().__init__(*args, **kwargs)
         self.fields[User.USERNAME_FIELD] = CharField()
-
-    def validate(self, attrs):
-        self.user = authenticate(
-            request=self.context.get("request"),
-            username=attrs.get(User.USERNAME_FIELD),
-            password=attrs.get("password"),
-        )
-
-        if not getattr(self.user, api_settings.USER_ACTIVE_FIELD, True):
-            raise UserAccountDisabledError()
-
-        if not self.user:
-            raise UnauthenticatedError()
-
-        return {}
 
 
 class CodeLoginSerializer(RequestBodyValidator):
@@ -164,19 +147,12 @@ class CodeLoginSerializer(RequestBodyValidator):
     Validates given token and OTP code.
     """
 
-    _FIELD_EPHEMERAL_TOKEN = "ephemeral_token"
-    _FIELD_CODE = "code"
-
     ephemeral_token = CharField()
     code = CharField()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.user = None
-
     def validate(self, attrs):
-        ephemeral_token = attrs.get(self._FIELD_EPHEMERAL_TOKEN)
-        code = attrs.get(self._FIELD_CODE)
+        ephemeral_token = attrs.get("ephemeral_token")
+        code = attrs.get("code")
 
         self.user = user_token_generator.check_token(user=None, token=ephemeral_token)
         if not self.user:
@@ -195,6 +171,11 @@ class CodeLoginSerializer(RequestBodyValidator):
         raise InvalidCodeError()
 
 
+class MFALoginValidator(RequestBodyValidator):
+    ephemeral_token = CharField(required=True)
+    code = CharField(required=True)
+
+
 class UserMFAMethodSerializer(ModelSerializer):
     class Meta:
         model = MFAMethod
@@ -207,3 +188,11 @@ class ChangePrimaryMethodValidator(ProtectedActionValidator):
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):
         pass
+
+
+class TokenSerializer(ModelSerializer):
+    auth_token = CharField(source="key")
+
+    class Meta:
+        model = Token
+        fields = ("auth_token",)

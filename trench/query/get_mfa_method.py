@@ -14,4 +14,4 @@ class GetMFAMethodQuery:
         return mfa
 
 
-get_mfa_method = GetMFAMethodQuery(mfa_model=get_mfa_model()).execute
+get_mfa_method_query = GetMFAMethodQuery(mfa_model=get_mfa_model()).execute
