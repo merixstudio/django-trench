@@ -10,8 +10,6 @@ from typing import Any, Dict, Iterable, Type
 
 from trench.exceptions import (
     CodeInvalidOrExpiredError,
-    InvalidCodeError,
-    InvalidTokenError,
     MFAMethodAlreadyActiveError,
     MFAMethodDoesNotExistError,
     MFANotEnabledError,
@@ -19,13 +17,7 @@ from trench.exceptions import (
 )
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.settings import api_settings
-from trench.utils import (
-    get_mfa_handler,
-    get_mfa_model,
-    user_token_generator,
-    validate_backup_code,
-    validate_code,
-)
+from trench.utils import get_mfa_handler, get_mfa_model, validate_backup_code
 
 
 User = get_user_model()
@@ -149,26 +141,6 @@ class CodeLoginSerializer(RequestBodyValidator):
 
     ephemeral_token = CharField()
     code = CharField()
-
-    def validate(self, attrs):
-        ephemeral_token = attrs.get("ephemeral_token")
-        code = attrs.get("code")
-
-        self.user = user_token_generator.check_token(user=None, token=ephemeral_token)
-        if not self.user:
-            raise InvalidTokenError()
-
-        for auth_method in self.user.mfa_methods.filter(is_active=True):
-            validated_backup_code = validate_backup_code(
-                code,
-                auth_method.backup_codes,
-            )
-            if validate_code(code, auth_method):
-                return attrs
-            if validated_backup_code:
-                auth_method.remove_backup_code(validated_backup_code)
-                return attrs
-        raise InvalidCodeError()
 
 
 class MFALoginValidator(RequestBodyValidator):

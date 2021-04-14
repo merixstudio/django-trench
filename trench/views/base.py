@@ -1,21 +1,17 @@
-from django.contrib.auth import (
-    get_user_model,
-    user_logged_in,
-    user_logged_out,
-)
+from django.contrib.auth import get_user_model, user_logged_in, user_logged_out
 from django.db.models import QuerySet
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView, ListAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from trench import serializers
 from trench.command.activate_mfa_method import activate_mfa_method_command
+from trench.command.authenticate_second_factor import authenticate_second_step_command
 from trench.command.authenticate_user import authenticate_user_command
 from trench.command.create_mfa_method import create_mfa_method_command
 from trench.command.deactivate_mfa_method import deactivate_mfa_method
@@ -23,11 +19,7 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
-from trench.exceptions import (
-    InvalidTokenError,
-    MFAMethodDoesNotExistError,
-    MFAValidationError,
-)
+from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.query.get_primary_active_mfa_method import (
     get_primary_active_mfa_method_query,
@@ -38,6 +30,7 @@ from trench.query.get_primary_active_mfa_method_name import (
 from trench.query.list_active_mfa_methods import list_active_mfa_methods_query
 from trench.serializers import (
     ChangePrimaryMethodValidator,
+    CodeLoginSerializer,
     LoginSerializer,
     MFALoginValidator,
     MFAMethodActivationConfirmationValidator,
@@ -45,6 +38,7 @@ from trench.serializers import (
     MFAMethodDeactivationValidator,
     RequestMFAMethodCodeSerializer,
     TokenSerializer,
+    UserMFAMethodSerializer,
     generate_model_serializer,
 )
 from trench.settings import api_settings
@@ -53,8 +47,6 @@ from trench.utils import (
     get_mfa_model,
     get_source_field_by_method_name,
     user_token_generator,
-    validate_backup_code,
-    validate_code,
 )
 
 
@@ -102,23 +94,30 @@ class MFACredentialsLoginMixin(APIView):
             )
 
 
-class MFACodeLoginMixin(GenericAPIView):
+class MFACodeLoginMixin(APIView):
     """
     Mixin handling user login if MFA auth is enabled.
     Expects ephemeral token and valid MFA code.
     Checks against all active MFA methods.
     """
 
-    serializer_class = serializers.CodeLoginSerializer
     permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    @staticmethod
+    def post(request: Request) -> Response:
+        serializer = CodeLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        return self.handle_user_login(
-            request=request, serializer=serializer, *args, **kwargs
-        )
+        try:
+            user = authenticate_second_step_command(
+                code=serializer.validated_data["code"],
+                ephemeral_token=serializer.validated_data["ephemeral_token"],
+            )
+            token = RefreshToken.for_user(user)
+            return Response({"refresh": str(token), "access": str(token.access_token)})
+        except MFAValidationError as cause:
+            return Response(
+                status=status.HTTP_401_UNAUTHORIZED, data={"error": str(cause)}
+            )
 
 
 class MFALoginView(APIView):
@@ -126,33 +125,18 @@ class MFALoginView(APIView):
     def post(cls, request: Request) -> Response:
         serializer = MFALoginValidator(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = user_token_generator.check_token(
-            user=None, token=serializer.validated_data["ephemeral_token"]
-        )
-        if user is None:
-            raise InvalidTokenError()
-
-        is_authenticated = cls._perform_authentication(
-            user_id=user.id, code=serializer.validated_data["code"]
-        )
-        if not is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        token, _ = Token.objects.get_or_create(user=user)
-        user_logged_in.send(sender=user.__class__, request=request, user=user)
-        return Response(status=status.HTTP_200_OK, data=TokenSerializer(token).data)
-
-    @classmethod
-    def _perform_authentication(cls, user_id: int, code: str) -> bool:
-        for auth_method in list_active_mfa_methods_query(user_id=user_id):
-            validated_backup_code = validate_backup_code(
-                value=code, backup_codes=auth_method.backup_codes
+        try:
+            user = authenticate_second_step_command(
+                code=serializer.validated_data["code"],
+                ephemeral_token=serializer.validated_data["ephemeral_token"],
             )
-            if validate_code(code=code, mfa_method=auth_method):
-                return True
-            if validated_backup_code:
-                auth_method.remove_backup_code(validated_backup_code)
-                return True
-        return False
+            token, _ = Token.objects.get_or_create(user=user)
+            user_logged_in.send(sender=user.__class__, request=request, user=user)
+            return Response(status=status.HTTP_200_OK, data=TokenSerializer(token).data)
+        except MFAValidationError as cause:
+            return Response(
+                status=status.HTTP_401_UNAUTHORIZED, data={"error": str(cause)}
+            )
 
 
 class MFALogoutView(APIView):
@@ -287,7 +271,7 @@ class GetMFAConfig(APIView):
 
 
 class ListUserActiveMFAMethods(ListAPIView):
-    serializer_class = serializers.UserMFAMethodSerializer
+    serializer_class = UserMFAMethodSerializer
 
     def get_queryset(self) -> QuerySet:
         return list_active_mfa_methods_query(user_id=self.request.user.id)

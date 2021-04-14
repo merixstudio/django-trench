@@ -1,5 +1,3 @@
-from rest_framework.generics import GenericAPIView
-
 from trench.views.base import (
     MFACodeLoginMixin,
     MFACredentialsLoginMixin,
@@ -8,13 +6,13 @@ from trench.views.base import (
 )
 
 
-class AuthTokenLoginOrRequestMFACode(
-    MFACredentialsLoginMixin, MFALoginView, GenericAPIView
-):
+class AuthTokenLoginOrRequestMFACode(MFACredentialsLoginMixin, MFALoginView):
+    # TODO - this is currently not used - do we want to have it anyway?
     pass
 
 
-class AuthTokenLoginWithMFACode(MFACodeLoginMixin, MFALoginView, GenericAPIView):
+class AuthTokenLoginWithMFACode(MFACodeLoginMixin, MFALoginView):
+    # TODO - this is currently not used - do we want to have it anyway?
     pass
 
 
