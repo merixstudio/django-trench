@@ -6,7 +6,7 @@ from typing_extensions import Type
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
-from trench.settings import api_settings
+from trench.settings import trench_settings
 from trench.utils import get_mfa_model
 
 
@@ -43,7 +43,7 @@ class RegenerateBackupCodesForMFAMethodCommand:
 
 regenerate_backup_codes_for_mfa_method_command = (
     RegenerateBackupCodesForMFAMethodCommand(
-        requires_encryption=api_settings.ENCRYPT_BACKUP_CODES,
+        requires_encryption=trench_settings.ENCRYPT_BACKUP_CODES,
         mfa_model=get_mfa_model(),
         code_hasher=make_password,
         codes_generator=generate_backup_codes_command,

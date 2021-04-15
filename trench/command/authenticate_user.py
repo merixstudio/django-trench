@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework.request import Request
 
 from trench.exceptions import UnauthenticatedError, UserAccountDisabledError
-from trench.settings import api_settings
+from trench.settings import trench_settings
 
 
 User = get_user_model()
@@ -19,7 +19,7 @@ class AuthenticateUserCommand:
         )
         if user is None:
             raise UnauthenticatedError()
-        if not getattr(user, api_settings.USER_ACTIVE_FIELD, True):
+        if not getattr(user, trench_settings.USER_ACTIVE_FIELD, True):
             raise UserAccountDisabledError()
         return user
 

@@ -41,7 +41,7 @@ from trench.serializers import (
     UserMFAMethodSerializer,
     generate_model_serializer,
 )
-from trench.settings import api_settings
+from trench.settings import trench_settings
 from trench.utils import (
     get_mfa_handler,
     get_mfa_model,
@@ -51,7 +51,7 @@ from trench.utils import (
 
 
 MFAMethod = get_mfa_model()
-requires_encryption = api_settings.ENCRYPT_BACKUP_CODES
+requires_encryption = trench_settings.ENCRYPT_BACKUP_CODES
 User = get_user_model()
 
 
@@ -186,8 +186,7 @@ class RequestMFAMethodActivationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 data={"error": str(cause)},
             )
-        handler = get_mfa_handler(mfa_method=mfa)
-        return Response(handler.dispatch_message(), status=status.HTTP_200_OK)
+        return get_mfa_handler(mfa_method=mfa).dispatch_message()
 
 
 class RequestMFAMethodActivationConfirmView(APIView):
@@ -258,14 +257,14 @@ class GetMFAConfig(APIView):
     @staticmethod
     def get(request: Request) -> Response:
         available_methods = [
-            (k, v.get("VERBOSE_NAME")) for k, v in api_settings.MFA_METHODS.items()
+            (k, v.get("VERBOSE_NAME")) for k, v in trench_settings.MFA_METHODS.items()
         ]
         return Response(
             data={
                 "methods": available_methods,
-                "confirm_disable_with_code": api_settings.CONFIRM_DISABLE_WITH_CODE,  # noqa
-                "confirm_regeneration_with_code": api_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE,  # noqa
-                "allow_backup_codes_regeneration": api_settings.ALLOW_BACKUP_CODES_REGENERATION,  # noqa
+                "confirm_disable_with_code": trench_settings.CONFIRM_DISABLE_WITH_CODE,  # noqa
+                "confirm_regeneration_with_code": trench_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE,  # noqa
+                "allow_backup_codes_regeneration": trench_settings.ALLOW_BACKUP_CODES_REGENERATION,  # noqa
             },
         )
 
@@ -291,8 +290,7 @@ class RequestMFAMethodCode(APIView):
                     user_id=request.user.id
                 )
             mfa = get_mfa_method_query(user_id=request.user.id, name=method)
-            handler = get_mfa_handler(mfa_method=mfa)
-            return Response(handler.dispatch_message())
+            return get_mfa_handler(mfa_method=mfa).dispatch_message()
         except MFAValidationError as cause:
             return Response(
                 status=status.HTTP_400_BAD_REQUEST, data={"error": str(cause)}

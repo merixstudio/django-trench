@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
 from trench.exceptions import MFAMethodDoesNotExistError
-from trench.settings import api_settings
+from trench.settings import SOURCE_FIELD, trench_settings
 
 
 User = get_user_model()
@@ -64,17 +64,17 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
 user_token_generator = UserTokenGenerator()
 
 
-def create_secret():
+def create_secret() -> str:
     """
     Creates new random secret.
 
     :returns: Random secret
     :rtype: str
     """
-    return pyotp.random_base32(length=api_settings.SECRET_KEY_LENGTH)
+    return pyotp.random_base32(length=trench_settings.SECRET_KEY_LENGTH)
 
 
-def create_otp_code(secret):
+def create_otp_code(secret: str) -> str:
     """
     Creates new OTP code.
 
@@ -103,7 +103,7 @@ def create_qr_link(secret: str, user: User) -> str:
     totp = pyotp.TOTP(secret)
     return totp.provisioning_uri(
         getattr(user, User.USERNAME_FIELD),
-        api_settings.APPLICATION_ISSUER_NAME,
+        trench_settings.APPLICATION_ISSUER_NAME,
     )
 
 
@@ -133,16 +133,13 @@ def get_mfa_handler(mfa_method):
     :returns: MFA handler
     :rtype: AbstractMessageDispatcher
     """
-    conf = api_settings.MFA_METHODS[mfa_method.name]
-    return conf["HANDLER"](
-        user=mfa_method.user,
-        obj=mfa_method,
-        conf=conf,
-    )
+    conf = trench_settings.MFA_METHODS[mfa_method.name]
+    dispatcher = conf["HANDLER"]
+    return dispatcher(mfa_method=mfa_method, config=conf)
 
 
 def get_mfa_model():
-    return apps.get_model(api_settings.USER_MFA_MODEL)
+    return apps.get_model(trench_settings.USER_MFA_MODEL)
 
 
 def parse_dotted_path(path: str) -> Tuple[Optional[str], str]:
@@ -189,7 +186,7 @@ def validate_backup_code(value, backup_codes):
     :param backup_codes:
     :return:
     """
-    if api_settings.ENCRYPT_BACKUP_CODES:
+    if trench_settings.ENCRYPT_BACKUP_CODES:
         validated_codes = [_ for _ in backup_codes if check_password(value, _)]
     else:  # pragma: no cover
         validated_codes = [_ for _ in backup_codes if value in backup_codes]
@@ -200,10 +197,10 @@ def validate_backup_code(value, backup_codes):
 
 def get_method_config_by_name(name: str) -> Dict[str, Any]:
     try:
-        return api_settings.MFA_METHODS[name]
+        return trench_settings.MFA_METHODS[name]
     except KeyError as cause:
         raise MFAMethodDoesNotExistError from cause
 
 
 def get_source_field_by_method_name(name: str) -> Optional[str]:
-    return get_method_config_by_name(name).get("SOURCE_FIELD")
+    return get_method_config_by_name(name).get(SOURCE_FIELD)

@@ -1,51 +1,38 @@
+from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.utils.translation import gettext_lazy as _
 
+import logging
 from smtplib import SMTPException
-from typing import Any, Dict
 
 from trench.backends.base import AbstractMessageDispatcher
-from trench.settings import api_settings
+from trench.responses import (
+    DispatchResponse,
+    FailedDispatchResponse,
+    SuccessfulDispatchResponse,
+)
+from trench.settings import EMAIL_HTML_TEMPLATE, EMAIL_PLAIN_TEMPLATE, EMAIL_SUBJECT
 
 
-class SendMailBackend(AbstractMessageDispatcher):
-    _FIELD_EMAIL_PLAIN_TEMPLATE = "EMAIL_PLAIN_TEMPLATE"
-    _FIELD_EMAIL_HTML_TEMPLATE = "EMAIL_HTML_TEMPLATE"
-    _FIELD_EMAIL_SUBJECT = "EMAIL_SUBJECT"
+class SendMailMessageDispatcher(AbstractMessageDispatcher):
     _KEY_MESSAGE = "message"
-    _KEY_CODE = "code"
+    _SUCCESS_DETAILS = _("Email message with MFA code has been sent.")
 
-    def dispatch_message(self, *args, **kwargs) -> Dict[str, str]:
-        """Sends an email with verification code."""
-
-        context = self.get_context()
-        plain_message = self.render_template(
-            self.conf.get(self._FIELD_EMAIL_PLAIN_TEMPLATE),
-            context,
-        )
-        html_message = self.render_template(
-            self.conf.get(self._FIELD_EMAIL_HTML_TEMPLATE),
-            context,
-        )
+    def dispatch_message(self) -> DispatchResponse:
+        context = {"code": self.create_code()}
+        email_plain_template = self._config[EMAIL_PLAIN_TEMPLATE]
+        email_html_template = self._config[EMAIL_HTML_TEMPLATE]
         try:
             send_mail(
-                subject=self.conf.get(self._FIELD_EMAIL_SUBJECT),
-                message=plain_message,
-                html_message=html_message,
-                from_email=api_settings.FROM_EMAIL,
-                recipient_list=[self.to],
+                subject=self._config.get(EMAIL_SUBJECT),
+                message=get_template(email_plain_template).render(context),
+                html_message=get_template(email_html_template).render(context),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=(self._to,),
                 fail_silently=False,
             )
-        except SMTPException:  # pragma: no cover
-            return {
-                self._KEY_MESSAGE: _("Email message with MFA code has not been sent.")
-            }  # pragma: no cover
-        return {self._KEY_MESSAGE: _("Email message with MFA code has been sent.")}
-
-    def get_context(self) -> Dict[str, Any]:
-        return {self._KEY_CODE: self.create_code()}
-
-    @staticmethod
-    def render_template(name: str, context: Dict[str, Any]):
-        return get_template(name).render(context)
+            return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
+        except SMTPException as cause:
+            logging.error(cause, exc_info=True)
+            return FailedDispatchResponse(details=str(cause))

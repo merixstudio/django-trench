@@ -1,47 +1,31 @@
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
+import logging
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
 from trench.backends.base import AbstractMessageDispatcher
+from trench.responses import (
+    DispatchResponse,
+    FailedDispatchResponse,
+    SuccessfulDispatchResponse,
+)
+from trench.settings import TWILIO_VERIFIED_FROM_NUMBER
 
 
-class TwilioBackend(AbstractMessageDispatcher):
-    SMS_BODY = _("Your verification code is: ")
+class TwilioMessageDispatcher(AbstractMessageDispatcher):
+    _SMS_BODY = _("Your verification code is: ")
+    _SUCCESS_DETAILS = _("SMS message with MFA code has been sent.")
 
-    def dispatch_message(self):
-        """
-        Sends a SMS with verification code.
-        :return:
-        """
-        code = self.create_code()
-
-        if settings.DEBUG:
-            try:  # pragma: no cover
-                self.send_sms(self.to, code)  # pragma: no cover
-            except TwilioRestException as e:  # pragma: no cover
-                print(  # pragma: no cover
-                    "Error found: {}\n"
-                    "SMS to number {}\n"
-                    "Your code is {}.".format(e, self.to, code)
-                )
-        else:
-            self.send_sms(self.to, code)
-        return {
-            "message": _("SMS message with MFA code has been sent.")
-        }  # pragma: no cover # noqa
-
-    def send_sms(self, user_mobile, code):
-        client = self.provider_auth()
-        client.messages.create(  # pragma: no cover
-            body=self.SMS_BODY + code,
-            to=user_mobile,
-            from_=self.conf.get("TWILIO_VERIFIED_FROM_NUMBER"),
-        )
-
-    def provider_auth(self):
-        return Client(
-            self.conf.get("TWILIO_ACCOUNT_SID"),
-            self.conf.get("TWILIO_AUTH_TOKEN"),
-        )
+    def dispatch_message(self) -> DispatchResponse:
+        try:
+            client = Client()  # pragma: no cover
+            client.messages.create(  # pragma: no cover
+                body=self._SMS_BODY + self.create_code(),
+                to=self._to,
+                from_=self._config.get(TWILIO_VERIFIED_FROM_NUMBER),
+            )
+            return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
+        except TwilioRestException as cause:
+            logging.error(cause, exc_info=True)
+            return FailedDispatchResponse(details=str(cause))

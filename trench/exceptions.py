@@ -5,16 +5,9 @@ from rest_framework.serializers import ValidationError
 from typing import Iterable
 
 
-class MissingSourceFieldAttributeError(ImproperlyConfigured):
+class MissingConfigurationError(ImproperlyConfigured):
     def __init__(self, attribute_name: str):
-        super().__init__(
-            f"Could not retrieve attribute '{attribute_name}' for given user."
-        )
-
-
-class InvalidSettingError(ImproperlyConfigured):
-    def __init__(self, attribute_name: str):
-        super().__init__(f"Invalid API setting: {attribute_name}")
+        super().__init__(f"Could not retrieve attribute '{attribute_name}'.")
 
 
 class RestrictedCharInBackupCodeError(ImproperlyConfigured):

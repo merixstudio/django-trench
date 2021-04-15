@@ -5,11 +5,7 @@ import string
 from rest_framework.settings import APISettings, perform_import
 from typing import Any
 
-from trench.exceptions import (
-    InvalidSettingError,
-    MethodHandlerMissingError,
-    RestrictedCharInBackupCodeError,
-)
+from trench.exceptions import MethodHandlerMissingError, RestrictedCharInBackupCodeError
 
 
 class TrenchAPISettings(APISettings):
@@ -27,16 +23,8 @@ class TrenchAPISettings(APISettings):
         return self._user_settings
 
     def __getattr__(self, attr):
-        if attr not in self.defaults:
-            raise InvalidSettingError(attribute_name=attr)
-        try:
-            val = self.user_settings[attr]
-        except (KeyError, InvalidSettingError):
-            val = self.defaults[attr]
-        if attr in self.import_strings:
-            val = perform_import(val, attr)
+        val = super().__getattr__(attr)
         self._validate(attribute=attr, value=val)
-        self._cache(attribute=attr, value=val)
         return val
 
     @classmethod
@@ -55,16 +43,23 @@ class TrenchAPISettings(APISettings):
                     method_config[cls._FIELD_HANDLER], cls._FIELD_HANDLER
                 )
 
-    def _cache(self, attribute: str, value: Any):
-        self._cached_attrs.add(attribute)
-        setattr(self, attribute, value)
-
     def __getitem__(self, attr):
         return self.__getattr__(attr)
 
 
+SOURCE_FIELD = "SOURCE_FIELD"
+HANDLER = "HANDLER"
+VALIDITY_PERIOD = "VALIDITY_PERIOD"
+VERBOSE_NAME = "VERBOSE_NAME"
+EMAIL_SUBJECT = "EMAIL_SUBJECT"
+EMAIL_PLAIN_TEMPLATE = "EMAIL_PLAIN_TEMPLATE"
+EMAIL_HTML_TEMPLATE = "EMAIL_HTML_TEMPLATE"
+SMSAPI_ACCESS_TOKEN = "SMSAPI_ACCESS_TOKEN"
+SMSAPI_FROM_NUMBER = "SMSAPI_FROM_NUMBER"
+TWILIO_VERIFIED_FROM_NUMBER = "TWILIO_VERIFIED_FROM_NUMBER"
+YUBICLOUD_CLIENT_ID = "YUBICLOUD_CLIENT_ID"
+
 DEFAULTS = {
-    "FROM_EMAIL": getattr(settings, "DEFAULT_FROM_EMAIL"),
     "USER_MFA_MODEL": "trench.MFAMethod",
     "USER_ACTIVE_FIELD": "is_active",
     "BACKUP_CODES_QUANTITY": 5,
@@ -76,52 +71,50 @@ DEFAULTS = {
     "CONFIRM_DISABLE_WITH_CODE": False,
     # FIXME: currently this is not used + tests coverage!
     "CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE": True,
-    "ALLOW_BACKUP_CODES_REGENERATION": True,
+    "ALLOW_BACKUP_CODES_REGENERATION": True,  # FIXME: unused
     "ENCRYPT_BACKUP_CODES": True,
     "APPLICATION_ISSUER_NAME": "MyApplication",
-    "CACHE_PREFIX": "trench",
-    "MAX_METHODS_PER_USER": 3,
+    "CACHE_PREFIX": "trench",  # FIXME: unused
+    "MAX_METHODS_PER_USER": 3,  # FIXME: unused
     "MFA_METHODS": {
         "sms_twilio": {
-            "VERBOSE_NAME": _("sms_twilio"),
-            "VALIDITY_PERIOD": 60 * 10,
-            "HANDLER": "trench.backends.twilio.TwilioBackend",
-            "SOURCE_FIELD": "phone_number",
-            "TWILIO_ACCOUNT_SID": "YOUR KEY",
-            "TWILIO_AUTH_TOKEN": "YOUR KEY",
-            "TWILIO_VERIFIED_FROM_NUMBER": "YOUR TWILIO REGISTERED NUMBER",
+            VERBOSE_NAME: _("sms_twilio"),
+            VALIDITY_PERIOD: 60 * 10,
+            HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
+            SOURCE_FIELD: "phone_number",
+            TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
         },
         "sms_api": {
-            "VERBOSE_NAME": _("sms_api"),
-            "VALIDITY_PERIOD": 60 * 10,
-            "HANDLER": "trench.backends.sms_api.SmsAPIBackend",
-            "SOURCE_FIELD": "phone_number",
-            "SMSAPI_ACCESS_TOKEN": "YOUR SMSAPI TOKEN",
-            "SMSAPI_FROM_NUMBER": "YOUR REGISTERED NUMBER",
+            VERBOSE_NAME: _("sms_api"),
+            VALIDITY_PERIOD: 60 * 10,
+            HANDLER: "trench.backends.sms_api.SMSAPIMessageDispatcher",
+            SOURCE_FIELD: "phone_number",
+            SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
+            SMSAPI_FROM_NUMBER: "YOUR REGISTERED NUMBER",
         },
         "email": {
-            "VERBOSE_NAME": _("email"),
-            "VALIDITY_PERIOD": 60 * 10,
-            "HANDLER": "trench.backends.basic_mail.SendMailBackend",
-            "SOURCE_FIELD": "email",
-            "EMAIL_SUBJECT": _("Your verification code"),
-            "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
-            "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
+            VERBOSE_NAME: _("email"),
+            VALIDITY_PERIOD: 60 * 10,
+            HANDLER: "trench.backends.basic_mail.SendMailMessageDispatcher",
+            SOURCE_FIELD: "email",
+            EMAIL_SUBJECT: _("Your verification code"),
+            EMAIL_PLAIN_TEMPLATE: "trench/backends/email/code.txt",
+            EMAIL_HTML_TEMPLATE: "trench/backends/email/code.html",
         },
         "app": {
-            "VERBOSE_NAME": _("app"),
-            "VALIDITY_PERIOD": 60 * 10,
+            VERBOSE_NAME: _("app"),
+            VALIDITY_PERIOD: 60 * 10,
             "USES_THIRD_PARTY_CLIENT": True,
-            "HANDLER": "trench.backends.application.ApplicationBackend",
+            HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
         },
         "yubi": {
-            "VERBOSE_NAME": _("yubi"),
-            "HANDLER": "trench.backends.yubikey.YubiKeyBackend",
-            "YUBICLOUD_CLIENT_ID": "YOUR KEY",
+            VERBOSE_NAME: _("yubi"),
+            HANDLER: "trench.backends.yubikey.YubiKeyMessageDispatcher",
+            YUBICLOUD_CLIENT_ID: "YOUR KEY",
         },
     },
 }
 
-api_settings = TrenchAPISettings(
+trench_settings = TrenchAPISettings(
     user_settings=None, defaults=DEFAULTS, import_strings=None
 )

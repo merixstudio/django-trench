@@ -1,36 +1,38 @@
 import pyotp
 from abc import abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from trench.exceptions import MissingSourceFieldAttributeError
-from trench.settings import api_settings
+from trench.exceptions import MissingConfigurationError
+from trench.models import MFAMethod
+from trench.responses import DispatchResponse
+from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
 from trench.utils import create_otp_code, get_nested_attr_value
 
 
 class AbstractMessageDispatcher:
-    _FIELD_SOURCE_FIELD = "SOURCE_FIELD"
-    _FIELD_VALIDITY_PERIOD = "VALIDITY_PERIOD"
+    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]):
+        self._mfa_method = mfa_method
+        self._config = config
+        self._to = self._get_source_field()
 
-    def __init__(self, user, obj, conf):
-        self.user = user
-        self.obj = obj
-        self.conf = conf
-        self.to = ""
-
-        if self._FIELD_SOURCE_FIELD in conf:
-            source = get_nested_attr_value(user, conf[self._FIELD_SOURCE_FIELD])
+    def _get_source_field(self) -> Optional[str]:
+        if SOURCE_FIELD in self._config:
+            source = get_nested_attr_value(
+                self._mfa_method.user, self._config[SOURCE_FIELD]
+            )
             if source is None:
-                raise MissingSourceFieldAttributeError(  # pragma: no cover
-                    attribute_name=conf[self._FIELD_SOURCE_FIELD]
+                raise MissingConfigurationError(
+                    attribute_name=self._config[SOURCE_FIELD]
                 )
-            self.to = source
+            return source
+        return None
 
     @abstractmethod
-    def dispatch_message(self) -> Dict[str, Any]:
-        pass  # pragma: no cover
+    def dispatch_message(self) -> DispatchResponse:
+        pass
 
     def create_code(self) -> str:
-        return create_otp_code(self.obj.secret)
+        return create_otp_code(self._mfa_method.secret)
 
     def confirm_activation(self, code: str):
         pass
@@ -39,10 +41,9 @@ class AbstractMessageDispatcher:
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
-        validity_period = (
-            self.conf.get(self._FIELD_VALIDITY_PERIOD)
-            or api_settings.DEFAULT_VALIDITY_PERIOD
+        validity_period = self._config.get(
+            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
         )
-        return pyotp.TOTP(self.obj.secret).verify(
+        return pyotp.TOTP(self._mfa_method.secret).verify(
             otp=code, valid_window=int(validity_period / 30)
         )

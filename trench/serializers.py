@@ -16,14 +16,14 @@ from trench.exceptions import (
     OTPCodeMissingError,
 )
 from trench.query.get_mfa_method import get_mfa_method_query
-from trench.settings import api_settings
+from trench.settings import trench_settings
 from trench.utils import get_mfa_handler, get_mfa_model, validate_backup_code
 
 
 User = get_user_model()
 MFAMethod = get_mfa_model()
 
-mfa_methods_items = api_settings.MFA_METHODS.items()
+mfa_methods_items = trench_settings.MFA_METHODS.items()
 MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
 
 ContextType = Dict[str, Any]
@@ -117,7 +117,7 @@ class RequestMFAMethodCodeSerializer(RequestBodyValidator):
 
     @staticmethod
     def validate_method(value: str) -> str:
-        if value and value not in api_settings.MFA_METHODS:
+        if value and value not in trench_settings.MFA_METHODS:
             raise MFAMethodDoesNotExistError()
         return value
 
