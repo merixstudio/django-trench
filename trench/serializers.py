@@ -50,7 +50,7 @@ class RequestBodyValidator(Serializer):
 
 
 class ProtectedActionValidator(RequestBodyValidator):
-    code = CharField(required=True)
+    code = CharField()
 
     @staticmethod
     def _get_validation_method_name() -> str:
@@ -123,10 +123,6 @@ class RequestMFAMethodCodeSerializer(RequestBodyValidator):
 
 
 class LoginSerializer(RequestBodyValidator):
-    """
-    Validates user's credentials.
-    """
-
     password = CharField(write_only=True)
 
     def __init__(self, *args, **kwargs):
@@ -135,17 +131,8 @@ class LoginSerializer(RequestBodyValidator):
 
 
 class CodeLoginSerializer(RequestBodyValidator):
-    """
-    Validates given token and OTP code.
-    """
-
     ephemeral_token = CharField()
     code = CharField()
-
-
-class MFALoginValidator(RequestBodyValidator):
-    ephemeral_token = CharField(required=True)
-    code = CharField(required=True)
 
 
 class UserMFAMethodSerializer(ModelSerializer):

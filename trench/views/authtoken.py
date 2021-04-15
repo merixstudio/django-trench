@@ -1,17 +1,17 @@
 from trench.views.base import (
-    MFACodeLoginMixin,
-    MFACredentialsLoginMixin,
-    MFALoginView,
+    MFAFirstStepJWTView,
     MFALogoutView,
+    MFASecondStepAuthTokenView,
+    MFASecondStepJWTView,
 )
 
 
-class AuthTokenLoginOrRequestMFACode(MFACredentialsLoginMixin, MFALoginView):
+class AuthTokenLoginOrRequestMFACode(MFAFirstStepJWTView, MFASecondStepAuthTokenView):
     # TODO - this is currently not used - do we want to have it anyway?
     pass
 
 
-class AuthTokenLoginWithMFACode(MFACodeLoginMixin, MFALoginView):
+class AuthTokenLoginWithMFACode(MFASecondStepJWTView, MFASecondStepAuthTokenView):
     # TODO - this is currently not used - do we want to have it anyway?
     pass
 

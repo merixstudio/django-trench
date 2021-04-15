@@ -28,4 +28,4 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
             return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
         except TwilioRestException as cause:
             logging.error(cause, exc_info=True)
-            return FailedDispatchResponse(details=str(cause))
+            return FailedDispatchResponse(details=cause.msg)

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model, user_logged_in, user_logged_out
 from django.db.models import QuerySet
 
+from abc import ABC, abstractmethod
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
@@ -32,7 +33,6 @@ from trench.serializers import (
     ChangePrimaryMethodValidator,
     CodeLoginSerializer,
     LoginSerializer,
-    MFALoginValidator,
     MFAMethodActivationConfirmationValidator,
     MFAMethodBackupCodesGenerationValidator,
     MFAMethodDeactivationValidator,
@@ -55,16 +55,14 @@ requires_encryption = trench_settings.ENCRYPT_BACKUP_CODES
 User = get_user_model()
 
 
-class MFACredentialsLoginMixin(APIView):
-    """
-    Mixin handling user log in. Checks if primary MFA method
-    is active and dispatches code if so. Else calls handle_user_login.
-    """
-
+class MFAFirstStepMixin(APIView, ABC):
     permission_classes = (AllowAny,)
 
-    @staticmethod
-    def post(request: Request) -> Response:
+    @abstractmethod
+    def _successful_authentication_response(self, user: User) -> Response:
+        pass
+
+    def post(self, request: Request) -> Response:
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -79,8 +77,7 @@ class MFACredentialsLoginMixin(APIView):
             )
         try:
             mfa_method = get_primary_active_mfa_method_query(user_id=user.id)
-            handler = get_mfa_handler(mfa_method=mfa_method)
-            handler.dispatch_message()
+            get_mfa_handler(mfa_method=mfa_method).dispatch_message()
             return Response(
                 data={
                     "ephemeral_token": user_token_generator.make_token(user),
@@ -88,23 +85,33 @@ class MFACredentialsLoginMixin(APIView):
                 }
             )
         except MFAMethodDoesNotExistError:
-            token = RefreshToken.for_user(user=user)
-            return Response(
-                data={"refresh": str(token), "access": str(token.access_token)}
-            )
+            return self._successful_authentication_response(user=user)
 
 
-class MFACodeLoginMixin(APIView):
-    """
-    Mixin handling user login if MFA auth is enabled.
-    Expects ephemeral token and valid MFA code.
-    Checks against all active MFA methods.
-    """
+# FIXME: use composition over inheritance! (duplicated code)
 
+
+class MFAFirstStepJWTView(MFAFirstStepMixin):
+    def _successful_authentication_response(self, user: User) -> Response:
+        token = RefreshToken.for_user(user=user)
+        return Response(data={"refresh": str(token), "access": str(token.access_token)})
+
+
+class MFAFirstStepAuthTokenView(MFAFirstStepMixin):
+    def _successful_authentication_response(self, user: User) -> Response:
+        token, _ = Token.objects.get_or_create(user=user)
+        user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+        return Response(data=TokenSerializer(token).data)
+
+
+class MFASecondStepMixin(APIView, ABC):
     permission_classes = (AllowAny,)
 
-    @staticmethod
-    def post(request: Request) -> Response:
+    @abstractmethod
+    def _successful_authentication_response(self, user: User) -> Response:
+        pass
+
+    def post(self, request: Request) -> Response:
         serializer = CodeLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -112,31 +119,24 @@ class MFACodeLoginMixin(APIView):
                 code=serializer.validated_data["code"],
                 ephemeral_token=serializer.validated_data["ephemeral_token"],
             )
-            token = RefreshToken.for_user(user)
-            return Response({"refresh": str(token), "access": str(token.access_token)})
+            return self._successful_authentication_response(user=user)
         except MFAValidationError as cause:
             return Response(
                 status=status.HTTP_401_UNAUTHORIZED, data={"error": str(cause)}
             )
 
 
-class MFALoginView(APIView):
-    @classmethod
-    def post(cls, request: Request) -> Response:
-        serializer = MFALoginValidator(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            user = authenticate_second_step_command(
-                code=serializer.validated_data["code"],
-                ephemeral_token=serializer.validated_data["ephemeral_token"],
-            )
-            token, _ = Token.objects.get_or_create(user=user)
-            user_logged_in.send(sender=user.__class__, request=request, user=user)
-            return Response(status=status.HTTP_200_OK, data=TokenSerializer(token).data)
-        except MFAValidationError as cause:
-            return Response(
-                status=status.HTTP_401_UNAUTHORIZED, data={"error": str(cause)}
-            )
+class MFASecondStepJWTView(MFASecondStepMixin):
+    def _successful_authentication_response(self, user: User) -> Response:
+        token = RefreshToken.for_user(user)
+        return Response({"refresh": str(token), "access": str(token.access_token)})
+
+
+class MFASecondStepAuthTokenView(MFASecondStepMixin):
+    def _successful_authentication_response(self, user: User) -> Response:
+        token, _ = Token.objects.get_or_create(user=user)
+        user_logged_in.send(sender=user.__class__, request=self.request, user=user)
+        return Response(data=TokenSerializer(token).data)
 
 
 class MFALogoutView(APIView):
@@ -151,13 +151,7 @@ class MFALogoutView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class RequestMFAMethodActivationView(APIView):
-    """
-    View handling new MFA method activation requests.
-    If validation passes, new MFAMethod (inactive) object
-    is created. The method will be activated after confirmation.
-    """
-
+class MFAMethodActivationView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
@@ -189,7 +183,7 @@ class RequestMFAMethodActivationView(APIView):
         return get_mfa_handler(mfa_method=mfa).dispatch_message()
 
 
-class RequestMFAMethodActivationConfirmView(APIView):
+class MFAMethodConfirmActivationView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
@@ -212,7 +206,7 @@ class RequestMFAMethodActivationConfirmView(APIView):
             )
 
 
-class RequestMFAMethodDeactivationView(APIView):
+class MFAMethodDeactivationView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
@@ -231,7 +225,7 @@ class RequestMFAMethodDeactivationView(APIView):
             )
 
 
-class RequestMFAMethodBackupCodesRegenerationView(APIView):
+class MFAMethodBackupCodesRegenerationView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
@@ -253,7 +247,9 @@ class RequestMFAMethodBackupCodesRegenerationView(APIView):
             )
 
 
-class GetMFAConfig(APIView):
+class MFAConfigView(APIView):
+    permission_classes = (AllowAny,)
+
     @staticmethod
     def get(request: Request) -> Response:
         available_methods = [
@@ -269,14 +265,15 @@ class GetMFAConfig(APIView):
         )
 
 
-class ListUserActiveMFAMethods(ListAPIView):
+class MFAListActiveUserMethodsView(ListAPIView):
     serializer_class = UserMFAMethodSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self) -> QuerySet:
         return list_active_mfa_methods_query(user_id=self.request.user.id)
 
 
-class RequestMFAMethodCode(APIView):
+class MFAMethodRequestCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
@@ -297,13 +294,14 @@ class RequestMFAMethodCode(APIView):
             )
 
 
-class ChangePrimaryMethod(APIView):
+class MFAPrimaryMethodChangeView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     @staticmethod
     def post(request: Request) -> Response:
         mfa_method_name = get_primary_active_mfa_method_name_query(
             user_id=request.user.id
         )
-        print(mfa_method_name)
         serializer = ChangePrimaryMethodValidator(
             user=request.user, mfa_method_name=mfa_method_name, data=request.data
         )
