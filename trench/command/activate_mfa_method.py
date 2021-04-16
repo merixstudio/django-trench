@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, Set
 from typing_extensions import Type
 
 from trench.command.generate_backup_codes import generate_backup_codes_command
@@ -17,7 +17,7 @@ class ActivateMFAMethodCommand:
         self._mfa_model = mfa_model
         self._backup_codes_generator = backup_codes_generator
 
-    def execute(self, user_id: int, name: str, code: str) -> List[str]:
+    def execute(self, user_id: int, name: str, code: str) -> Set[str]:
         mfa = get_mfa_method_query(user_id=user_id, name=name)
         handler = get_mfa_handler(mfa)
         handler.confirm_activation(code)

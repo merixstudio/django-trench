@@ -2,6 +2,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
@@ -14,7 +15,7 @@ from trench.exceptions import MFAMethodDoesNotExistError
 from trench.settings import SOURCE_FIELD, trench_settings
 
 
-User = get_user_model()
+UserModel = get_user_model()
 
 
 class UserTokenGenerator(PasswordResetTokenGenerator):
@@ -39,8 +40,8 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
             token = str(token)
             user_pk, ts_b36, token_hash = token.rsplit("-", 2)
             ts = base36_to_int(ts_b36)
-            user = User._default_manager.get(pk=user_pk)
-        except (ValueError, TypeError, User.DoesNotExist):
+            user = UserModel._default_manager.get(pk=user_pk)
+        except (ValueError, TypeError, UserModel.DoesNotExist):
             return None
 
         if (datetime.now().timestamp() - ts) > self.EXPIRY_TIME:
@@ -148,11 +149,9 @@ def parse_dotted_path(path: str) -> Tuple[Optional[str], str]:
     """
     try:
         objects, attr = path.rsplit(".", 1)
+        return objects, attr
     except ValueError:
-        objects = None
-        attr = path
-
-    return objects, attr
+        return None, path
 
 
 def get_innermost_object(obj: object, dotted_path: str = None) -> object:

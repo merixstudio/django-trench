@@ -1,12 +1,10 @@
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 from rest_framework.request import Request
 
 from trench.exceptions import UnauthenticatedError, UserAccountDisabledError
 from trench.settings import trench_settings
-
-
-User = get_user_model()
 
 
 class AuthenticateUserCommand:

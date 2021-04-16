@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.db.models import Model
 from django.utils.translation import gettext as _
 
@@ -15,13 +15,11 @@ from trench.exceptions import (
     MFANotEnabledError,
     OTPCodeMissingError,
 )
+from trench.models import MFAMethod
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.settings import trench_settings
 from trench.utils import get_mfa_handler, get_mfa_model, validate_backup_code
 
-
-User = get_user_model()
-MFAMethod = get_mfa_model()
 
 mfa_methods_items = trench_settings.MFA_METHODS.items()
 MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
@@ -137,7 +135,7 @@ class CodeLoginSerializer(RequestBodyValidator):
 
 class UserMFAMethodSerializer(ModelSerializer):
     class Meta:
-        model = MFAMethod
+        model = get_mfa_model()
         fields = ("name", "is_primary")
 
 

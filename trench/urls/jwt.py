@@ -1,6 +1,6 @@
 from django.urls import path
 
-from trench.views import MFAFirstStepJWTView, MFASecondStepJWTView
+from trench.views.jwt import MFAFirstStepJWTView, MFASecondStepJWTView
 
 
 urlpatterns = [
