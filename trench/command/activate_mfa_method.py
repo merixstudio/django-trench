@@ -1,6 +1,7 @@
 from typing import Callable, Set
 from typing_extensions import Type
 
+from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
@@ -9,7 +10,7 @@ from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.query.primary_mfa_method_exists import primary_mfa_method_exists_query
-from trench.utils import get_mfa_handler, get_mfa_model
+from trench.utils import get_mfa_model
 
 
 class ActivateMFAMethodCommand:

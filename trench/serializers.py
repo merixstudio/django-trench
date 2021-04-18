@@ -8,6 +8,8 @@ from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
 from typing import Any, Dict, Iterable, Type
 
+from trench.backends.provider import get_mfa_handler
+from trench.command.validate_backup_code import validate_backup_code_command
 from trench.exceptions import (
     CodeInvalidOrExpiredError,
     MFAMethodAlreadyActiveError,
@@ -18,7 +20,7 @@ from trench.exceptions import (
 from trench.models import MFAMethod
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.settings import trench_settings
-from trench.utils import get_mfa_handler, get_mfa_model, validate_backup_code
+from trench.utils import get_mfa_model
 
 
 mfa_methods_items = trench_settings.MFA_METHODS.items()
@@ -71,7 +73,9 @@ class ProtectedActionValidator(RequestBodyValidator):
         mfa = get_mfa_method_query(user_id=self._user.id, name=self._mfa_method_name)
         self._validate_mfa_method(mfa)
 
-        validated_backup_code = validate_backup_code(value, mfa.backup_codes)
+        validated_backup_code = validate_backup_code_command(
+            value=value, backup_codes=mfa.backup_codes
+        )
 
         handler = get_mfa_handler(mfa)
         validation_method = getattr(handler, self._get_validation_method_name())

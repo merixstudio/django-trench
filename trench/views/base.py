@@ -13,6 +13,7 @@ from rest_framework.status import (
 )
 from rest_framework.views import APIView
 
+from trench.backends.provider import get_mfa_handler
 from trench.command.activate_mfa_method import activate_mfa_method_command
 from trench.command.authenticate_second_factor import authenticate_second_step_command
 from trench.command.authenticate_user import authenticate_user_command
@@ -23,6 +24,7 @@ from trench.command.replace_mfa_method_backup_codes import (
 )
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
+from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.query.get_mfa_method import get_mfa_method_query
 from trench.query.get_primary_active_mfa_method import (
     get_primary_active_mfa_method_query,
@@ -43,12 +45,8 @@ from trench.serializers import (
     UserMFAMethodSerializer,
     generate_model_serializer,
 )
-from trench.settings import trench_settings
-from trench.utils import (
-    get_mfa_handler,
-    get_source_field_by_method_name,
-    user_token_generator,
-)
+from trench.settings import SOURCE_FIELD, trench_settings
+from trench.utils import user_token_generator
 
 
 class MFAStepMixin(APIView, ABC):
@@ -104,7 +102,7 @@ class MFAMethodActivationView(APIView):
     @staticmethod
     def post(request: Request, method: str) -> Response:
         try:
-            source_field = get_source_field_by_method_name(name=method)
+            source_field = get_mfa_config_by_name_query(name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
         if source_field is not None:

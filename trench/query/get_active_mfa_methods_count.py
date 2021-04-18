@@ -1,9 +1,11 @@
+from typing import Type
+
 from trench.models import MFAMethod
 from trench.utils import get_mfa_model
 
 
 class GetActiveMFAMethodsCount:
-    def __init__(self, mfa_model: MFAMethod):
+    def __init__(self, mfa_model: Type[MFAMethod]):
         self._mfa_model = mfa_model
 
     def execute(self, user_id: int) -> int:

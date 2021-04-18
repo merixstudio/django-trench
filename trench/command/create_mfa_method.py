@@ -1,12 +1,13 @@
-from typing import Callable
+from typing import Callable, Type
 
+from trench.command.create_secret import create_secret_command
 from trench.exceptions import MFAMethodAlreadyActiveError
 from trench.models import MFAMethod
-from trench.utils import create_secret, get_mfa_model
+from trench.utils import get_mfa_model
 
 
 class CreateMFAMethodCommand:
-    def __init__(self, secret_generator: Callable, mfa_model: MFAMethod):
+    def __init__(self, secret_generator: Callable, mfa_model: Type[MFAMethod]):
         self._mfa_model = mfa_model
         self._create_secret = secret_generator
 
@@ -25,5 +26,5 @@ class CreateMFAMethodCommand:
 
 
 create_mfa_method_command = CreateMFAMethodCommand(
-    secret_generator=create_secret, mfa_model=get_mfa_model()
+    secret_generator=create_secret_command, mfa_model=get_mfa_model()
 ).execute

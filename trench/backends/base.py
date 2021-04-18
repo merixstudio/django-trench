@@ -1,15 +1,17 @@
-import pyotp
-from abc import abstractmethod
-from typing import Any, Dict, Optional
+from django.db.models import Model
 
+import pyotp
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional, Tuple
+
+from trench.create_code import create_code_command
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
 from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
-from trench.utils import create_otp_code, get_nested_attr_value
 
 
-class AbstractMessageDispatcher:
+class AbstractMessageDispatcher(ABC):
     def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]):
         self._mfa_method = mfa_method
         self._config = config
@@ -17,7 +19,7 @@ class AbstractMessageDispatcher:
 
     def _get_source_field(self) -> Optional[str]:
         if SOURCE_FIELD in self._config:
-            source = get_nested_attr_value(
+            source = self._get_nested_attr_value(
                 self._mfa_method.user, self._config[SOURCE_FIELD]
             )
             if source is None:
@@ -27,12 +29,42 @@ class AbstractMessageDispatcher:
             return source
         return None
 
+    def _get_nested_attr_value(self, obj, path) -> Optional[str]:
+        objects, attr = self._parse_dotted_path(path)
+        try:
+            _obj = self._get_innermost_object(obj, objects)
+        except AttributeError:  # pragma: no cover
+            return None  # pragma: no cover
+        return getattr(_obj, attr)
+
+    @staticmethod
+    def _parse_dotted_path(path: str) -> Tuple[Optional[str], str]:
+        """
+        Extracts attribute name from dotted path.
+        """
+        try:
+            objects, attr = path.rsplit(".", 1)
+            return objects, attr
+        except ValueError:
+            return None, path
+
+    @staticmethod
+    def _get_innermost_object(obj: Model, dotted_path: str = None) -> Model:
+        """
+        For given object return innermost object.
+        """
+        if dotted_path is None:
+            return obj
+        for o in dotted_path.split("."):
+            obj = getattr(obj, o)
+        return obj  # pragma: no cover
+
     @abstractmethod
     def dispatch_message(self) -> DispatchResponse:
         pass
 
     def create_code(self) -> str:
-        return create_otp_code(self._mfa_method.secret)
+        return create_code_command(secret=self._mfa_method.secret)
 
     def confirm_activation(self, code: str):
         pass
