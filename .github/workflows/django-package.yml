@@ -13,6 +13,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ./testproject
+      DJANGO_SETTINGS_MODULE: testproject.settings
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
