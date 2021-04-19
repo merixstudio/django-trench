@@ -8,7 +8,6 @@ from trench.exceptions import (
     MFANotEnabledError,
 )
 from trench.models import MFAMethod
-from trench.query.get_mfa_method import get_mfa_method_query
 from trench.utils import get_mfa_model
 
 
@@ -18,7 +17,7 @@ class DeactivateMFAMethodCommand:
 
     @atomic
     def execute(self, mfa_method_name: str, user_id: int):
-        mfa = get_mfa_method_query(user_id=user_id, name=mfa_method_name)
+        mfa = self._mfa_model.objects.get_by_name(user_id=user_id, name=mfa_method_name)
         if mfa.is_primary:
             raise DeactivationOfPrimaryMFAMethodError()
         if not mfa.is_active:

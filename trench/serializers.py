@@ -1,14 +1,14 @@
 from django.contrib.auth.models import User
 from django.db.models import Model
-from django.utils.translation import gettext as _
 
 from abc import abstractmethod
 from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
-from typing import Any, Dict, Iterable, Type
+from typing import Iterable, Type
 
 from trench.backends.provider import get_mfa_handler
+from trench.command.remove_backup_code import remove_backup_code_command
 from trench.command.validate_backup_code import validate_backup_code_command
 from trench.exceptions import (
     CodeInvalidOrExpiredError,
@@ -18,15 +18,8 @@ from trench.exceptions import (
     OTPCodeMissingError,
 )
 from trench.models import MFAMethod
-from trench.query.get_mfa_method import get_mfa_method_query
 from trench.settings import trench_settings
-from trench.utils import get_mfa_model
-
-
-mfa_methods_items = trench_settings.MFA_METHODS.items()
-MFA_METHODS = [(k, v.get("VERBOSE_NAME", _(k))) for k, v in mfa_methods_items]
-
-ContextType = Dict[str, Any]
+from trench.utils import available_method_choices, get_mfa_model
 
 
 def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) -> Type:
@@ -69,8 +62,10 @@ class ProtectedActionValidator(RequestBodyValidator):
     def validate_code(self, value: str) -> str:
         if not value:
             raise OTPCodeMissingError()
-
-        mfa = get_mfa_method_query(user_id=self._user.id, name=self._mfa_method_name)
+        mfa_model = get_mfa_model()
+        mfa = mfa_model.objects.get_by_name(
+            user_id=self._user.id, name=self._mfa_method_name
+        )
         self._validate_mfa_method(mfa)
 
         validated_backup_code = validate_backup_code_command(
@@ -83,13 +78,17 @@ class ProtectedActionValidator(RequestBodyValidator):
             return value
 
         if validated_backup_code:
-            mfa.remove_backup_code(validated_backup_code)
+            remove_backup_code_command(
+                user_id=mfa.user_id, method_name=mfa.name, code=value
+            )
             return value
 
         raise CodeInvalidOrExpiredError()
 
 
 class MFAMethodDeactivationValidator(ProtectedActionValidator):
+    code = CharField(required=trench_settings.CONFIRM_DISABLE_WITH_CODE)
+
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):
         if not mfa.is_active:
@@ -108,13 +107,17 @@ class MFAMethodActivationConfirmationValidator(ProtectedActionValidator):
 
 
 class MFAMethodBackupCodesGenerationValidator(ProtectedActionValidator):
+    code = CharField(
+        required=trench_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE
+    )
+
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):
         if not mfa.is_active:
             raise MFANotEnabledError()
 
 
-class RequestMFAMethodCodeSerializer(RequestBodyValidator):
+class MFAMethodCodeSerializer(RequestBodyValidator):
     method = CharField(max_length=255, required=False)
 
     @staticmethod
@@ -144,7 +147,7 @@ class UserMFAMethodSerializer(ModelSerializer):
 
 
 class ChangePrimaryMethodValidator(ProtectedActionValidator):
-    method = ChoiceField(choices=MFA_METHODS)
+    method = ChoiceField(choices=available_method_choices())
 
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod):

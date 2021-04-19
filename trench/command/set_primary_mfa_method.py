@@ -2,9 +2,8 @@ from django.db.transaction import atomic
 
 from typing_extensions import Type
 
-from trench.exceptions import MFAMethodDoesNotExistError
+from trench.exceptions import MFAMethodDoesNotExistError, MFAPrimaryMethodInactiveError
 from trench.models import MFAMethod
-from trench.query.is_mfa_method_active import is_mfa_method_active_query
 from trench.utils import get_mfa_model
 
 
@@ -17,7 +16,8 @@ class SetPrimaryMFAMethodCommand:
         self._mfa_model.objects.filter(user_id=user_id, is_primary=True).update(
             is_primary=False
         )
-        is_mfa_method_active_query(user_id=user_id, name=name)
+        if not self._mfa_model.objects.is_active_by_name(user_id=user_id, name=name):
+            raise MFAPrimaryMethodInactiveError()
         rows_affected = self._mfa_model.objects.filter(
             user_id=user_id, name=name
         ).update(is_primary=True)

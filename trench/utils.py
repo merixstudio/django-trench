@@ -5,15 +5,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
+from django.utils.translation import gettext_lazy as _
 
 from datetime import datetime
-from typing import Optional, Type
+from typing import List, Optional, Tuple, Type
 
 from trench.models import MFAMethod
-from trench.settings import trench_settings
-
-
-UserModel = get_user_model()
+from trench.settings import VERBOSE_NAME, trench_settings
 
 
 class UserTokenGenerator(PasswordResetTokenGenerator):
@@ -32,14 +30,15 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
 
     def check_token(self, user: User, token: str) -> Optional[User]:
+        user_model = get_user_model()
         if not token:
             return None
         try:
             token = str(token)
             user_pk, ts_b36, token_hash = token.rsplit("-", 2)
             ts = base36_to_int(ts_b36)
-            user = UserModel._default_manager.get(pk=user_pk)
-        except (ValueError, TypeError, UserModel.DoesNotExist):
+            user = user_model._default_manager.get(pk=user_pk)
+        except (ValueError, TypeError, user_model.DoesNotExist):
             return None
 
         if (datetime.now().timestamp() - ts) > self.EXPIRY_TIME:
@@ -65,3 +64,10 @@ user_token_generator = UserTokenGenerator()
 
 def get_mfa_model() -> Type[MFAMethod]:
     return apps.get_model(trench_settings.USER_MFA_MODEL)
+
+
+def available_method_choices() -> List[Tuple[str, str]]:
+    return [
+        (method_name, method_config.get(VERBOSE_NAME, _(method_name)))
+        for method_name, method_config in trench_settings.MFA_METHODS.items()
+    ]
