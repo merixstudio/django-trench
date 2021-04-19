@@ -31,13 +31,16 @@ jobs:
         python -m pip install mypy flake8 pytest
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
         python setup.py sdist
-        python -m pip install dist/django-trench-0.3.0.tar.gz
+        python -m pip install dist/`python setup.py --fullname`.tar.gz
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 ./trench/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 ./trench/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Check type hints with mypy
+      run: |
+        mypy ./trench/
     - name: Test with pytest
       run: |
         pytest testproject/tests/.
