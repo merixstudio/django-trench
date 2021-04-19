@@ -185,8 +185,8 @@ def active_user():
 @pytest.fixture()
 def inactive_user():
     user, created = User.objects.get_or_create(
-        username='djoser',
-        email='djoser@pyramids.eg',
+        username='ramzes',
+        email='ramzes@pyramids.eg',
     )
     if created:
         user.set_password('secretkey'),

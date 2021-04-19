@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'djoser',
     'corsheaders',
     'rest_framework_swagger',
 
@@ -117,12 +116,6 @@ JWT_AUTH = {
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'username',
     'USER_ID_CLAIM': 'username',
-}
-
-DJOSER = {
-    'SERIALIZERS': {
-        'user': 'testapp.serializers.ExtendedUserSerializer',
-    }
 }
 
 TRENCH_AUTH = {
