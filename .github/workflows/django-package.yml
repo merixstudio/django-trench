@@ -14,7 +14,6 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: ./testproject
       DJANGO_SETTINGS_MODULE: testproject.settings
     strategy:
       matrix:
@@ -31,6 +30,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install mypy flake8 pytest
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
+        python setup.py sdist
+        python -m pip install dist/django-trench-0.3.0.tar.gz
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -39,4 +40,4 @@ jobs:
         flake8 ./trench/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        pytest testproject/tests/.
