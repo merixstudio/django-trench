@@ -12,7 +12,7 @@ from tests.utils import (
     get_token_from_response,
     get_username_from_jwt,
     header_template,
-    login,
+    login, PATH_AUTH_JWT_LOGIN, PATH_AUTH_JWT_LOGIN_CODE,
 )
 
 
@@ -25,7 +25,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -46,7 +46,7 @@ def test_wrong_second_step_verification_with_empty_code(
     client = APIClient()
     first_step = login(active_user_with_email_otp)
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': '',
@@ -65,7 +65,7 @@ def test_wrong_second_step_verification_with_wrong_code(
     client = APIClient()
     first_step = login(active_user_with_email_otp)
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': 'test',
@@ -84,7 +84,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token') + 'wrong',
             'code': handler.create_code(),
@@ -100,7 +100,7 @@ def test_second_method_activation(active_user_with_email_otp):
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -135,7 +135,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -164,7 +164,7 @@ def test_use_backup_code(active_user_with_backup_codes):
     first_step = login(active_user)
 
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
@@ -248,7 +248,7 @@ def test_deactivation_of_primary_method(active_user_with_email_otp):
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -276,7 +276,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
     mfa_method_to_be_deactivated = user.mfa_methods.filter(is_primary=False).first()
     handler = get_mfa_handler(mfa_method=mfa_method_to_be_deactivated)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -307,7 +307,7 @@ def test_deactivation_of_disabled_method(
     mfa = active_user_with_email_and_inactive_other_methods_otp.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=mfa)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -336,7 +336,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     primary_mfa = active_user.mfa_methods.filter(is_primary=True)[0]
     handler = get_mfa_handler(mfa_method=primary_mfa)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -372,7 +372,7 @@ def test_change_primary_method_with_backup_code(
     first_primary_method = active_user.mfa_methods.filter(is_primary=True)[0]
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -406,7 +406,7 @@ def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_method
     first_primary_method = active_user.mfa_methods.filter(is_primary=True)[0]
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -435,7 +435,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
     first_primary_method = active_user_with_email_otp.mfa_methods.filter(is_primary=True)[0]
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -461,7 +461,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
 def test_change_primary_disabled_method_wrong(active_user):
     client = APIClient()
     login_response = client.post(
-        path='/auth/login/',
+        path=PATH_AUTH_JWT_LOGIN,
         data={
             'username': getattr(
                 active_user,
@@ -495,7 +495,7 @@ def test_confirm_activation_otp_with_backup_code(
     first_step = login(active_user)
 
     response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': backup_code,
@@ -542,7 +542,7 @@ def test_request_codes(active_user_with_email_otp):
     first_primary_method = active_user_with_email_otp.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -570,7 +570,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
     first_primary_method = active_user_with_email_otp.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -599,7 +599,7 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
     first_primary_method = active_user_with_email_otp.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -629,7 +629,7 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
     old_backup_codes = first_primary_method.backup_codes
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -659,7 +659,7 @@ def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
     first_primary_method = active_user.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),
@@ -691,7 +691,7 @@ def test_backup_codes_regeneration_disabled_method(
     sms_method.save()
     handler = get_mfa_handler(mfa_method=first_primary_method)
     login_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),

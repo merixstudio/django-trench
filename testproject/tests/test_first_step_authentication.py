@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 
-from tests.utils import get_username_from_jwt, login
+from tests.utils import get_username_from_jwt, login, PATH_AUTH_JWT_LOGIN
 from trench.utils import user_token_generator
 
 
@@ -55,7 +55,7 @@ def test_login_missing_field(active_user):
     """
     client = APIClient()
     response = client.post(
-        path='/auth/login/',
+        path=PATH_AUTH_JWT_LOGIN,
         data={
             'username': '',
             'password': 'secretkey',
@@ -78,7 +78,7 @@ def test_login_wrong_password(active_user):
     """
     client = APIClient()
     response = client.post(
-        path='/auth/login/',
+        path=PATH_AUTH_JWT_LOGIN,
         data={
             'username': getattr(
                 active_user,

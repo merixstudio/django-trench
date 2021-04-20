@@ -7,8 +7,8 @@ from trench.backends.provider import get_mfa_handler
 from trench.command.create_secret import create_secret_command
 from trench.create_code import create_code_command
 
-from tests.utils import get_token_from_response, header_template, login
-
+from tests.utils import get_token_from_response, header_template, login, \
+    PATH_AUTH_JWT_LOGIN_CODE
 
 User = get_user_model()
 
@@ -46,7 +46,7 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
 
     handler = get_mfa_handler(mfa_method=primary_method)
     second_step_response = client.post(
-        path='/auth/login/code/',
+        path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             'ephemeral_token': first_step.data.get('ephemeral_token'),
             'code': handler.create_code(),

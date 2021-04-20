@@ -17,16 +17,18 @@ def get_token_from_response(response: Response, token_field=default_token_field)
     return response.data.get(token_field)
 
 
+PATH_AUTH_JWT_LOGIN = "/auth/jwt/login/"
+PATH_AUTH_JWT_LOGIN_CODE = "/auth/jwt/login/code/"
+
+
 @pytest.mark.django_db
-def login(user, path='/auth/login/') -> Response:
-    payload = {
-        'username': getattr(user, User.USERNAME_FIELD),
-        'password': 'secretkey',
-    }
-    client = APIClient()
-    return client.post(
+def login(user, path=PATH_AUTH_JWT_LOGIN) -> Response:
+    return APIClient().post(
         path=path,
-        data=payload,
+        data={
+            'username': getattr(user, User.USERNAME_FIELD),
+            'password': 'secretkey',
+        },
         format='json',
     )
 
