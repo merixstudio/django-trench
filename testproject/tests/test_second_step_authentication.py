@@ -713,6 +713,22 @@ def test_backup_codes_regeneration_disabled_method(
 
 
 @pytest.mark.django_db
+def test_yubikey(active_user_with_yubi, offline_yubikey):
+    first_step_response = login(active_user_with_yubi)
+    handler = get_mfa_handler(mfa_method=active_user_with_yubi.mfa_methods.first())
+    response = APIClient().post(
+        path=PATH_AUTH_JWT_LOGIN_CODE,
+        data={
+            'ephemeral_token': first_step_response.data.get('ephemeral_token'),
+            'code': handler.create_code(),
+        },
+        format='json',
+    )
+    print(response.data)
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
 def test_get_mfa_config():
     client = APIClient()
     response = client.get(

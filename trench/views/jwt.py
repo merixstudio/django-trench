@@ -1,7 +1,12 @@
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from trench.views import MFAFirstStepMixin, MFASecondStepMixin, MFAStepMixin, User
+from trench.views import (
+    MFAFirstStepMixin,
+    MFASecondStepMixin,
+    MFAStepMixin,
+    User,
+)
 
 
 class MFAJWTView(MFAStepMixin):

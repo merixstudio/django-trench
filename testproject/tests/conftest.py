@@ -3,6 +3,9 @@ import pytest
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from yubico_client import Yubico
+from yubico_client.otp import OTP
+
 from trench.command.create_secret import create_secret_command
 from trench.command.generate_backup_codes import generate_backup_codes_command
 
@@ -204,3 +207,46 @@ def admin_user():
         is_active=True,
         password='secretkey',
     )
+
+
+FAKE_YUBI_SECRET = "testtesttesttesttesttesttesttest"
+
+
+@pytest.fixture()
+def active_user_with_yubi():
+    user, created = User.objects.get_or_create(
+        username='ramses',
+        email='ramses@thegreat.eg',
+    )
+    backup_codes = generate_backup_codes_command()
+    encrypted_backup_codes = ','.join([make_password(_) for _ in backup_codes])
+    if created:
+        user.set_password('secretkey'),
+        user.is_active = True
+        user.save()
+
+        MFAMethod = apps.get_model('trench.MFAMethod')
+        MFAMethod.objects.create(
+            user=user,
+            is_primary=True,
+            name='yubi',
+            is_active=True,
+            secret=FAKE_YUBI_SECRET,
+            _backup_codes=encrypted_backup_codes,
+        )
+    return user
+
+
+@pytest.fixture()
+def offline_yubikey(monkeypatch):
+    def mock_verify(*args, **kwargs):
+        return True
+
+    def mock_getattribute(self, name):
+        if name == "device_id":
+            return FAKE_YUBI_SECRET
+        return super(OTP, self).__getattribute__(name)
+
+    monkeypatch.setattr(target=Yubico, name="verify", value=mock_verify)
+    monkeypatch.setattr(target=OTP, name="__getattribute__", value=mock_getattribute)
+    assert OTP("123456").device_id == FAKE_YUBI_SECRET

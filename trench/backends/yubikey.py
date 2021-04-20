@@ -15,8 +15,7 @@ class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
         return SuccessfulDispatchResponse(details=_("Generate code using YubiKey"))
 
     def confirm_activation(self, code: str):
-        otp = OTP(code)
-        self._mfa_method.secret = otp.device_id
+        self._mfa_method.secret = OTP(code).device_id
         self._mfa_method.save(update_fields=("secret",))
 
     def validate_confirmation_code(self, code) -> bool:
@@ -36,8 +35,9 @@ class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
 
     def _validate_yubikey_otp(self, code: str) -> bool:
         try:
-            client = Yubico(self._config[YUBICLOUD_CLIENT_ID])
-            return client.verify(code, timestamp=True)
+            return Yubico(self._config[YUBICLOUD_CLIENT_ID]).verify(
+                code, timestamp=True
+            )
         except (YubicoError, Exception) as cause:
             logging.error(cause, exc_info=True)
             return False
