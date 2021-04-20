@@ -10,7 +10,7 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
     env:
@@ -43,4 +43,8 @@ jobs:
         mypy ./trench/
     - name: Test with pytest
       run: |
-        pytest testproject/tests/.
+        pytest testproject/tests/. --cov-report term-missing --cov=../trench
+    - uses: codecov/codecov-action@v1
+      with:
+        files: .codecov
+        fail_ci_if_error: true
