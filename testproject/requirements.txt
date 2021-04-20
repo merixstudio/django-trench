@@ -9,6 +9,7 @@ twilio>=6.56.0
 yubico-client>=1.13.0
 smsapi-client>=2.4.5
 
+# fixme: remove, not maintained, use drf-yasg instead
 django-rest-swagger==2.2.0
 
 pytest==6.2.3

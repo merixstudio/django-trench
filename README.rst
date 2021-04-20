@@ -38,13 +38,9 @@ Requirements
 Supported versions
 ******************
 
-* Python 3.5, 3.6, 3.7, 3.8
-* Django 1.11, 2.0, 2.1, 2.2, 3.0
+* Python 3.6, 3.7, 3.8
+* Django 2.0, 2.1, 2.2, 3.0
 * Django REST Framework 3.10
-
-| If you implement Token Based Authentication:
-
-* `djoser`_ >= 1.21.0
 
 | If you are going to use JWT authentication:
 
