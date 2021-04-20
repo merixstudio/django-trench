@@ -30,7 +30,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install mypy flake8 pytest
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
-#        ln -s ./trench ./testproject/trench
         python setup.py sdist
         python -m pip install dist/`python setup.py --fullname`.tar.gz
     - name: Lint with flake8
