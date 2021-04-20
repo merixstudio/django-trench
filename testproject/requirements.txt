@@ -4,7 +4,10 @@ django-environ==0.4.5
 django-cors-headers==3.7.0
 pyjwt==1.7.1
 djangorestframework-simplejwt
-pyotp
+pyotp>=2.6.0
+twilio>=6.56.0
+yubico-client>=1.13.0
+smsapi-client>=2.4.5
 
 django-rest-swagger==2.2.0
 

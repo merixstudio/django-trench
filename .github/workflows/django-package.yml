@@ -35,7 +35,7 @@ jobs:
         ln -s $(pwd)/trench/ $(pwd)/testproject/trench
         pwd
         ls
-        cd trench
+        cd testproject
         echo "-------"
         pwd
         ls
