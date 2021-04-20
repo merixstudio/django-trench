@@ -4,6 +4,7 @@ django-environ==0.4.5
 django-cors-headers==3.7.0
 pyjwt==1.7.1
 djangorestframework-simplejwt
+pyotp
 
 django-rest-swagger==2.2.0
 
