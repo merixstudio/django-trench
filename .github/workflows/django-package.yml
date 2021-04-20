@@ -44,7 +44,7 @@ jobs:
         mypy ./trench/
     - name: Test with pytest
       run: |
-        pytest --capture=no --cov-report term-missing --cov-report html --cov=trench
+        pytest --capture=no --cov-report term-missing --cov-report html --cov=trench testproject/tests/
     - uses: codecov/codecov-action@v1
       with:
         files: .coverage
