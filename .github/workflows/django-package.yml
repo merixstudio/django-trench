@@ -30,8 +30,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install mypy flake8 pytest
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
-        python setup.py sdist
-        python -m pip install dist/`python setup.py --fullname`.tar.gz
+        ln -s ./trench ./testproject/trench
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -43,7 +42,7 @@ jobs:
         mypy ./trench/
     - name: Test with pytest
       run: |
-        pytest --capture=no --cov-report term-missing --cov-report html --cov=trench testproject/tests/
+        pytest --capture=no --cov-report term-missing --cov-report html --cov=testproject/trench testproject/tests/
     - uses: codecov/codecov-action@v1
       with:
         files: .coverage
