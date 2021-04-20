@@ -14,7 +14,6 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: ./testproject
       DJANGO_SETTINGS_MODULE: testproject.settings
     strategy:
       matrix:
