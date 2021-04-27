@@ -368,16 +368,12 @@ Change user's primary MFA method
       - ``method`` - one of: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
         ``code`` -  authentication code received by specified method
     * - Successful response
+      - ``empty``
+      - **HTTP status:** ``204 NO CONTENT``
+    * - Error response
       - .. code-block:: json
 
-            [
-                {
-                    "name": "email",
-                    "is_primary": true
-                },
-                {
-                    "name": "yubi",
-                    "is_primary": false
-                }
-            ]
-      - **HTTP status:** ``200 OK``
+            {
+                "error": "MFA Method selected as new primary method is not active"
+            }
+      - **HTTP status:** ``400 BAD REQUEST``
