@@ -8,7 +8,7 @@ MFA method activation
 
 | Request a new method activation and get an authentication code by specified channel.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -17,9 +17,6 @@ MFA method activation
     * - Parameters
       - ``:method_name`` - **required**
       - Allowed method names: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
-    * - Payload
-      - ``empty``
-      -
     * - Successful response
       - .. code-block:: json
 
@@ -27,9 +24,7 @@ MFA method activation
                 "details": "Email message with MFA code has been sent."
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -37,9 +32,7 @@ MFA method activation
                 "error": "Requested MFA method does not exist."
             }
 
-      - **HTTP status:**
-
-        ``400 BAD REQUEST``
+      - **HTTP status:** ``400 BAD REQUEST``
 
 **********************************
 MFA method activation confirmation
@@ -47,7 +40,7 @@ MFA method activation confirmation
 
 | Accepts the authentication code, activates the method and returns backup codes if successful.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -78,9 +71,7 @@ MFA method activation confirmation
                 ]
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -88,17 +79,15 @@ MFA method activation confirmation
                 "error": "MFA method already active."
             }
 
-      - **HTTP status:**
-
-        ``400 BAD REQUEST``
+      - **HTTP status:** ``400 BAD REQUEST``
 
 ***********************
 MFA method deactivation
 ***********************
 
-| Deactivates the specified method. Depeding on :doc:`settings` sends out an authentication code and requires confirmation.
+| Deactivates the specified method. Depeding on :doc: `settings` sends out an authentication code and requires confirmation.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -117,9 +106,7 @@ MFA method deactivation
       - ``code`` - authentication code received by specified method
     * - Successful response
       - ``empty``
-      - **HTTP status:**
-
-        ``204 NO CONTENT``
+      - **HTTP status:** ``204 NO CONTENT``
     * - Error response
       - .. code-block:: json
 
@@ -127,9 +114,7 @@ MFA method deactivation
                 "error": "Requested MFA method does not exist."
             }
 
-      - **HTTP status:**
-
-        ``400 BAD REQUEST``
+      - **HTTP status:** ``400 BAD REQUEST``
 
 *************
 Send the code
@@ -137,7 +122,7 @@ Send the code
 
 | Triggers sending out a code. If no ``method`` specified in the payload user's primary MFA method will be used.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -153,9 +138,7 @@ Send the code
       - ``method`` **(optional)** - one of: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
     * - Successful response
       - ``empty``
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -163,9 +146,7 @@ Send the code
                 "details": "Email message with MFA code has been sent."
             }
 
-      - **HTTP status:**
-
-        ``400 BAD REQUEST``
+      - **HTTP status:** ``400 BAD REQUEST``
 
 ********************************
 Login - first step (JWT example)
@@ -174,7 +155,7 @@ Login - first step (JWT example)
 | If MFA is enabled for a given user returns ``ephemeral_token`` required in next step as well as current auth ``method``.
 | Otherwise returns ``access`` and ``refresh`` tokens.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -197,9 +178,7 @@ Login - first step (JWT example)
                 "method": "email"
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Successful response (MFA disabled)
       - .. code-block:: json
 
@@ -208,9 +187,7 @@ Login - first step (JWT example)
                 "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI...T_t8"
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -218,18 +195,16 @@ Login - first step (JWT example)
                 "details": "Unable to login with provided credentials."
             }
 
-      - **HTTP status:**
+      - **HTTP status:** ``401 UNAUTHENTICATED``
 
-        ``401 UNAUTHENTICATED``
-
-********************************
+*********************************
 Login - second step (JWT example)
-********************************
+*********************************
 
 | Requires ``ephemeral_token`` generated in previous step and OTP code.
 | Returns ``access`` and ``refresh`` tokens after successful authentication.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -252,9 +227,7 @@ Login - second step (JWT example)
                 "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI...T_t8"
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -262,17 +235,15 @@ Login - second step (JWT example)
                 "details": "Unable to login with provided credentials."
             }
 
-      - **HTTP status:**
-
-        ``401 UNAUTHENTICATED``
+      - **HTTP status:** ``401 UNAUTHENTICATED``
 
 *************************
 Generate new backup codes
 *************************
 
-| If you've set the ``CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE`` option to ``True`` in the :doc:`settings` then passing the ``code`` in request payload is required.
+| If you've set the ``CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE`` option to ``True`` in the :doc: `settings` then passing the ``code`` in request payload is required.
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -303,9 +274,7 @@ Generate new backup codes
                 ]
             }
 
-      - **HTTP status:**
-
-        ``200 OK``
+      - **HTTP status:** ``200 OK``
     * - Error response
       - .. code-block:: json
 
@@ -313,9 +282,7 @@ Generate new backup codes
                 "error": "Requested MFA method does not exist."
             }
 
-      - **HTTP status:**
-
-        ``400 BAD REQUEST``
+      - **HTTP status:** ``400 BAD REQUEST``
 
 *****************
 Get configuration
@@ -323,7 +290,7 @@ Get configuration
 
 | Returns MFA configuration
 
-.. list-table:: API endpoint specification
+.. list-table::
     :stub-columns: 1
 
     * - Request
@@ -345,16 +312,72 @@ Get configuration
                 "allow_backup_codes_regeneration": true
             }
 
-      - **HTTP status:**
+      - **HTTP status:** ``200 OK``
 
-        ``200 OK``
+*****************************
+Get user's active MFA methods
+*****************************
 
-* ``/mfa/user-active-methods/`` ``[GET]``
-    | Display methods activated by user
+| Display methods activated by user
 
-* ``/mfa/change-primary-method/`` ``[POST]``
-    | Change default authentication method
-    | Payload:
+.. list-table::
+    :stub-columns: 1
 
-        * ``method`` MFA method name
-        * ``code`` auth code received by specified channel
+    * - Request
+      - ``GET /mfa/user-active-methods/``
+        ``Authorization: Bearer ACCESS_TOKEN``
+      - ``ACCESS_TOKEN`` is used for JWT authentication. For other types use the authorization header accordingly.
+    * - Successful response
+      - .. code-block:: json
+
+            [
+                {
+                    "name": "email",
+                    "is_primary": true
+                },
+                {
+                    "name": "yubi",
+                    "is_primary": false
+                }
+            ]
+
+      - **HTTP status:** ``200 OK``
+
+********************************
+Change user's primary MFA method
+********************************
+
+| Change user's primary authentication method.
+
+| Display methods activated by user
+
+.. list-table::
+    :stub-columns: 1
+
+    * - Request
+      - ``POST /mfa/change-primary-method/``
+        ``Authorization: Bearer ACCESS_TOKEN``
+      - ``ACCESS_TOKEN`` is used for JWT authentication. For other types use the authorization header accordingly.
+    * - Payload
+      - .. code-block:: json
+
+            {
+                "method": "yubi",
+                "code": "123456"
+            }
+      - ``method`` - one of: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
+        ``code`` -  authentication code received by specified method
+    * - Successful response
+      - .. code-block:: json
+
+            [
+                {
+                    "name": "email",
+                    "is_primary": true
+                },
+                {
+                    "name": "yubi",
+                    "is_primary": false
+                }
+            ]
+      - **HTTP status:** ``200 OK``

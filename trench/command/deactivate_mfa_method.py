@@ -1,6 +1,6 @@
 from django.db.transaction import atomic
 
-from typing_extensions import Type
+from typing import Type
 
 from trench.exceptions import (
     DeactivationOfPrimaryMFAMethodError,

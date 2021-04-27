@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import check_password
 
-from typing import Any, Set
-from typing_extensions import Type
+from typing import Any, Set, Type
 
 from trench.exceptions import InvalidCodeError, MFAMethodDoesNotExistError
 from trench.models import MFAMethod

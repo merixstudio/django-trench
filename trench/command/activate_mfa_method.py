@@ -1,5 +1,4 @@
-from typing import Callable, Set
-from typing_extensions import Type
+from typing import Callable, Set, Type
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command

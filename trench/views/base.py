@@ -192,7 +192,10 @@ class MFAConfigView(APIView):
     def get(request: Request) -> Response:
         return Response(
             data={
-                "methods": [method_name for method_name, method_verbose_name in available_method_choices()],
+                "methods": [
+                    method_name
+                    for method_name, method_verbose_name in available_method_choices()
+                ],
                 "confirm_disable_with_code": trench_settings.CONFIRM_DISABLE_WITH_CODE,  # noqa
                 "confirm_regeneration_with_code": trench_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE,  # noqa
                 "allow_backup_codes_regeneration": trench_settings.ALLOW_BACKUP_CODES_REGENERATION,  # noqa

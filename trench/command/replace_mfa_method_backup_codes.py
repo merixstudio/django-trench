@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 
-from typing import Callable, Set
-from typing_extensions import Type
+from typing import Callable, Set, Type
 
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.exceptions import MFAMethodDoesNotExistError

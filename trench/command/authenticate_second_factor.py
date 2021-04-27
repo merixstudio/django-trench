@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from typing_extensions import Type
+from typing import Type
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.remove_backup_code import remove_backup_code_command
