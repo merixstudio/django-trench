@@ -167,38 +167,187 @@ Send the code
 
         ``400 BAD REQUEST``
 
-*****
-Login
-*****
+********************************
+Login - first step (JWT example)
+********************************
 
-* ``/login/`` ``[POST]``
-    | First step, if 2FA is enable returns ``ephemeral_token`` required in next step as well as current auth ``method``, otherwise logs in user.
-    | Payload:
-        * ``username``
-        * ``password``
+| If MFA is enabled for a given user returns ``ephemeral_token`` required in next step as well as current auth ``method``.
+| Otherwise returns ``access`` and ``refresh`` tokens.
 
-* ``/login/code/`` ``[POST]``
-    | Requires token generated in previous step and OTP code, logs in user (returns ``token``)
-    | Payload:
-        * ``ephemeral_token``
-        * ``code``
+.. list-table:: API endpoint specification
+    :stub-columns: 1
 
-************
-Backup codes
-************
+    * - Request
+      - ``POST /login/``
+      -
+    * - Payload
+      - .. code-block:: json
 
-* ``/mfa/codes/regenerate/`` ``[POST]``
-    | Requests new batch of backup codes.
-    | Payload:
+            {
+                "username": "Merixstudio",
+                "password": "SecretPassword123#"
+            }
 
-        * ``method`` MFA method name
+      -
+    * - Successful response (MFA enabled)
+      - .. code-block:: json
 
-********
-Settings
-********
+            {
+                "ephemeral_token": "1-qrx0ph-e76b858094f0321525b42ad7141b5720816b6a4c",
+                "method": "email"
+            }
 
-* ``/mfa/config/`` ``[GET]``
-    | Display app's configuration
+      - **HTTP status:**
+
+        ``200 OK``
+    * - Successful response (MFA disabled)
+      - .. code-block:: json
+
+            {
+                "access": "eyJhbGciOiJIUzI1NiIsInR5cCI...AhJA",
+                "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI...T_t8"
+            }
+
+      - **HTTP status:**
+
+        ``200 OK``
+    * - Error response
+      - .. code-block:: json
+
+            {
+                "details": "Unable to login with provided credentials."
+            }
+
+      - **HTTP status:**
+
+        ``401 UNAUTHENTICATED``
+
+********************************
+Login - second step (JWT example)
+********************************
+
+| Requires ``ephemeral_token`` generated in previous step and OTP code.
+| Returns ``access`` and ``refresh`` tokens after successful authentication.
+
+.. list-table:: API endpoint specification
+    :stub-columns: 1
+
+    * - Request
+      - ``POST /login/code/``
+      -
+    * - Payload
+      - .. code-block:: json
+
+            {
+                "ephemeral_token": "1-qrx0ph-e76b858094f0321525b42ad7141b5720816b6a4c",
+                "code": "925738"
+            }
+
+      -
+    * - Successful response
+      - .. code-block:: json
+
+            {
+                "access": "eyJhbGciOiJIUzI1NiIsInR5cCI...AhJA",
+                "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI...T_t8"
+            }
+
+      - **HTTP status:**
+
+        ``200 OK``
+    * - Error response
+      - .. code-block:: json
+
+            {
+                "details": "Unable to login with provided credentials."
+            }
+
+      - **HTTP status:**
+
+        ``401 UNAUTHENTICATED``
+
+*************************
+Generate new backup codes
+*************************
+
+| If you've set the ``CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE`` option to ``True`` in the :doc:`settings` then passing the ``code`` in request payload is required.
+
+.. list-table:: API endpoint specification
+    :stub-columns: 1
+
+    * - Request
+      - ``POST /:method_name/codes/regenerate/``
+      -
+    * - Parameters
+      - ``:method_name`` - **required**
+      - Allowed method names: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
+    * - Payload
+      - .. code-block:: json
+
+            {
+                "code": "123456"
+            }
+
+      - ``code`` - authentication code received by specified method
+    * - Successful response
+      - .. code-block:: json
+
+            {
+                "backup_codes": [
+                    "111111",
+                    "222222",
+                    "333333",
+                    "444444",
+                    "555555",
+                    "666666",
+                ]
+            }
+
+      - **HTTP status:**
+
+        ``200 OK``
+    * - Error response
+      - .. code-block:: json
+
+            {
+                "error": "Requested MFA method does not exist."
+            }
+
+      - **HTTP status:**
+
+        ``400 BAD REQUEST``
+
+*****************
+Get configuration
+*****************
+
+| Returns MFA configuration
+
+.. list-table:: API endpoint specification
+    :stub-columns: 1
+
+    * - Request
+      - ``GET /mfa/config/``
+      -
+    * - Successful response
+      - .. code-block:: json
+
+            {
+                "methods": [
+                    "sms_twilio",
+                    "sms_api",
+                    "email",
+                    "app",
+                    "yubi"
+                ],
+                "confirm_disable_with_code": true,
+                "confirm_regeneration_with_code": true,
+                "allow_backup_codes_regeneration": true
+            }
+
+      - **HTTP status:**
+
+        ``200 OK``
 
 * ``/mfa/user-active-methods/`` ``[GET]``
     | Display methods activated by user
