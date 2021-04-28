@@ -26,14 +26,11 @@ django-trench
 | Developers can easily add their own authentication backends supporting any communication channel.
 
 Features
---------
+********
 
 * Easily pluggable and compatible with `django-rest-framework`_
 * Allows user to pick an additional authentication method from range of backends defined by a developer. Read more: `backends`_
 * Comes out of a box with email, SMS, mobile apps and YubiKey support
-
-Requirements
-------------
 
 Supported versions
 ******************
@@ -47,7 +44,7 @@ Supported versions
 * `djangorestframework-simplejwt`_ >= 4.3.0
 
 Quick Start
------------
+***********
 
 1. Install the package using pip:
 
@@ -74,7 +71,7 @@ or add it to your requirements file.
 | Read further in: `installation`_.
 
 Translation
------------
+***********
 
 Trench uses Transifex service to translate our package into other languages.
 
@@ -84,7 +81,7 @@ https://www.transifex.com/merixstudio/django-trench/dashboard/
 
 
 Demo project
-------------
+************
 
 You can also check our live `demo`_.
 

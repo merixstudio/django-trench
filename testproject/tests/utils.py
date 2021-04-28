@@ -9,8 +9,8 @@ from rest_framework.test import APIClient
 
 User = get_user_model()
 
-header_template = 'Bearer {}'
-default_token_field = 'access'
+header_template = "Bearer {}"
+default_token_field = "access"
 
 
 def get_token_from_response(response: Response, token_field=default_token_field):
@@ -26,10 +26,10 @@ def login(user, path=PATH_AUTH_JWT_LOGIN) -> Response:
     return APIClient().post(
         path=path,
         data={
-            'username': getattr(user, User.USERNAME_FIELD),
-            'password': 'secretkey',
+            "username": getattr(user, User.USERNAME_FIELD),
+            "password": "secretkey",
         },
-        format='json',
+        format="json",
     )
 
 

@@ -1,4 +1,5 @@
 import pytest
+
 from rest_framework.test import APIClient
 
 from tests.utils import login
@@ -11,18 +12,21 @@ def test_authtoken_both_steps(active_user_with_email_otp):
     # first step
     first_step_response = login(active_user_with_email_otp, path="/auth/token/login/")
     assert first_step_response.status_code == 200
-    assert user_token_generator.check_token(
-        user=None, token=first_step_response.data.get('ephemeral_token')
-    ) == active_user_with_email_otp
+    assert (
+        user_token_generator.check_token(
+            user=None, token=first_step_response.data.get("ephemeral_token")
+        )
+        == active_user_with_email_otp
+    )
     # second step
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     second_step_response = APIClient().post(
-        path='/auth/token/login/code/',
+        path="/auth/token/login/code/",
         data={
-            'ephemeral_token': first_step_response.data.get('ephemeral_token'),
-            'code': handler.create_code(),
+            "ephemeral_token": first_step_response.data.get("ephemeral_token"),
+            "code": handler.create_code(),
         },
-        format='json',
+        format="json",
     )
     assert second_step_response.status_code == 200
     assert second_step_response.data.get("auth_token") is not None
