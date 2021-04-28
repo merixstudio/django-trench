@@ -64,7 +64,14 @@ class AbstractMessageDispatcher(ABC):
         pass
 
     def create_code(self) -> str:
-        return create_code_command(secret=self._mfa_method.secret)
+        interval = self._config.get(
+            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
+        )
+        print(interval)
+        return create_code_command(
+            secret=self._mfa_method.secret,
+            interval=interval,
+        )
 
     def confirm_activation(self, code: str):
         pass
@@ -73,9 +80,4 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
-        validity_period = self._config.get(
-            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
-        )
-        return pyotp.TOTP(self._mfa_method.secret).verify(
-            otp=code, valid_window=int(validity_period / 30)
-        )
+        return pyotp.TOTP(self._mfa_method.secret).verify(otp=code)

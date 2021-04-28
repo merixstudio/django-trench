@@ -16,6 +16,7 @@ jobs:
     env:
       PYTHONPATH: ./testproject
       DJANGO_SETTINGS_MODULE: settings
+      SECRET_KEY: this_is_no_secret_at_all
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9]
