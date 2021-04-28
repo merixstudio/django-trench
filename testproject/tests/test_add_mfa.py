@@ -12,7 +12,7 @@ from tests.utils import (
 )
 from trench.backends.provider import get_mfa_handler
 from trench.command.create_secret import create_secret_command
-from trench.create_code import create_code_command
+from trench.command.create_code import create_code_command
 
 
 User = get_user_model()

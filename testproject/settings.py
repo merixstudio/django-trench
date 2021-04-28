@@ -122,7 +122,7 @@ TRENCH_AUTH = {
     "MFA_METHODS": {
         "sms_twilio": {
             "VERBOSE_NAME": "sms",
-            "VALIDITY_PERIOD": 30,
+            "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.twilio.TwilioMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "TWILIO_VERIFIED_FROM_NUMBER": env(
@@ -132,7 +132,7 @@ TRENCH_AUTH = {
         },
         "email": {
             "VERBOSE_NAME": "email",
-            "VALIDITY_PERIOD": 30,
+            "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
             "SOURCE_FIELD": "email",
             "EMAIL_SUBJECT": "Your verification code",
@@ -141,7 +141,7 @@ TRENCH_AUTH = {
         },
         "app": {
             "VERBOSE_NAME": "app",
-            "VALIDITY_PERIOD": 30,
+            "VALIDITY_PERIOD": 60,
             "USES_THIRD_PARTY_CLIENT": True,
             "HANDLER": "trench.backends.application.ApplicationMessageDispatcher",
         },
