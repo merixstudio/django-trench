@@ -136,8 +136,8 @@ TRENCH_AUTH = {
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
             "SOURCE_FIELD": "email",
             "EMAIL_SUBJECT": "Your verification code",
-            "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
-            "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
+            # "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
+            # "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
         },
         "app": {
             "VERBOSE_NAME": "app",

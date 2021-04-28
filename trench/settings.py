@@ -30,20 +30,21 @@ class TrenchAPISettings(APISettings):
         self._validate(attribute=attr, value=val)
         return val
 
-    @classmethod
-    def _validate(cls, attribute: str, value: Any):
-        if attribute == cls._FIELD_BACKUP_CODES_CHARACTERS:
-            if any(char in value for char in cls._RESTRICTED_BACKUP_CODES_CHARACTERS):
+    def _validate(self, attribute: str, value: Any):
+        if attribute == self._FIELD_BACKUP_CODES_CHARACTERS:
+            if any(char in value for char in self._RESTRICTED_BACKUP_CODES_CHARACTERS):
                 raise RestrictedCharInBackupCodeError(
                     attribute_name=attribute,
-                    restricted_chars=cls._RESTRICTED_BACKUP_CODES_CHARACTERS,
+                    restricted_chars=self._RESTRICTED_BACKUP_CODES_CHARACTERS,
                 )
-        if attribute == cls._FIELD_MFA_METHODS:
+        if attribute == self._FIELD_MFA_METHODS:
             for method_name, method_config in value.items():
-                if cls._FIELD_HANDLER not in method_config:
+                if self._FIELD_HANDLER not in method_config:
                     raise MethodHandlerMissingError(method_name=method_name)
-                method_config[cls._FIELD_HANDLER] = perform_import(
-                    method_config[cls._FIELD_HANDLER], cls._FIELD_HANDLER
+                for k, v in self.defaults[self._FIELD_MFA_METHODS][method_name].items():
+                    method_config[k] = method_config.get(k, v)
+                method_config[self._FIELD_HANDLER] = perform_import(
+                    method_config[self._FIELD_HANDLER], self._FIELD_HANDLER
                 )
 
     def __getitem__(self, attr):
