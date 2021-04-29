@@ -193,14 +193,14 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_use_backup_code(active_user_with_backup_codes):
     client = APIClient()
-    active_user, backup_code = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_backup_codes
     first_step = login(active_user)
 
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": backup_code,
+            "code": backup_codes.pop(),
         },
         format="json",
     )
@@ -544,14 +544,14 @@ def test_confirm_activation_otp_with_backup_code(
     active_user_with_backup_codes,
 ):
     client = APIClient()
-    active_user, backup_code = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_backup_codes
     first_step = login(active_user)
 
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
             "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": backup_code,
+            "code": backup_codes.pop(),
         },
         format="json",
     )
@@ -789,8 +789,58 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
         },
         format="json",
     )
-    print(response.data)
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
+    first_step_response = login(active_user_with_yubi)
+    handler = get_mfa_handler(mfa_method=active_user_with_yubi.mfa_methods.first())
+    response = APIClient().post(
+        path=PATH_AUTH_JWT_LOGIN_CODE,
+        data={
+            "ephemeral_token": first_step_response.data.get("ephemeral_token"),
+            "code": handler.create_code(),
+        },
+        format="json",
+    )
+    assert response.status_code == 401
+    assert response.data.get("error") is not None
+
+
+@pytest.mark.django_db
+def test_confirm_yubikey_activation_with_backup_code(
+    active_user_with_backup_codes,
+):
+    client = APIClient()
+    active_user, backup_codes = active_user_with_backup_codes
+    first_step = login(active_user)
+    ephemeral_token = first_step.data.get("ephemeral_token")
+    response = client.post(
+        path=PATH_AUTH_JWT_LOGIN_CODE,
+        data={
+            "ephemeral_token": ephemeral_token,
+            "code": backup_codes.pop(),
+        },
+        format="json",
+    )
+    client.credentials(
+        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
+    )
+    client.post(
+        path="/auth/yubi/activate/",
+        format="json",
+    )
+    response = client.post(
+        path="/auth/yubi/activate/confirm/",
+        data={
+            "ephemeral_token": ephemeral_token,
+            "code": backup_codes.pop(),
+        },
+        format="json",
+    )
+    assert response.status_code == 400
+    assert response.data.get("code") is not None
 
 
 @pytest.mark.django_db

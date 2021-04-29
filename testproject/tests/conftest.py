@@ -122,7 +122,7 @@ def active_user_with_backup_codes():
             _backup_codes=encrypted_backup_codes,
         )
 
-    return user, next(iter(backup_codes))
+    return user, backup_codes
 
 
 @pytest.fixture()
@@ -239,17 +239,22 @@ def active_user_with_yubi():
         )
     return user
 
-
 @pytest.fixture()
-def offline_yubikey(monkeypatch):
-    def mock_verify(*args, **kwargs):
-        return True
-
+def fake_yubikey(monkeypatch):
     def mock_getattribute(self, name):
         if name == "device_id":
             return FAKE_YUBI_SECRET
         return super(OTP, self).__getattribute__(name)
 
-    monkeypatch.setattr(target=Yubico, name="verify", value=mock_verify)
     monkeypatch.setattr(target=OTP, name="__getattribute__", value=mock_getattribute)
+
+@pytest.fixture()
+def offline_yubikey(monkeypatch, fake_yubikey):
+    def mock_verify(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(target=Yubico, name="verify", value=mock_verify)
     assert OTP("123456").device_id == FAKE_YUBI_SECRET
+
+
+
