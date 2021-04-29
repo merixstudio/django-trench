@@ -17,7 +17,6 @@ from tests.utils import (
     login,
 )
 from trench.backends.provider import get_mfa_handler
-from trench.command.create_code import create_code_command
 from trench.command.generate_backup_codes import generate_backup_codes_command
 
 
@@ -25,7 +24,7 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_changing_default_time(
+def test_custom_validity_period(
     active_user_with_email_otp,
     settings
 ):
@@ -35,7 +34,7 @@ def test_changing_default_time(
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     code = handler.create_code()
-    time.sleep(4)
+    time.sleep(3)
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={

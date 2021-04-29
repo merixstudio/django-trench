@@ -1,10 +1,10 @@
 from django.db.models import Model
 
-from pyotp import TOTP
 from abc import ABC, abstractmethod
+from pyotp import TOTP
 from typing import Any, Dict, Optional, Tuple
 
-from trench.command.create_code import create_code_command
+from trench.command.create_otp import create_otp_command
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
@@ -64,7 +64,7 @@ class AbstractMessageDispatcher(ABC):
         pass
 
     def create_code(self) -> str:
-        return create_code_command(secret=self._mfa_method.secret)
+        return self._get_otp().now()
 
     def confirm_activation(self, code: str):
         pass
@@ -73,9 +73,14 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
-        validity_period = self._config.get(
-            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
+        return self._get_otp().verify(
+            otp=code, valid_window=self._get_valid_window() - 1
         )
-        return TOTP(self._mfa_method.secret, interval=1).verify(
-            otp=code, valid_window=int(validity_period)
+
+    def _get_otp(self) -> TOTP:
+        return create_otp_command(secret=self._mfa_method.secret)
+
+    def _get_valid_window(self) -> int:
+        return self._config.get(
+            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
         )

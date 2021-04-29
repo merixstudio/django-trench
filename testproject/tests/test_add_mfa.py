@@ -11,8 +11,8 @@ from tests.utils import (
     login,
 )
 from trench.backends.provider import get_mfa_handler
+from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
-from trench.command.create_code import create_code_command
 
 
 User = get_user_model()
@@ -29,7 +29,7 @@ def test_add_user_mfa(active_user):
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_code_command(secret=secret),
+            "code": create_otp_command(secret=secret).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",

@@ -3,6 +3,7 @@ import pytest
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
+from trench.models import MFAMethod
 from trench.utils import UserTokenGenerator
 
 
@@ -19,14 +20,14 @@ def test_unexisting_user():
 
 
 @pytest.mark.django_db
-def test_create_qr_link(active_user_with_email_otp):
-    secret = active_user_with_email_otp.mfa_methods.first().secret
-    qr_link = ApplicationMessageDispatcher._create_qr_link(
-        secret, active_user_with_email_otp
-    )
+def test_create_qr_link(active_user_with_many_otp_methods):
+    user, _ = active_user_with_many_otp_methods
+    mfa_method: MFAMethod = user.mfa_methods.filter(name="app").first()
+    handler: ApplicationMessageDispatcher = get_mfa_handler(mfa_method)
+    qr_link = handler._create_qr_link(user=user)
     assert type(qr_link) == str
-    assert active_user_with_email_otp.username in qr_link
-    assert secret in qr_link
+    assert user.username in qr_link
+    assert mfa_method.secret in qr_link
 
 
 @pytest.mark.django_db
