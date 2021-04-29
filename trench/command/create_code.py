@@ -5,16 +5,9 @@ from trench.settings import trench_settings
 
 
 class CreateCodeCommand:
-    def __init__(self, default_validity: int):
-        self._default_interval = default_validity
-
-    def execute(self, secret: str, interval: Optional[int] = None) -> str:
-        return TOTP(
-            secret,
-            interval=interval if interval is not None else self._default_interval,
-        ).now()
+    @staticmethod
+    def execute(secret: str) -> str:
+        return TOTP(secret, interval=1).now()
 
 
-create_code_command = CreateCodeCommand(
-    default_validity=trench_settings.DEFAULT_VALIDITY_PERIOD
-).execute
+create_code_command = CreateCodeCommand.execute

@@ -25,7 +25,7 @@ class ApplicationMessageDispatcher(AbstractMessageDispatcher):
 
     @staticmethod
     def _create_qr_link(secret: str, user: User) -> str:
-        return TOTP(secret).provisioning_uri(
+        return TOTP(secret, interval=1).provisioning_uri(
             getattr(user, User.USERNAME_FIELD),
             trench_settings.APPLICATION_ISSUER_NAME,
         )

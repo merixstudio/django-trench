@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from django.contrib.auth import get_user_model
@@ -15,10 +17,44 @@ from tests.utils import (
     login,
 )
 from trench.backends.provider import get_mfa_handler
+from trench.command.create_code import create_code_command
 from trench.command.generate_backup_codes import generate_backup_codes_command
 
 
 User = get_user_model()
+
+
+@pytest.mark.django_db
+def test_changing_default_time(
+    active_user_with_email_otp,
+    settings
+):
+    settings.TRENCH_AUTH['MFA_METHODS']['email']["VALIDITY_PERIOD"] = 3
+
+    client = APIClient()
+    first_step = login(active_user_with_email_otp)
+    handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
+    code = handler.create_code()
+    time.sleep(4)
+    response = client.post(
+        path=PATH_AUTH_JWT_LOGIN_CODE,
+        data={
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': code,
+        },
+        format='json',
+    )
+    assert response.status_code == 401
+    response = client.post(
+        path=PATH_AUTH_JWT_LOGIN_CODE,
+        data={
+            'ephemeral_token': first_step.data.get('ephemeral_token'),
+            'code': handler.create_code(),
+        },
+        format='json',
+    )
+
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db

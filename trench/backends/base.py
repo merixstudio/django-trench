@@ -1,6 +1,6 @@
 from django.db.models import Model
 
-import pyotp
+from pyotp import TOTP
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, Tuple
 
@@ -76,6 +76,6 @@ class AbstractMessageDispatcher(ABC):
         validity_period = self._config.get(
             VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
         )
-        return pyotp.TOTP(self._mfa_method.secret).verify(
+        return TOTP(self._mfa_method.secret, interval=1).verify(
             otp=code, valid_window=int(validity_period)
         )
