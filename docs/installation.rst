@@ -1,5 +1,6 @@
 Installation
 ============
+
 First steps
 """""""""""
 
@@ -22,8 +23,6 @@ or add it to your requirements file.
         ...,
         'trench',
     )
-
-You will also need ``djangorestframework-simplejwt`` to support JWT authentication.
 
 Setup
 """""

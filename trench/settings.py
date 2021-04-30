@@ -79,14 +79,14 @@ DEFAULTS = {
     "MFA_METHODS": {
         "sms_twilio": {
             VERBOSE_NAME: _("sms_twilio"),
-            VALIDITY_PERIOD: 60 * 10,
+            VALIDITY_PERIOD: 30,
             HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
         },
         "sms_api": {
             VERBOSE_NAME: _("sms_api"),
-            VALIDITY_PERIOD: 60 * 10,
+            VALIDITY_PERIOD: 30,
             HANDLER: "trench.backends.sms_api.SMSAPIMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
@@ -94,7 +94,7 @@ DEFAULTS = {
         },
         "email": {
             VERBOSE_NAME: _("email"),
-            VALIDITY_PERIOD: 60 * 10,
+            VALIDITY_PERIOD: 30,
             HANDLER: "trench.backends.basic_mail.SendMailMessageDispatcher",
             SOURCE_FIELD: "email",
             EMAIL_SUBJECT: _("Your verification code"),
@@ -103,7 +103,7 @@ DEFAULTS = {
         },
         "app": {
             VERBOSE_NAME: _("app"),
-            VALIDITY_PERIOD: 60 * 10,
+            VALIDITY_PERIOD: 30,
             "USES_THIRD_PARTY_CLIENT": True,
             HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
         },

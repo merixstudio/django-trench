@@ -11,7 +11,6 @@ Contents
    settings
    endpoints
    backends
-   examples
 
 
 Indices and tables

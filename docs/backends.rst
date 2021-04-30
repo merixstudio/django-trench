@@ -1,16 +1,17 @@
 Authentication backends
 =======================
 
-| ``django-trench`` comes with three predefined authentication methods.
-| Custom backends can be easily added by inheriting ``AbstractMessageDispatcher`` class.
+| ``django-trench`` comes with some predefined authentication methods.
+| Custom backends can be easily added by inheriting from ``AbstractMessageDispatcher`` class.
 
 Built-in backends
 """""""""""""""""
-Email
+
+E-mail
 *****
 
 This basic method uses built-in Django email backend.
-Check out `Django documentation on this topic`_.
+Check out the `Django's documentation`_ on this topic.
 
 .. code-block:: python
 
@@ -33,32 +34,57 @@ Check out `Django documentation on this topic`_.
 ``EMAIL_PLAIN_TEMPLATE`` and ``EMAIL_HTML_TEMPLATE`` are paths to templates
 that are used to render email content.
 
-These templates receive ``code`` variable in the context,
-which is the generated code.
+These templates receive ``code`` variable in the context, which is the generated OTP code.
 
-Text/SMS
-********
-| SMS backends sends out text messages with `Twilio`_ or `Smsapi.pl`_. Credentials can be set in method's specific settings.
+Text / SMS
+**********
+
+| SMS backends sends out text messages with `Twilio`_ or `SMS API`_. Credentials can be set in method's specific settings.
+
+Using Twilio
+------------
+
+| If you are using Twilio service for sending out Text messages then you need to set ``TWILIO_ACCOUNT_SID`` and ``TWILIO_AUTH_TOKEN`` environment variables for Twilio API client to be used as credentials.
 
 .. code-block:: python
 
     TRENCH_AUTH = {
-        (...)
-        'MFA_METHODS': {
-            'sms_twilio': {
-                'VERBOSE_NAME': 'sms',
-                'VALIDITY_PERIOD': 60 * 10,
-                'HANDLER': 'trench.backends.twilio.TwilioBackend',
-                'SOURCE_FIELD': 'phone_number',
-                'TWILIO_ACCOUNT_SID': TWILIO SID,
-                'TWILIO_AUTH_TOKEN': TWILIO TOKEN,
-                'TWILIO_VERIFIED_FROM_NUMBER': TWILIO REGISTERED NUMBER,
+        "MFA_METHODS": {
+            "sms_twilio": {
+                VERBOSE_NAME: _("sms_twilio"),
+                VALIDITY_PERIOD: 30,
+                HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
+                SOURCE_FIELD: "phone_number",
+                TWILIO_VERIFIED_FROM_NUMBER: "+48 123 456 789",
             },
-            ...,
         },
     }
 
-Read more in :doc:`settings`.
+:SOURCE_FIELD: Defines the field name in your ``AUTH_USER_MODEL`` to be looked up and used as field containing the phone number of the recipient of the OTP code.
+:TWILIO_VERIFIED_FROM_NUMBER: This will be used as the sender's phone number. Note: this number must be verified in the Twilio's client panel.
+
+Using SMS API
+-------------
+
+.. code-block:: python
+
+    TRENCH_AUTH = {
+        "MFA_METHODS": {
+            "sms_api": {
+                "VERBOSE_NAME": _("sms_api"),
+                "VALIDITY_PERIOD": 30,
+                "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
+                "SOURCE_FIELD": "phone_number",
+                "SMSAPI_ACCESS_TOKEN": "YOUR SMSAPI TOKEN",
+                "SMSAPI_FROM_NUMBER": "YOUR REGISTERED NUMBER",
+            }
+        }
+    }
+
+
+:SOURCE_FIELD: Defines the field name in your ``AUTH_USER_MODEL`` to be looked up and used as field containing the phone number of the recipient of the OTP code.
+:SMSAPI_ACCESS_TOKEN: Access token obtained from `SMS API`_
+:SMSAPI_FROM_NUMBER: This will be used as the sender's phone number.
 
 Authentication apps
 *******************
@@ -67,16 +93,14 @@ Authentication apps
 .. code-block:: python
 
     TRENCH_AUTH = {
-        (...)
-        'MFA_METHODS': {
-            'app': {
-                'VERBOSE_NAME': 'app',
-                'VALIDITY_PERIOD': 60 * 10,
-                'USES_THIRD_PARTY_CLIENT': True,
-                'HANDLER': 'trench.backends.application.ApplicationBackend',
-            },
-            ...,
-        },
+        "MFA_METHODS": {
+            "app": {
+                "VERBOSE_NAME": _("app"),
+                "VALIDITY_PERIOD": 30,
+                "USES_THIRD_PARTY_CLIENT": True,
+                "HANDLER": "trench.backends.application.ApplicationMessageDispatcher",
+            }
+        }
     }
 
 YubiKey
@@ -85,53 +109,36 @@ YubiKey
 .. code-block:: python
 
     TRENCH_AUTH = {
-        (...)
-        'MFA_METHODS': {
-            'yubi': {
-                'VERBOSE_NAME': 'yubi',
-                'HANDLER': 'trench.backends.yubikey.YubiKeyBackend',
-                'SOURCE_FIELD': 'yubikey_id',
-                'YUBICLOUD_CLIENT_ID': '',
+        "MFA_METHODS": {
+            "yubi": {
+                "VERBOSE_NAME": _("yubi"),
+                "HANDLER": "trench.backends.yubikey.YubiKeyMessageDispatcher",
+                "YUBICLOUD_CLIENT_ID": "YOUR KEY",
             }
-            ...,
-        },
+        }
     }
 
-Adding own authentication method
-""""""""""""""""""""""""""""""""
-| Base on provided examples you can create own handler class, which heritates from ``AbstractMessageDispatcher``.
+:YUBICLOUD_CLIENT_ID: Your client ID obtained from `Yubico`_.
+
+Adding custom MFA backend
+"""""""""""""""""""""""""
+
+| Basing on provided examples you can create your own handler class, which inherits from ``AbstractMessageDispatcher``.
 
 .. code-block:: python
 
-    from trench.backends import AbstractMessageDispatcher
+    from trench.backends.base import AbstractMessageDispatcher
 
 
-    class CustomAuthBackend(AbstractMessageDispatcher):
+    class YourMessageDispatcher(AbstractMessageDispatcher):
+        def dispatch_message(self) -> DispatchResponse:
+            try:
+                # dispatch the message through the channel of your choice
+                return SuccessfulDispatchResponse(details=_("Code was sent."))
+            except Exception as cause:
+                return FailedDispatchResponse(details=str(cause))
 
-        def dispatch_message(self, *args, **kwargs):
-            (....)
-            return {'data': 'ok'}
-
-| It may be also required to provide a custom serializer depending on what information need to be passed on from user.
-| In order to run your own method update settings as follows:
-
-.. code-block:: python
-
-    TRENCH_AUTH = {
-        (...)
-        'MFA_METHODS': {
-            'yourmethod': {
-                'VERBOSE_NAME': 'yourmethod',
-                'VALIDITY_PERIOD': 60 * 10,
-                'SOURCE_FIELD': 'phone_number', # if your backend requires custom field on User model
-                'HANDLER': 'yourapp.backends.CustomAuthBackend',
-                'SERIALIZER': 'yourapp.serializers.CustomAuthSerializer',
-            },
-            ...,
-        },
-    }
-
-
-.. _`Django documentation`: https://docs.djangoproject.com/en/2.1/topics/email/
+.. _`Django's documentation`: https://docs.djangoproject.com/en/3.2/topics/email/
 .. _`Twilio`: https://www.twilio.com/
-.. _`Smsapi.pl`: https://www.smsapi.pl/
+.. _`SMS API`: https://www.smsapi.pl/
+.. _`Yubico`: https://www.yubico.com/
