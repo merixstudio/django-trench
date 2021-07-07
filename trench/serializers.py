@@ -321,7 +321,8 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
     default_error_messages = {
         'not_enabled': _('2FA is not enabled.'),
         'invalid_code': _('Invalid or expired code.'),
-        'missing_method': _('Target method does not exist or is not active'),
+        'missing_method': _('Target method does not exist or is not active.'),
+        'already_primary': _('This method already setted as primary.')
     }
 
     def validate(self, attrs):
@@ -340,6 +341,8 @@ class ChangePrimaryMethodSerializer(serializers.Serializer):
             )
         except ObjectDoesNotExist:
             self.fail('missing_method')
+        if current_method == new_primary_method:
+            self.fail('already_primary')
         code = attrs.get('code')
         validated_backup_code = validate_backup_code(
             code,
