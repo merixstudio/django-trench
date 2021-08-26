@@ -3,7 +3,7 @@ djangorestframework
 django-environ==0.4.5
 django-cors-headers==3.7.0
 pyjwt==1.7.1
-djangorestframework-simplejwt==4.4.0
+djangorestframework-simplejwt<=4.4.0
 pyotp>=2.6.0
 twilio>=6.56.0
 yubico-client>=1.13.0
