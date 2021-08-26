@@ -35,3 +35,8 @@ def test_smsapi_backend_with_wrong_credentials(
         mfa_method=auth_method, config=conf
     ).dispatch_message()
     assert "Authorization failed" == response.data.get("details")
+
+
+@pytest.mark.django_db
+def test_application_backend_without_credentials(active_user_with_application_otp):
+    assert True
