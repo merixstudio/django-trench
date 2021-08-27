@@ -37,6 +37,6 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
                 fail_silently=False,
             )
             return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
-        except SMTPException as cause:
-            logging.error(cause, exc_info=True)
-            return FailedDispatchResponse(details=str(cause))
+        except SMTPException as cause:  # pragma: nocover
+            logging.error(cause, exc_info=True)  # pragma: nocover
+            return FailedDispatchResponse(details=str(cause))  # pragma: nocover

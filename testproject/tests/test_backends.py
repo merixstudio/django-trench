@@ -4,32 +4,37 @@ from django.contrib.auth import get_user_model
 
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
+from trench.backends.twilio import TwilioMessageDispatcher
 from trench.exceptions import MissingConfigurationError
 
 User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_smsapi_backend_without_credentials(
-    active_user_with_sms_otp,
-    settings,
-):
-    auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_twilio")
+def test_twilio_backend_without_credentials(active_user_with_twilio_otp, settings):
+    auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
-    response = SMSAPIMessageDispatcher(
+    response = TwilioMessageDispatcher(
         mfa_method=auth_method, config=conf
     ).dispatch_message()
-    assert response.data.get("details") == "Credentials are required."
+    assert response.data.get("details")[:23] == "Unable to create record"
 
 
 @pytest.mark.django_db
-def test_smsapi_backend_with_wrong_credentials(
-    active_user_with_sms_otp,
-    settings,
-):
-    auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_twilio")
-    conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
-    settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"][
+def test_sms_api_backend_without_credentials(active_user_with_sms_otp, settings):
+    auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_api")
+    conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_api"]
+    response = SMSAPIMessageDispatcher(
+        mfa_method=auth_method, config=conf
+    ).dispatch_message()
+    assert response.data.get("details") == "Authorization failed"
+
+
+@pytest.mark.django_db
+def test_sms_api_backend_with_wrong_credentials(active_user_with_sms_otp, settings):
+    auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_api")
+    conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_api"]
+    settings.TRENCH_AUTH["MFA_METHODS"]["sms_api"][
         "SMSAPI_ACCESS_TOKEN"
     ] = "wrong-token"
     response = SMSAPIMessageDispatcher(
@@ -39,8 +44,8 @@ def test_smsapi_backend_with_wrong_credentials(
 
 
 @pytest.mark.django_db
-def test_sms_backend_misconfiguration_error(active_user_with_sms_otp, settings):
-    auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_twilio")
+def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, settings):
+    auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
     current_source = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"]
     settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"] = "invalid.source"

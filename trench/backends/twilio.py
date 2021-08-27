@@ -19,8 +19,8 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
 
     def dispatch_message(self) -> DispatchResponse:
         try:
-            client = Client()  # pragma: no cover
-            client.messages.create(  # pragma: no cover
+            client = Client()
+            client.messages.create(
                 body=self._SMS_BODY + self.create_code(),
                 to=self._to,
                 from_=self._config.get(TWILIO_VERIFIED_FROM_NUMBER),

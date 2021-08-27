@@ -130,6 +130,14 @@ TRENCH_AUTH = {
                 default="",
             ),
         },
+        "sms_api": {
+            "VERBOSE_NAME": "sms",
+            "VALIDITY_PERIOD": 60,
+            "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
+            "SOURCE_FIELD": "phone_number",
+            "SMSAPI_ACCESS_TOKEN": "token",
+            "SMSAPI_FROM_NUMBER": "123 456 789"
+        },
         "email": {
             "VERBOSE_NAME": "email",
             "VALIDITY_PERIOD": 60,
