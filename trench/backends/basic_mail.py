@@ -1,8 +1,8 @@
-from smtplib import SMTPException
-
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
+
+from smtplib import SMTPException
 
 from trench.backends import AbstractMessageDispatcher
 from trench.settings import api_settings
@@ -17,17 +17,17 @@ class SendMailBackend(AbstractMessageDispatcher):
 
         context = self.get_context()
         plain_message = self.render_template(
-            self.conf.get('EMAIL_PLAIN_TEMPLATE'),
+            self.conf.get("EMAIL_PLAIN_TEMPLATE"),
             context,
         )
         html_message = self.render_template(
-            self.conf.get('EMAIL_HTML_TEMPLATE'),
+            self.conf.get("EMAIL_HTML_TEMPLATE"),
             context,
         )
 
         try:
             send_mail(
-                subject=self.conf.get('EMAIL_SUBJECT'),
+                subject=self.conf.get("EMAIL_SUBJECT"),
                 message=plain_message,
                 html_message=html_message,
                 from_email=api_settings.FROM_EMAIL,
@@ -36,15 +36,15 @@ class SendMailBackend(AbstractMessageDispatcher):
             )
         except SMTPException:  # pragma: no cover
             return {
-                'message': _('Email message with MFA code has not been sent.')
+                "message": _("Email message with MFA code has not been sent.")
             }  # pragma: no cover
 
-        return {'message': _('Email message with MFA code has been sent.')}
+        return {"message": _("Email message with MFA code has been sent.")}
 
     def get_context(self):
         """Returns context available to email templates."""
         return {
-            'code': self.create_code(),
+            "code": self.create_code(),
         }
 
     @staticmethod

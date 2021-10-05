@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -14,6 +12,7 @@ from django.utils.crypto import (
 from django.utils.http import base36_to_int, int_to_base36
 
 import pyotp
+from datetime import datetime
 
 from trench.settings import api_settings
 
@@ -28,13 +27,12 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         - expires after 15 minutes
         - longer hash (40 instead of 20)
     """
-    key_salt = 'django.contrib.auth.tokens.PasswordResetTokenGenerator'
+
+    key_salt = "django.contrib.auth.tokens.PasswordResetTokenGenerator"
     secret = settings.SECRET_KEY
 
     def make_token(self, user):
-        return self._make_token_with_timestamp(
-            user, int(datetime.now().timestamp())
-        )
+        return self._make_token_with_timestamp(user, int(datetime.now().timestamp()))
 
     def check_token(self, token):
         if not token:
@@ -42,7 +40,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
 
         try:
             token = str(token)
-            user_pk, ts_b36, hash = token.rsplit('-', 2)
+            user_pk, ts_b36, hash = token.rsplit("-", 2)
             ts = base36_to_int(ts_b36)
             user = User._default_manager.get(pk=user_pk)
         except (ValueError, TypeError, User.DoesNotExist):
@@ -51,8 +49,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
         if (datetime.now().timestamp() - ts) > (60 * 15):
             return None  # pragma: no cover
 
-        if not constant_time_compare(
-                self._make_token_with_timestamp(user, ts), token):
+        if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
             return None
 
         return user
@@ -64,7 +61,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
             self._make_hash_value(user, timestamp),
             secret=self.secret,
         ).hexdigest()
-        return '%s-%s-%s' % (user.pk, ts_b36, hash)
+        return "%s-%s-%s" % (user.pk, ts_b36, hash)
 
 
 user_token_generator = UserTokenGenerator()
@@ -149,7 +146,7 @@ def validate_code(
 
 def get_mfa_handler(mfa_method):
     conf = api_settings.MFA_METHODS[mfa_method.name]
-    return conf['HANDLER'](
+    return conf["HANDLER"](
         user=mfa_method.user,
         obj=mfa_method,
         conf=conf,
@@ -165,7 +162,7 @@ def parse_dotted_path(path):
     Extracts attribute name from dotted path.
     """
     try:
-        objects, attr = path.rsplit('.', 1)
+        objects, attr = path.rsplit(".", 1)
     except ValueError:
         objects = None
         attr = path
@@ -179,7 +176,7 @@ def get_innermost_object(obj, dotted_path=None):
     """
     if not dotted_path:
         return obj
-    for o in dotted_path.split('.'):
+    for o in dotted_path.split("."):
         obj = getattr(obj, o)
     return obj  # pragma: no cover
 

@@ -17,19 +17,46 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='MFAMethod',
+            name="MFAMethod",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, verbose_name='name')),
-                ('secret', models.CharField(max_length=20, verbose_name='secret')),
-                ('is_primary', models.BooleanField(default=False, verbose_name='is primary')),
-                ('is_active', models.BooleanField(default=False, verbose_name='is active')),
-                ('backup_codes', models.CharField(blank=True, max_length=255, verbose_name='backup codes')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mfa', to=settings.AUTH_USER_MODEL, verbose_name='user')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255, verbose_name="name")),
+                ("secret", models.CharField(max_length=20, verbose_name="secret")),
+                (
+                    "is_primary",
+                    models.BooleanField(default=False, verbose_name="is primary"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(default=False, verbose_name="is active"),
+                ),
+                (
+                    "backup_codes",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="backup codes"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mfa",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="user",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'MFA Method',
-                'verbose_name_plural': 'MFA Methods',
+                "verbose_name": "MFA Method",
+                "verbose_name_plural": "MFA Methods",
             },
         ),
     ]

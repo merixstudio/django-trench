@@ -18,13 +18,14 @@ from django.contrib import admin
 
 from rest_framework_swagger.views import get_swagger_view
 
-schema_view = get_swagger_view(title='Django-Trench')
+
+schema_view = get_swagger_view(title="Django-Trench")
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^auth/', include('trench.urls')),
-    url(r'^auth/', include('trench.urls.jwt')),
-    url(r'^simplejwt-auth/', include('trench.urls.simplejwt')),
-    url(r'^djoser/', include('djoser.urls')),
-    url(r'^swagger/', schema_view)
+    url(r"^admin/", admin.site.urls),
+    url(r"^auth/", include("trench.urls")),
+    url(r"^auth/", include("trench.urls.jwt")),
+    url(r"^simplejwt-auth/", include("trench.urls.simplejwt")),
+    url(r"^djoser/", include("djoser.urls")),
+    url(r"^swagger/", schema_view),
 ]

@@ -9,15 +9,15 @@ class ObtainAuthTokenMixin(TokenCreateView):
         return self._action(serializer)
 
 
-class AuthTokenLoginOrRequestMFACode(MFACredentialsLoginMixin,
-                                     ObtainAuthTokenMixin,
-                                     GenericAPIView):
+class AuthTokenLoginOrRequestMFACode(
+    MFACredentialsLoginMixin, ObtainAuthTokenMixin, GenericAPIView
+):
     pass
 
 
-class AuthTokenLoginWithMFACode(MFACodeLoginMixin,
-                                ObtainAuthTokenMixin,
-                                GenericAPIView):
+class AuthTokenLoginWithMFACode(
+    MFACodeLoginMixin, ObtainAuthTokenMixin, GenericAPIView
+):
     pass
 
 

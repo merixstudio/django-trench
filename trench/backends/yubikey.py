@@ -8,14 +8,14 @@ from trench.backends import AbstractMessageDispatcher
 
 
 class YubiKeyBackend(AbstractMessageDispatcher):
-    SMS_BODY = _('Your verification code is: ')
+    SMS_BODY = _("Your verification code is: ")
 
     def dispatch_message(self):
         """
         Do nothing.
         """
 
-        return {'message': _('Generate code using YubiKey')}  # pragma: no cover # noqa
+        return {"message": _("Generate code using YubiKey")}  # pragma: no cover # noqa
 
     def confirm_activation(self, code):
         """
@@ -25,7 +25,7 @@ class YubiKeyBackend(AbstractMessageDispatcher):
 
         otp = OTP(code)
         self.obj.secret = otp.device_id
-        self.obj.save(update_fields=('secret',))
+        self.obj.save(update_fields=("secret",))
 
     def validate_confirmation_code(self, code):
         """
@@ -45,7 +45,7 @@ class YubiKeyBackend(AbstractMessageDispatcher):
         return True
 
     def _validate_yubikey_otp(self, code):
-        client = Yubico(self.conf['YUBICLOUD_CLIENT_ID'])
+        client = Yubico(self.conf["YUBICLOUD_CLIENT_ID"])
         try:
             return client.verify(code, timestamp=True)
         except (YubicoError, Exception):
