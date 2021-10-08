@@ -9,13 +9,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('testapp', '0001_initial'),
+        ("testapp", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='yubikey_id',
-            field=models.CharField(blank=True, max_length=12, validators=[django.core.validators.MinLengthValidator(12)]),
+            model_name="user",
+            name="yubikey_id",
+            field=models.CharField(
+                blank=True,
+                max_length=12,
+                validators=[django.core.validators.MinLengthValidator(12)],
+            ),
         ),
     ]

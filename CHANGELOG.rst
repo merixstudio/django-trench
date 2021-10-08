@@ -3,6 +3,18 @@ Changelog
 =========
 
 
+0.3.0 (2021-04-30)
+==================
+
+* Support for Python >=3.6 only (older versions are not maintained anymore)
+* Abandoned support of the :code:`django-rest-framework-jwt` library as it is no longer maintained
+* Used :code:`black` tool for auto code formatting
+* Type hits added
+* Backwards-compatible code refactoring and cleanup for better maintenance experience
+* Deactivation of primary MFA method would raise an error instead of randomly selecting new primary method from all active ones
+* Twilio backend client should be configured via environment variables instead of backend's configuration the `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`
+
+
 0.2.3 (2019-12-16)
 ==================
 
