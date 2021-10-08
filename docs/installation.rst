@@ -1,5 +1,6 @@
 Installation
 ============
+
 First steps
 """""""""""
 
@@ -11,7 +12,7 @@ First steps
 
 or add it to your requirements file.
 
-2. Add ``trench`` library to INSTALLED_APPS in your app settings file:
+2. Add ``trench`` library to ``INSTALLED_APPS`` in your ``settings.py`` file:
 
 .. code-block:: python
 
@@ -23,53 +24,72 @@ or add it to your requirements file.
         'trench',
     )
 
-.. note:: If you're going to use ``djoser`` to handle user authentication make sure you have it installed and included in INSTALLED_APPS. You'll also need ``djangorestframework-jwt`` to support JSON Web Tokens.
+Setup
+"""""
 
-Config
-""""""
+With JWT authentication
+***********************
 
-``urls.py``
-***********
+1. Include Django Trench's URLs to your application:
+
 .. code-block:: python
 
     urlpatterns = [
         ...,
         url(r'^auth/', include('trench.urls')),
+        url(r'^auth/', include('trench.urls.jwt')),
     ]
 
-| If you utilise ``djoser`` and JWT authentication:
+
+2. Adjust your ``settings.py`` file like so:
+
+.. code-block:: python
+
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ),
+    }
+
+
+With token authentication
+*************************
+
+1. Include Django Trench's URLs to your application:
 
 .. code-block:: python
 
     urlpatterns = [
         ...,
-        url(r'^auth/', include('trench.urls')), # Base endpoints
-        url(r'^auth/', include('djoser.urls')),
-        url(r'^auth/', include('trench.urls.djoser')),  # for Token Based Authorization
-        url(r'^auth/', include('trench.urls.jwt')), # for django-rest-framework-jwt
-        url(r'^auth/', include('trench.urls.simplejwt')), # for djangorestframework-simplejwt
+        url(r'^auth/', include('trench.urls')),
+        url(r'^auth/', include('trench.urls.authtoken')),
     ]
 
-``settings.py``
-***************
-| ``django-trench`` supports ``djangorestframework`` built-in Token Based Authentication, as well as JSON Web Tokens. You'll need setup it accordingly:
+
+2. Adjust your ``settings.py`` file like so:
 
 .. code-block:: python
 
     REST_FRAMEWORK = {
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.TokenAuthentication',
-            # or / and
-            'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-            # or / and
-            'rest_framework_simplejwt.authentication.JWTAuthentication',
         ),
     }
 
+3. Add ``rest_framework.authtoken`` to your ``INSTALLED_APPS``:
+
+.. code-block:: python
+
+    INSTALLED_APPS = (
+        ...,
+        'rest_framework.authtoken',
+    )
+
 Migrations
 """"""""""
+
 | Last but not least, run migrations:
 
-.. code-block:: text
+.. code-block:: shell
 
-    $ ./manage.py migrate
+    python manage.py migrate

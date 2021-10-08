@@ -1,33 +1,33 @@
 from django.utils.translation import gettext_lazy as _
 
+import logging
 from smsapi.client import SmsApiPlClient
+from smsapi.exception import SmsApiException
 
-from trench.backends import AbstractMessageDispatcher
+from trench.backends.base import AbstractMessageDispatcher
+from trench.responses import (
+    DispatchResponse,
+    FailedDispatchResponse,
+    SuccessfulDispatchResponse,
+)
+from trench.settings import SMSAPI_ACCESS_TOKEN, SMSAPI_FROM_NUMBER
 
 
-class SmsAPIBackend(AbstractMessageDispatcher):
-    SMS_BODY = _("Your verification code is: ")
+class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
+    _SMS_BODY = _("Your verification code is: ")
+    _SUCCESS_DETAILS = _("SMS message with MFA code has been sent.")
 
-    def dispatch_message(self):
-        """
-        Sends a SMS with verification code.
-        """
-
-        code = self.create_code()
-        self.send_sms(self.to, code)
-
-        return {
-            "message": _("SMS message with MFA code has been sent.")
-        }  # pragma: no cover # noqa
-
-    def send_sms(self, user_mobile, code):
-        client = self.provider_auth()
-
-        kwargs = {}
-        if self.conf.get("SMSAPI_FROM_NUMBER"):
-            kwargs["from_"] = self.conf.get("SMSAPI_FROM_NUMBER")  # pragma: no cover
-
-        client.sms.send(message=self.SMS_BODY + code, to=user_mobile, **kwargs)
-
-    def provider_auth(self):
-        return SmsApiPlClient(access_token=self.conf.get("SMSAPI_ACCESS_TOKEN"))
+    def dispatch_message(self) -> DispatchResponse:
+        try:
+            client = SmsApiPlClient(access_token=self._config.get(SMSAPI_ACCESS_TOKEN))
+            from_number = self._config.get(SMSAPI_FROM_NUMBER)
+            kwargs = {"from_": from_number} if from_number is not None else {}
+            client.sms.send(
+                message=self._SMS_BODY + self.create_code(),
+                to=self._to,
+                **kwargs,
+            )
+            return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
+        except SmsApiException as cause:
+            logging.error(cause, exc_info=True)
+            return FailedDispatchResponse(details=cause.message)

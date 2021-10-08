@@ -1,17 +1,9 @@
-from django.conf.urls import url
+from django.urls import path
 
-from trench.views import jwt as views
+from trench.views.jwt import MFAFirstStepJWTView, MFASecondStepJWTView
 
 
-urlpatterns = [
-    url(
-        r"^login/$",
-        views.JSONWebTokenLoginOrRequestMFACode.as_view(),
-        name="generate-code",
-    ),
-    url(
-        r"^login/code/",
-        views.JSONWebTokenLoginWithMFACode.as_view(),
-        name="generate-token",
-    ),
-]
+urlpatterns = (
+    path("login/", MFAFirstStepJWTView.as_view(), name="generate-code-jwt"),
+    path("login/code/", MFASecondStepJWTView.as_view(), name="generate-token-jwt"),
+)
