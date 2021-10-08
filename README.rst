@@ -93,3 +93,62 @@ You can also check our live `demo`_.
 .. _django-rest-framework-jwt: https://github.com/GetBlimp/django-rest-framework-jwt
 .. _djangorestframework-simplejwt: https://github.com/davesque/django-rest-framework-simplejwt
 .. _YubiKey: https://www.yubico.com/
+
+
+Local development
+*****************
+
+1. Clone the repo.
+
+2. Crete virtual environment named e.g. :code:`.venv`:
+
+    .. code-block:: shell
+
+        virtualenv .venv
+
+3. Activate the virtual environment:
+
+    .. code-block:: shell
+
+        source .venv/bin/activate
+
+4. Install dependencies:
+
+    .. code-block:: shell
+
+        pip install pytest pytest-cov black flake8 isort mypy
+        pip install -r testproject/requirements.txt
+
+5. Set environment variables:
+
+    .. code-block:: shell
+
+        export PYTHONPATH=./testproject
+        export DJANGO_SETTINGS_MODULE=settings
+        export SECRET_KEY=YOURsecretGOEShere
+
+6. Build your :code:`django-trench` package distribution locally:
+
+    .. code-block:: shell
+
+        python setup.py sdist
+
+    This will create a :code:`dist` directory and place a file named :code:`django-trench-x.x.x.tar.gz`
+    where :code:`x.x.x` will be replaced with the current package's version.
+
+7.  Install the :code:`django-trench` package that you just built:
+
+    .. code-block:: shell
+
+        pip install dist/django-trench-x.x.x.tar.gz
+
+    Use the actual distribution file name, the one above is just an example.
+
+8. Check whether the tests are passing:
+
+    .. code-block:: shell
+
+        pytest --cov=testproject/trench testproject/tests/
+
+Remember - anytime you change something in the :code:`django-trench` source code you need to re-build and re-install
+the package (steps 6-7) for the changes to be present during e.g. running the tests.
