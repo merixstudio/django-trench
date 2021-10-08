@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 
 from django.contrib.auth import get_user_model
 
@@ -36,5 +37,7 @@ def login(user, path=PATH_AUTH_JWT_LOGIN) -> Response:
 def get_username_from_jwt(response, token_field=default_token_field):
     return jwt.decode(
         response.data.get(token_field),
+        key=settings.SECRET_KEY,
         verify=False,
+        algorithms=["HS256"]
     ).get(User.USERNAME_FIELD)

@@ -113,6 +113,7 @@ JWT_AUTH = {
 SIMPLE_JWT = {
     "USER_ID_FIELD": "username",
     "USER_ID_CLAIM": "username",
+    "ALGORITHM": "HS256",
 }
 
 TRENCH_AUTH = {
