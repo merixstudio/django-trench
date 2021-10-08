@@ -1,27 +1,23 @@
-from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework_jwt.utils import (
-    jwt_encode_handler,
-    jwt_payload_handler,
-    jwt_response_payload_handler,
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from trench.views import (
+    MFAFirstStepMixin,
+    MFASecondStepMixin,
+    MFAStepMixin,
+    User,
 )
 
-from trench.views.base import MFACodeLoginMixin, MFACredentialsLoginMixin
+
+class MFAJWTView(MFAStepMixin):
+    def _successful_authentication_response(self, user: User) -> Response:
+        token = RefreshToken.for_user(user=user)
+        return Response(data={"refresh": str(token), "access": str(token.access_token)})
 
 
-class ObtainJSONWebTokenMixin:
-    def handle_user_login(self, request, serializer, *args, **kwargs):
-        token = jwt_encode_handler(jwt_payload_handler(serializer.user))
-        return Response(jwt_response_payload_handler(token, serializer.user, request))
-
-
-class JSONWebTokenLoginOrRequestMFACode(
-    MFACredentialsLoginMixin, ObtainJSONWebTokenMixin, GenericAPIView
-):
+class MFAFirstStepJWTView(MFAJWTView, MFAFirstStepMixin):
     pass
 
 
-class JSONWebTokenLoginWithMFACode(
-    MFACodeLoginMixin, ObtainJSONWebTokenMixin, GenericAPIView
-):
+class MFASecondStepJWTView(MFAJWTView, MFASecondStepMixin):
     pass
