@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trench', '0002_auto_20190111_1403'),
+        ("trench", "0002_auto_20190111_1403"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mfamethod',
-            name='secret',
-            field=models.CharField(max_length=255, verbose_name='secret'),
+            model_name="mfamethod",
+            name="secret",
+            field=models.CharField(max_length=255, verbose_name="secret"),
         ),
         migrations.AlterField(
-            model_name='mfamethod',
-            name='_backup_codes',
-            field=models.TextField(blank=True, verbose_name='backup codes'),
+            model_name="mfamethod",
+            name="_backup_codes",
+            field=models.TextField(blank=True, verbose_name="backup codes"),
         ),
     ]

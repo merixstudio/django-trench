@@ -18,7 +18,7 @@ def test_token_obj_without_token():
 @pytest.mark.django_db
 def test_unexisting_user():
     token = UserTokenGenerator()
-    assert token.check_token('test') is None
+    assert token.check_token("test") is None
 
 
 @pytest.mark.django_db
@@ -36,7 +36,7 @@ def test_create_qr_link(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_innermost_object_test(active_user):
     with pytest.raises(AttributeError):
-        get_innermost_object(active_user, dotted_path='test')
+        get_innermost_object(active_user, dotted_path="test")
 
 
 @pytest.mark.django_db
@@ -51,6 +51,6 @@ def test_validate_code(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_validate_code_yubikey(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods
-    yubi_method = active_user.mfa_methods.get(name='yubi')
+    yubi_method = active_user.mfa_methods.get(name="yubi")
 
     assert validate_code("t" * 44, yubi_method) is False

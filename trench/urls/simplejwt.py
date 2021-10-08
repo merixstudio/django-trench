@@ -5,13 +5,13 @@ from trench.views import simplejwt as views
 
 urlpatterns = [
     url(
-        r'^login/$',
+        r"^login/$",
         views.JSONWebTokenLoginOrRequestMFACode.as_view(),
-        name='generate-code',
+        name="generate-code",
     ),
     url(
-        r'^login/code/',
+        r"^login/code/",
         views.JSONWebTokenLoginWithMFACode.as_view(),
-        name='generate-token',
+        name="generate-token",
     ),
 ]

@@ -10,18 +10,23 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trench', '0001_initial'),
+        ("trench", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='mfamethod',
-            old_name='backup_codes',
-            new_name='_backup_codes',
+            model_name="mfamethod",
+            old_name="backup_codes",
+            new_name="_backup_codes",
         ),
         migrations.AlterField(
-            model_name='mfamethod',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mfa_methods', to=settings.AUTH_USER_MODEL, verbose_name='user'),
+            model_name="mfamethod",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="mfa_methods",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="user",
+            ),
         ),
     ]

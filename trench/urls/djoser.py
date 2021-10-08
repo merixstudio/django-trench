@@ -7,31 +7,31 @@ from trench.views import authtoken as views
 
 
 __all__ = [
-    'urlpatterns',
+    "urlpatterns",
 ]
 
-if 'djoser' not in settings.INSTALLED_APPS:
+if "djoser" not in settings.INSTALLED_APPS:
     msg = _(
-        'Djoser not found in INSTALLED_APPS. '
-        'Make sure you\'ve installed it, and '
-        'add appropriate entry in settings.'
+        "Djoser not found in INSTALLED_APPS. "
+        "Make sure you've installed it, and "
+        "add appropriate entry in settings."
     )
     raise ImproperlyConfigured(msg)
 
 urlpatterns = [
     url(
-        r'^login/$',
+        r"^login/$",
         views.AuthTokenLoginOrRequestMFACode.as_view(),
-        name='mfa-authtoken-login',
+        name="mfa-authtoken-login",
     ),
     url(
-        r'^login/code/',
+        r"^login/code/",
         views.AuthTokenLoginWithMFACode.as_view(),
-        name='mfa-authtoken-login-code',
+        name="mfa-authtoken-login-code",
     ),
     url(
-        r'^logout/',
+        r"^logout/",
         views.AuthTokenLogoutView.as_view(),
-        name='authtoken-logout',
-    )
+        name="authtoken-logout",
+    ),
 ]
