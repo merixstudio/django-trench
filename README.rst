@@ -35,7 +35,7 @@ Features
 Supported versions
 ******************
 
-* Python 3.6, 3.7, 3.8
+* Python 3.7, 3.8, 3.9, 3.10
 * Django 2.0, 2.1, 2.2, 3.0
 * Django REST Framework 3.10
 
