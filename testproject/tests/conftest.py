@@ -74,6 +74,12 @@ def active_user_with_email_otp() -> UserModel:
 
 
 @pytest.fixture()
+def deactivated_user_with_email_otp(active_user_with_email_otp) -> UserModel:
+    active_user_with_email_otp.is_active = False
+    active_user_with_email_otp.save()
+    return active_user_with_email_otp
+
+@pytest.fixture()
 def active_user_with_sms_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"

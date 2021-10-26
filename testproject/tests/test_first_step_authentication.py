@@ -24,6 +24,12 @@ def test_get_emphemeral_token(active_user_with_email_otp):
 
 
 @pytest.mark.django_db
+def test_deactivated_user(deactivated_user_with_email_otp):
+    response = login(deactivated_user_with_email_otp)
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
 def test_get_jwt_without_otp(active_user):
     response = login(active_user)
     assert response.status_code == 200
