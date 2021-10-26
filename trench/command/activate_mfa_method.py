@@ -29,13 +29,13 @@ class ActivateMFAMethodCommand:
             is_primary=not self._mfa_model.objects.primary_exists(user_id=user_id),
         )
 
+        if rows_affected < 1:
+            raise MFAMethodDoesNotExistError()
+
         backup_codes = regenerate_backup_codes_for_mfa_method_command(
             user_id=user_id,
             name=name,
         )
-
-        if rows_affected < 1:
-            raise MFAMethodDoesNotExistError()
 
         return backup_codes
 
