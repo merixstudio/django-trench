@@ -67,7 +67,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -137,7 +137,7 @@ TRENCH_AUTH = {
             "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "SMSAPI_ACCESS_TOKEN": "token",
-            "SMSAPI_FROM_NUMBER": "123 456 789"
+            "SMSAPI_FROM_NUMBER": "123 456 789",
         },
         "email": {
             "VERBOSE_NAME": "email",

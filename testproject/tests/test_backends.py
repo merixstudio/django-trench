@@ -7,6 +7,7 @@ from trench.backends.sms_api import SMSAPIMessageDispatcher
 from trench.backends.twilio import TwilioMessageDispatcher
 from trench.exceptions import MissingConfigurationError
 
+
 User = get_user_model()
 
 
@@ -55,8 +56,15 @@ def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, setting
 
 
 @pytest.mark.django_db
-def test_application_backend_generating_url_successfully(active_user_with_application_otp, settings):
+def test_application_backend_generating_url_successfully(
+    active_user_with_application_otp, settings
+):
     auth_method = active_user_with_application_otp.mfa_methods.get(name="app")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["app"]
-    response = ApplicationMessageDispatcher(mfa_method=auth_method, config=conf).dispatch_message()
-    assert response.data.get("details")[:44] == "otpauth://totp/MyApplication:imhotep?secret="
+    response = ApplicationMessageDispatcher(
+        mfa_method=auth_method, config=conf
+    ).dispatch_message()
+    assert (
+        response.data.get("details")[:44]
+        == "otpauth://totp/MyApplication:imhotep?secret="
+    )

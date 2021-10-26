@@ -1,11 +1,11 @@
-from os import environ
-
 import pytest
 
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
+from os import environ
+from testapp.models import User as UserModel
 from yubico_client import Yubico
 from yubico_client.otp import OTP
 
@@ -19,16 +19,20 @@ User = get_user_model()
 @pytest.fixture(scope="session", autouse=True)
 def tests_setup_and_teardown():
     original_environment = dict(environ)
-    environ.update({
-        "TWILIO_ACCOUNT_SID": "TEST",
-        "TWILIO_AUTH_TOKEN": "TOKEN",
-    })
+    environ.update(
+        {
+            "TWILIO_ACCOUNT_SID": "TEST",
+            "TWILIO_AUTH_TOKEN": "TOKEN",
+        }
+    )
     yield
     environ.clear()
     environ.update(original_environment)
 
 
-def mfa_method_creator(user: User, method_name: str, is_primary: bool = True, **method_args):
+def mfa_method_creator(
+    user: UserModel, method_name: str, is_primary: bool = True, **method_args
+):
     MFAMethod = apps.get_model("trench.MFAMethod")
     return MFAMethod.objects.create(
         user=user,
@@ -42,7 +46,9 @@ def mfa_method_creator(user: User, method_name: str, is_primary: bool = True, **
 
 @pytest.fixture()
 def active_user_with_application_otp():
-    user, created = User.objects.get_or_create(username="imhotep", email="imhotep@pyramids.eg")
+    user, created = User.objects.get_or_create(
+        username="imhotep", email="imhotep@pyramids.eg"
+    )
     if created:
         user.set_password("secretkey")
         user.is_active = True
@@ -102,8 +108,12 @@ def active_user_with_email_and_inactive_other_methods_otp():
         user.is_active = True
         user.save()
         mfa_method_creator(user=user, method_name="email")
-        mfa_method_creator(user=user, method_name="sms_twilio", is_primary=False, is_active=False)
-        mfa_method_creator(user=user, method_name="app", is_primary=False, is_active=False)
+        mfa_method_creator(
+            user=user, method_name="sms_twilio", is_primary=False, is_active=False
+        )
+        mfa_method_creator(
+            user=user, method_name="app", is_primary=False, is_active=False
+        )
     return user
 
 
@@ -119,7 +129,9 @@ def active_user_with_backup_codes():
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
-        mfa_method_creator(user=user, method_name="email", _backup_codes=encrypted_backup_codes)
+        mfa_method_creator(
+            user=user, method_name="email", _backup_codes=encrypted_backup_codes
+        )
     return user, backup_codes
 
 
@@ -135,10 +147,27 @@ def active_user_with_many_otp_methods():
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
-        mfa_method_creator(user=user, method_name="email", _backup_codes=encrypted_backup_codes)
-        mfa_method_creator(user=user, method_name="sms_twilio", is_primary=False, _backup_codes=encrypted_backup_codes)
-        mfa_method_creator(user=user, method_name="app", is_primary=False, _backup_codes=encrypted_backup_codes)
-        mfa_method_creator(user=user, method_name="yubi", is_primary=False, _backup_codes=encrypted_backup_codes)
+        mfa_method_creator(
+            user=user, method_name="email", _backup_codes=encrypted_backup_codes
+        )
+        mfa_method_creator(
+            user=user,
+            method_name="sms_twilio",
+            is_primary=False,
+            _backup_codes=encrypted_backup_codes,
+        )
+        mfa_method_creator(
+            user=user,
+            method_name="app",
+            is_primary=False,
+            _backup_codes=encrypted_backup_codes,
+        )
+        mfa_method_creator(
+            user=user,
+            method_name="yubi",
+            is_primary=False,
+            _backup_codes=encrypted_backup_codes,
+        )
     return user, next(iter(backup_codes))
 
 
@@ -195,7 +224,12 @@ def active_user_with_yubi():
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
-        mfa_method_creator(user=user, method_name="yubi", secret=FAKE_YUBI_SECRET, _backup_codes=encrypted_backup_codes)
+        mfa_method_creator(
+            user=user,
+            method_name="yubi",
+            secret=FAKE_YUBI_SECRET,
+            _backup_codes=encrypted_backup_codes,
+        )
     return user
 
 
@@ -216,6 +250,3 @@ def offline_yubikey(monkeypatch, fake_yubikey):
 
     monkeypatch.setattr(target=Yubico, name="verify", value=mock_verify)
     assert OTP("123456").device_id == FAKE_YUBI_SECRET
-
-
-

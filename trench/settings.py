@@ -5,10 +5,7 @@ import string
 from rest_framework.settings import APISettings, perform_import
 from typing import Any
 
-from trench.exceptions import (
-    MethodHandlerMissingError,
-    RestrictedCharInBackupCodeError,
-)
+from trench.exceptions import MethodHandlerMissingError, RestrictedCharInBackupCodeError
 
 
 class TrenchAPISettings(APISettings):

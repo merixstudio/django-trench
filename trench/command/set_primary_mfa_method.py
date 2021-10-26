@@ -2,10 +2,7 @@ from django.db.transaction import atomic
 
 from typing import Type
 
-from trench.exceptions import (
-    MFAMethodDoesNotExistError,
-    MFAPrimaryMethodInactiveError,
-)
+from trench.exceptions import MFAMethodDoesNotExistError, MFAPrimaryMethodInactiveError
 from trench.models import MFAMethod
 from trench.utils import get_mfa_model
 

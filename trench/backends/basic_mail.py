@@ -12,11 +12,7 @@ from trench.responses import (
     FailedDispatchResponse,
     SuccessfulDispatchResponse,
 )
-from trench.settings import (
-    EMAIL_HTML_TEMPLATE,
-    EMAIL_PLAIN_TEMPLATE,
-    EMAIL_SUBJECT,
-)
+from trench.settings import EMAIL_HTML_TEMPLATE, EMAIL_PLAIN_TEMPLATE, EMAIL_SUBJECT
 
 
 class SendMailMessageDispatcher(AbstractMessageDispatcher):

@@ -1,10 +1,9 @@
-import time
-
 import pytest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
+import time
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
@@ -24,11 +23,8 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_custom_validity_period(
-    active_user_with_email_otp,
-    settings
-):
-    settings.TRENCH_AUTH['MFA_METHODS']['email']["VALIDITY_PERIOD"] = 3
+def test_custom_validity_period(active_user_with_email_otp, settings):
+    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
 
     client = APIClient()
     first_step = login(active_user_with_email_otp)
@@ -38,19 +34,19 @@ def test_custom_validity_period(
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
-            'ephemeral_token': first_step.data.get('ephemeral_token'),
-            'code': code,
+            "ephemeral_token": first_step.data.get("ephemeral_token"),
+            "code": code,
         },
-        format='json',
+        format="json",
     )
     assert response.status_code == 401
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
-            'ephemeral_token': first_step.data.get('ephemeral_token'),
-            'code': handler.create_code(),
+            "ephemeral_token": first_step.data.get("ephemeral_token"),
+            "code": handler.create_code(),
         },
-        format='json',
+        format="json",
     )
 
     assert response.status_code == 200

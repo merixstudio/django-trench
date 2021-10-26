@@ -32,15 +32,24 @@ jobs:
         python -m pip install mypy flake8 pytest
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
         ln -s $(pwd)/trench/ $(pwd)/testproject/trench
-    - name: Lint with flake8
+    - name: Lint trench package with flake8
       run: |
         # Stop the build if there are Python syntax errors or undefined names.
         flake8 ./trench/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide.
-        flake8 ./trench/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Check type hints with mypy
+        flake8 ./trench/ --count --exit-zero --max-complexity=10 --statistics
+    - name: Check trench package's type hints with mypy
       run: |
         mypy ./trench/
+    - name: Lint testproject with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names.
+        flake8 ./testproject/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide.
+        flake8 ./testproject/ --count --exit-zero --max-complexity=10 --statistics
+    - name: Check testproject's type hints with mypy
+      run: |
+        mypy ./testproject/
     - name: Test with pytest
       run: |
         python -m pytest --cov-report=xml --cov=testproject/trench testproject/tests/
