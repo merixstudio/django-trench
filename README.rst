@@ -116,7 +116,7 @@ Local development
 
     .. code-block:: shell
 
-        pip install pytest pytest-cov black flake8 isort mypy
+        pip install black mypy
         pip install -r testproject/requirements.txt
 
 5. Set environment variables:
