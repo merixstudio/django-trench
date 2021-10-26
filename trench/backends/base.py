@@ -61,7 +61,7 @@ class AbstractMessageDispatcher(ABC):
 
     @abstractmethod
     def dispatch_message(self) -> DispatchResponse:
-        pass
+        raise NotImplementedError
 
     def create_code(self) -> str:
         return self._get_otp().now()

@@ -47,7 +47,7 @@ class MFAStepMixin(APIView, ABC):
 
     @abstractmethod
     def _successful_authentication_response(self, user: User) -> Response:
-        pass
+        raise NotImplementedError
 
 
 class MFAFirstStepMixin(MFAStepMixin, ABC):

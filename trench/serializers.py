@@ -52,7 +52,7 @@ class ProtectedActionValidator(RequestBodyValidator):
     @staticmethod
     @abstractmethod
     def _validate_mfa_method(mfa: MFAMethod) -> None:
-        pass
+        raise NotImplementedError
 
     def __init__(self, mfa_method_name: str, user: User, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
