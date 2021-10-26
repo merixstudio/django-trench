@@ -6,11 +6,13 @@ from django.contrib.auth.hashers import make_password
 
 from os import environ
 from testapp.models import User as UserModel
+from typing import Set, Tuple, Any
 from yubico_client import Yubico
 from yubico_client.otp import OTP
 
 from trench.command.create_secret import create_secret_command
 from trench.command.generate_backup_codes import generate_backup_codes_command
+from trench.models import MFAMethod as MFAMethodModel
 
 
 User = get_user_model()
@@ -31,8 +33,8 @@ def tests_setup_and_teardown():
 
 
 def mfa_method_creator(
-    user: UserModel, method_name: str, is_primary: bool = True, **method_args
-):
+    user: UserModel, method_name: str, is_primary: bool = True, **method_args: Any
+) -> MFAMethodModel:
     MFAMethod = apps.get_model("trench.MFAMethod")
     return MFAMethod.objects.create(
         user=user,
@@ -45,7 +47,7 @@ def mfa_method_creator(
 
 
 @pytest.fixture()
-def active_user_with_application_otp():
+def active_user_with_application_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep", email="imhotep@pyramids.eg"
     )
@@ -58,7 +60,7 @@ def active_user_with_application_otp():
 
 
 @pytest.fixture()
-def active_user_with_email_otp():
+def active_user_with_email_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep",
         email="imhotep@pyramids.eg",
@@ -72,7 +74,7 @@ def active_user_with_email_otp():
 
 
 @pytest.fixture()
-def active_user_with_sms_otp():
+def active_user_with_sms_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"
     )
@@ -85,7 +87,7 @@ def active_user_with_sms_otp():
 
 
 @pytest.fixture()
-def active_user_with_twilio_otp():
+def active_user_with_twilio_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"
     )
@@ -98,7 +100,7 @@ def active_user_with_twilio_otp():
 
 
 @pytest.fixture()
-def active_user_with_email_and_inactive_other_methods_otp():
+def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep",
         email="imhotep@pyramids.eg",
@@ -118,7 +120,7 @@ def active_user_with_email_and_inactive_other_methods_otp():
 
 
 @pytest.fixture()
-def active_user_with_backup_codes():
+def active_user_with_backup_codes() -> Tuple[UserModel, Set[str]]:
     user, created = User.objects.get_or_create(
         username="cleopatra",
         email="cleopatra@pyramids.eg",
@@ -136,7 +138,7 @@ def active_user_with_backup_codes():
 
 
 @pytest.fixture()
-def active_user_with_many_otp_methods():
+def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
     user, created = User.objects.get_or_create(
         username="ramses",
         email="ramses@thegreat.eg",
@@ -172,7 +174,7 @@ def active_user_with_many_otp_methods():
 
 
 @pytest.fixture()
-def active_user():
+def active_user() -> UserModel:
     user, created = User.objects.get_or_create(
         username="hetephernebti",
         email="hetephernebti@pyramids.eg",
@@ -186,7 +188,7 @@ def active_user():
 
 
 @pytest.fixture()
-def inactive_user():
+def inactive_user() -> UserModel:
     user, created = User.objects.get_or_create(
         username="ramzes",
         email="ramzes@pyramids.eg",
@@ -200,7 +202,7 @@ def inactive_user():
 
 
 @pytest.fixture()
-def admin_user():
+def admin_user() -> UserModel:
     return User.objects.create_superuser(
         username="admin",
         email="admin@admin.com",
@@ -213,7 +215,7 @@ FAKE_YUBI_SECRET = "testtesttesttesttesttesttesttest"
 
 
 @pytest.fixture()
-def active_user_with_yubi():
+def active_user_with_yubi() -> UserModel:
     user, created = User.objects.get_or_create(
         username="ramses",
         email="ramses@thegreat.eg",
