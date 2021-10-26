@@ -29,7 +29,7 @@ class AbstractMessageDispatcher(ABC):
             return source
         return None
 
-    def _get_nested_attr_value(self, obj, path) -> Optional[str]:
+    def _get_nested_attr_value(self, obj: Model, path: str) -> Optional[str]:
         objects, attr = self._parse_dotted_path(path)
         try:
             _obj = self._get_innermost_object(obj, objects)
