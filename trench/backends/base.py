@@ -12,7 +12,7 @@ from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
 
 
 class AbstractMessageDispatcher(ABC):
-    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]):
+    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]) -> None:
         self._mfa_method = mfa_method
         self._config = config
         self._to = self._get_source_field()
@@ -66,7 +66,7 @@ class AbstractMessageDispatcher(ABC):
     def create_code(self) -> str:
         return self._get_otp().now()
 
-    def confirm_activation(self, code: str):
+    def confirm_activation(self, code: str) -> None:
         pass
 
     def validate_confirmation_code(self, code: str) -> bool:

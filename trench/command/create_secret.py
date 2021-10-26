@@ -5,7 +5,7 @@ from trench.settings import TrenchAPISettings, trench_settings
 
 
 class CreateSecretCommand:
-    def __init__(self, generator: Callable, settings: TrenchAPISettings):
+    def __init__(self, generator: Callable, settings: TrenchAPISettings) -> None:
         self._generator = generator
         self._settings = settings
 

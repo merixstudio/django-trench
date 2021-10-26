@@ -13,7 +13,9 @@ class DispatchResponse(Response):
 
 
 class SuccessfulDispatchResponse(DispatchResponse):
-    def __init__(self, details: str, status: str = HTTP_200_OK, *args, **kwargs):
+    def __init__(
+        self, details: str, status: str = HTTP_200_OK, *args, **kwargs
+    ) -> None:
         super().__init__(
             data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
         )
@@ -22,7 +24,7 @@ class SuccessfulDispatchResponse(DispatchResponse):
 class FailedDispatchResponse(DispatchResponse):
     def __init__(
         self, details: str, status: str = HTTP_422_UNPROCESSABLE_ENTITY, *args, **kwargs
-    ):
+    ) -> None:
         super().__init__(
             data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
         )
@@ -37,7 +39,7 @@ class ErrorResponse(Response):
         status: str = HTTP_400_BAD_REQUEST,
         *args,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(
             data={self._FIELD_ERROR: str(error)}, status=status, *args, **kwargs
         )

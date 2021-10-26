@@ -12,11 +12,11 @@ from trench.utils import get_mfa_model
 
 
 class DeactivateMFAMethodCommand:
-    def __init__(self, mfa_model: Type[MFAMethod]):
+    def __init__(self, mfa_model: Type[MFAMethod]) -> None:
         self._mfa_model = mfa_model
 
     @atomic
-    def execute(self, mfa_method_name: str, user_id: int):
+    def execute(self, mfa_method_name: str, user_id: int) -> None:
         mfa = self._mfa_model.objects.get_by_name(user_id=user_id, name=mfa_method_name)
         if mfa.is_primary:
             raise DeactivationOfPrimaryMFAMethodError()

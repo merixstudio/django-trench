@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 import string
 from rest_framework.settings import APISettings, perform_import
-from typing import Any
+from typing import Any, Dict
 
 from trench.exceptions import MethodHandlerMissingError, RestrictedCharInBackupCodeError
 
@@ -17,17 +17,17 @@ class TrenchAPISettings(APISettings):
     _RESTRICTED_BACKUP_CODES_CHARACTERS = (",",)
 
     @property
-    def user_settings(self):
+    def user_settings(self) -> Dict[str, Any]:
         if not hasattr(self, self._FIELD_USER_SETTINGS):
             self._user_settings = getattr(settings, self._FIELD_TRENCH_AUTH, {})
         return self._user_settings
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         val = super().__getattr__(attr)
         self._validate(attribute=attr, value=val)
         return val
 
-    def _validate(self, attribute: str, value: Any):
+    def _validate(self, attribute: str, value: Any) -> None:
         if attribute == self._FIELD_BACKUP_CODES_CHARACTERS:
             if any(char in value for char in self._RESTRICTED_BACKUP_CODES_CHARACTERS):
                 raise RestrictedCharInBackupCodeError(
@@ -44,7 +44,7 @@ class TrenchAPISettings(APISettings):
                     method_config[self._FIELD_HANDLER], self._FIELD_HANDLER
                 )
 
-    def __getitem__(self, attr):
+    def __getitem__(self, attr: str) -> Any:
         return self.__getattr__(attr)
 
 

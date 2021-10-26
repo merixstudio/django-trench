@@ -16,7 +16,7 @@ class RegenerateBackupCodesForMFAMethodCommand:
         mfa_model: Type[MFAMethod],
         code_hasher: Callable,
         codes_generator: Callable,
-    ):
+    ) -> None:
         self._requires_encryption = requires_encryption
         self._mfa_model = mfa_model
         self._code_hasher = code_hasher

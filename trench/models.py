@@ -83,5 +83,5 @@ class MFAMethod(Model):
         return self._backup_codes.split(",")
 
     @backup_codes.setter
-    def backup_codes(self, codes: Iterable):
+    def backup_codes(self, codes: Iterable) -> None:
         self._backup_codes = ",".join(codes)

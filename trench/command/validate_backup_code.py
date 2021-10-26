@@ -6,7 +6,7 @@ from trench.settings import TrenchAPISettings, trench_settings
 
 
 class ValidateBackupCodeCommand:
-    def __init__(self, settings: TrenchAPISettings):
+    def __init__(self, settings: TrenchAPISettings) -> None:
         self._settings = settings
 
     def execute(self, value: str, backup_codes: Iterable) -> Optional[str]:

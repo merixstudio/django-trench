@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password
 
 from os import environ
 from testapp.models import User as UserModel
-from typing import Set, Tuple, Any
+from typing import Any, Set, Tuple
 from yubico_client import Yubico
 from yubico_client.otp import OTP
 

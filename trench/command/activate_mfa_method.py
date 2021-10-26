@@ -11,7 +11,9 @@ from trench.utils import get_mfa_model
 
 
 class ActivateMFAMethodCommand:
-    def __init__(self, mfa_model: Type[MFAMethod], backup_codes_generator: Callable):
+    def __init__(
+        self, mfa_model: Type[MFAMethod], backup_codes_generator: Callable
+    ) -> None:
         self._mfa_model = mfa_model
         self._backup_codes_generator = backup_codes_generator
 
