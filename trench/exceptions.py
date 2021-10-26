@@ -1,5 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework.serializers import ValidationError
 from typing import Iterable
