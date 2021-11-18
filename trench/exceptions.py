@@ -49,16 +49,6 @@ class MFAMethodDoesNotExistError(MFAValidationError):
         )
 
 
-class MFAMethodNotRegisteredForUserError(MFAValidationError):
-    def __init__(self) -> None:
-        super().__init__(
-            detail=_(
-                "Selected new primary MFA method is not registered for current user."
-            ),
-            code="method_not_registered_for_user",
-        )
-
-
 class MFAPrimaryMethodInactiveError(MFAValidationError):
     def __init__(self) -> None:
         super().__init__(
@@ -72,17 +62,6 @@ class MFAMethodAlreadyActiveError(MFAValidationError):
         super().__init__(
             detail=_("MFA method already active."),
             code="method_already_active",
-        )
-
-
-class MFANewPrimarySameAsOldError(MFAValidationError):
-    def __init__(self) -> None:
-        super().__init__(
-            detail=_(
-                "MFA Method to be deactivated cannot be chosen as new "
-                "primary method."
-            ),
-            code="new_primary_same_as_old",
         )
 
 
@@ -109,29 +88,6 @@ class InvalidTokenError(MFAValidationError):
 class InvalidCodeError(MFAValidationError):
     def __init__(self) -> None:
         super().__init__(detail=_("Invalid or expired code."), code="invalid_code")
-
-
-class RequiredFieldMissingError(MFAValidationError):
-    def __init__(self) -> None:
-        super().__init__(
-            detail=_("Required field not provided"),
-            code="required_field_missing",
-        )
-
-
-class RequiredFieldUpdateFailedError(MFAValidationError):
-    def __init__(self) -> None:
-        super().__init__(
-            detail=_("Failed to update required User data. Try again."),
-            code="required_field_update_failed",
-        )
-
-
-class UserAccountDisabledError(MFAValidationError):
-    def __init__(self) -> None:
-        super().__init__(
-            detail=_("User account is disabled."), code="user_account_disabled"
-        )
 
 
 class UnauthenticatedError(MFAValidationError):

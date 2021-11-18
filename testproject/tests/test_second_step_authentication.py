@@ -187,9 +187,9 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
 
 
 @pytest.mark.django_db
-def test_use_backup_code(active_user_with_backup_codes):
+def test_use_backup_code(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
 
     response = client.post(
@@ -537,10 +537,10 @@ def test_change_primary_disabled_method_wrong(active_user):
 
 @pytest.mark.django_db
 def test_confirm_activation_otp_with_backup_code(
-    active_user_with_backup_codes,
+        active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
 
     response = client.post(
@@ -676,9 +676,9 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
 
 
 @pytest.mark.django_db
-def test_backup_codes_regeneration(active_user_with_backup_codes):
+def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, _ = active_user_with_backup_codes
+    active_user, _ = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.first()
     old_backup_codes = first_primary_method.backup_codes
@@ -709,9 +709,9 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
 
 
 @pytest.mark.django_db
-def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
+def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, _ = active_user_with_backup_codes
+    active_user, _ = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
@@ -806,10 +806,10 @@ def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
 
 @pytest.mark.django_db
 def test_confirm_yubikey_activation_with_backup_code(
-    active_user_with_backup_codes,
+        active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     ephemeral_token = first_step.data.get("ephemeral_token")
     response = client.post(

@@ -126,22 +126,31 @@ def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
 
 
 @pytest.fixture()
-def active_user_with_backup_codes() -> Tuple[UserModel, Set[str]]:
+def active_user_with_encrypted_backup_codes() -> Tuple[UserModel, Set[str]]:
+    return active_user_with_backup_codes(encrypt_codes=True)
+
+@pytest.fixture()
+def active_user_with_non_encrypted_backup_codes() -> Tuple[UserModel, Set[str]]:
+    return active_user_with_backup_codes(encrypt_codes=False)
+
+def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[str]]:
     user, created = User.objects.get_or_create(
-        username="cleopatra",
-        email="cleopatra@pyramids.eg",
+        username=f"cleopatra",
+        email=f"cleopatra@pyramids.eg",
     )
     backup_codes = generate_backup_codes_command()
-    encrypted_backup_codes = ",".join([make_password(_) for _ in backup_codes])
+    serialized_backup_codes = ",".join([
+        make_password(code) if encrypt_codes else code
+        for code in backup_codes
+    ])
     if created:
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
         mfa_method_creator(
-            user=user, method_name="email", _backup_codes=encrypted_backup_codes
+            user=user, method_name="email", _backup_codes=serialized_backup_codes
         )
     return user, backup_codes
-
 
 @pytest.fixture()
 def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
