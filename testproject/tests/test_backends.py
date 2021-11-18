@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
 from trench.backends.twilio import TwilioMessageDispatcher
+from trench.backends.yubikey import YubiKeyMessageDispatcher
 from trench.exceptions import MissingConfigurationError
 
 
@@ -68,3 +69,12 @@ def test_application_backend_generating_url_successfully(
         response.data.get("details")[:44]
         == "otpauth://totp/MyApplication:imhotep?secret="
     )
+
+
+@pytest.mark.django_db
+def test_yubikey_backend(active_user_with_many_otp_methods, settings):
+    user, code = active_user_with_many_otp_methods
+    config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
+    auth_method = user.mfa_methods.get(name="yubi")
+    dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
+    dispatcher.confirm_activation(code)
