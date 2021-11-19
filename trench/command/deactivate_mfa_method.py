@@ -4,7 +4,6 @@ from typing import Type
 
 from trench.exceptions import (
     DeactivationOfPrimaryMFAMethodError,
-    MFAMethodDoesNotExistError,
     MFANotEnabledError,
 )
 from trench.models import MFAMethod
@@ -23,12 +22,9 @@ class DeactivateMFAMethodCommand:
         if not mfa.is_active:
             raise MFANotEnabledError()
 
-        rows_affected = self._mfa_model.objects.filter(
+        self._mfa_model.objects.filter(
             user_id=user_id, name=mfa_method_name
         ).update(is_active=False)
 
-        if rows_affected < 1:
-            raise MFAMethodDoesNotExistError()
 
-
-deactivate_mfa_method = DeactivateMFAMethodCommand(mfa_model=get_mfa_model()).execute
+deactivate_mfa_method_command = DeactivateMFAMethodCommand(mfa_model=get_mfa_model()).execute

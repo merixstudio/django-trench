@@ -19,7 +19,7 @@ from trench.command.activate_mfa_method import activate_mfa_method_command
 from trench.command.authenticate_second_factor import authenticate_second_step_command
 from trench.command.authenticate_user import authenticate_user_command
 from trench.command.create_mfa_method import create_mfa_method_command
-from trench.command.deactivate_mfa_method import deactivate_mfa_method
+from trench.command.deactivate_mfa_method import deactivate_mfa_method_command
 from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
@@ -149,7 +149,7 @@ class MFAMethodDeactivationView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
         try:
-            deactivate_mfa_method(mfa_method_name=method, user_id=request.user.id)
+            deactivate_mfa_method_command(mfa_method_name=method, user_id=request.user.id)
             return Response(status=HTTP_204_NO_CONTENT)
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)

@@ -36,10 +36,10 @@ def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) ->
 
 class RequestBodyValidator(Serializer):
     def update(self, instance: Model, validated_data: OrderedDict[str, Any]):
-        pass
+        raise NotImplementedError
 
     def create(self, validated_data: OrderedDict[str, Any]):
-        pass
+        raise NotImplementedError
 
 
 class ProtectedActionValidator(RequestBodyValidator):
