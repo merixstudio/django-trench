@@ -79,6 +79,7 @@ def deactivated_user_with_email_otp(active_user_with_email_otp) -> UserModel:
     active_user_with_email_otp.save()
     return active_user_with_email_otp
 
+
 @pytest.fixture()
 def active_user_with_sms_otp() -> UserModel:
     user, created = User.objects.get_or_create(
@@ -129,20 +130,21 @@ def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
 def active_user_with_encrypted_backup_codes() -> Tuple[UserModel, Set[str]]:
     return active_user_with_backup_codes(encrypt_codes=True)
 
+
 @pytest.fixture()
 def active_user_with_non_encrypted_backup_codes() -> Tuple[UserModel, Set[str]]:
     return active_user_with_backup_codes(encrypt_codes=False)
 
+
 def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[str]]:
     user, created = User.objects.get_or_create(
-        username=f"cleopatra",
-        email=f"cleopatra@pyramids.eg",
+        username="cleopatra",
+        email="cleopatra@pyramids.eg",
     )
     backup_codes = generate_backup_codes_command()
-    serialized_backup_codes = ",".join([
-        make_password(code) if encrypt_codes else code
-        for code in backup_codes
-    ])
+    serialized_backup_codes = ",".join(
+        [make_password(code) if encrypt_codes else code for code in backup_codes]
+    )
     if created:
         user.set_password("secretkey"),
         user.is_active = True
@@ -151,6 +153,7 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
             user=user, method_name="email", _backup_codes=serialized_backup_codes
         )
     return user, backup_codes
+
 
 @pytest.fixture()
 def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:

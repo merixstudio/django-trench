@@ -1,8 +1,8 @@
 import pytest
 
 from django.contrib.auth import get_user_model
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient
 
 from tests.utils import PATH_AUTH_JWT_LOGIN, get_username_from_jwt, login

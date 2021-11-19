@@ -4,8 +4,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
 import time
-
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+)
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
@@ -539,7 +542,7 @@ def test_change_primary_disabled_method_wrong(active_user):
 
 @pytest.mark.django_db
 def test_confirm_activation_otp_with_backup_code(
-        active_user_with_encrypted_backup_codes,
+    active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
     active_user, backup_codes = active_user_with_encrypted_backup_codes
@@ -808,7 +811,7 @@ def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
 
 @pytest.mark.django_db
 def test_confirm_yubikey_activation_with_backup_code(
-        active_user_with_encrypted_backup_codes,
+    active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
     active_user, backup_codes = active_user_with_encrypted_backup_codes

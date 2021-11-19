@@ -2,10 +2,7 @@ from django.db.transaction import atomic
 
 from typing import Type
 
-from trench.exceptions import (
-    DeactivationOfPrimaryMFAMethodError,
-    MFANotEnabledError,
-)
+from trench.exceptions import DeactivationOfPrimaryMFAMethodError, MFANotEnabledError
 from trench.models import MFAMethod
 from trench.utils import get_mfa_model
 
@@ -22,9 +19,11 @@ class DeactivateMFAMethodCommand:
         if not mfa.is_active:
             raise MFANotEnabledError()
 
-        self._mfa_model.objects.filter(
-            user_id=user_id, name=mfa_method_name
-        ).update(is_active=False)
+        self._mfa_model.objects.filter(user_id=user_id, name=mfa_method_name).update(
+            is_active=False
+        )
 
 
-deactivate_mfa_method_command = DeactivateMFAMethodCommand(mfa_model=get_mfa_model()).execute
+deactivate_mfa_method_command = DeactivateMFAMethodCommand(
+    mfa_model=get_mfa_model()
+).execute
