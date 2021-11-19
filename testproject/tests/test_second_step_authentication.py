@@ -7,7 +7,7 @@ import time
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED,
+    HTTP_401_UNAUTHORIZED, HTTP_204_NO_CONTENT,
 )
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
@@ -333,7 +333,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
         },
         format="json",
     )
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     mfa_method_to_be_deactivated.refresh_from_db()
     assert not mfa_method_to_be_deactivated.is_active
 
@@ -401,7 +401,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa != new_primary_method
     assert new_primary_method.name == "sms_twilio"
 
@@ -439,7 +439,7 @@ def test_change_primary_method_with_backup_code(
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     assert first_primary_method != new_primary_method
     assert new_primary_method.name == "sms_twilio"
 
