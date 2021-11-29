@@ -25,9 +25,9 @@ copyright = "2018, Merixstudio"
 author = "Merixstudio"
 
 # The short X.Y version
-version = "1.0"
+version = "0.3"
 # The full version, including alpha/beta/rc tags
-release = "1.0.0-rc"
+release = "0.3.0"
 
 
 # -- General configuration ---------------------------------------------------
