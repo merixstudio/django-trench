@@ -5,7 +5,7 @@ from abc import abstractmethod
 from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
-from typing import Iterable, Type
+from typing import Any, Iterable, OrderedDict, Type
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.remove_backup_code import remove_backup_code_command
@@ -35,11 +35,11 @@ def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) ->
 
 
 class RequestBodyValidator(Serializer):
-    def update(self, instance, validated_data):
-        pass
+    def update(self, instance: Model, validated_data: OrderedDict[str, Any]):
+        raise NotImplementedError
 
-    def create(self, validated_data):
-        pass
+    def create(self, validated_data: OrderedDict[str, Any]):
+        raise NotImplementedError
 
 
 class ProtectedActionValidator(RequestBodyValidator):
@@ -51,10 +51,10 @@ class ProtectedActionValidator(RequestBodyValidator):
 
     @staticmethod
     @abstractmethod
-    def _validate_mfa_method(mfa: MFAMethod):
-        pass
+    def _validate_mfa_method(mfa: MFAMethod) -> None:
+        raise NotImplementedError
 
-    def __init__(self, mfa_method_name: str, user: User, *args, **kwargs):
+    def __init__(self, mfa_method_name: str, user: User, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._user = user
         self._mfa_method_name = mfa_method_name
@@ -90,7 +90,7 @@ class MFAMethodDeactivationValidator(ProtectedActionValidator):
     code = CharField(required=trench_settings.CONFIRM_DISABLE_WITH_CODE)
 
     @staticmethod
-    def _validate_mfa_method(mfa: MFAMethod):
+    def _validate_mfa_method(mfa: MFAMethod) -> None:
         if not mfa.is_active:
             raise MFANotEnabledError()
 
@@ -101,7 +101,7 @@ class MFAMethodActivationConfirmationValidator(ProtectedActionValidator):
         return "validate_confirmation_code"
 
     @staticmethod
-    def _validate_mfa_method(mfa: MFAMethod):
+    def _validate_mfa_method(mfa: MFAMethod) -> None:
         if mfa.is_active:
             raise MFAMethodAlreadyActiveError()
 
@@ -112,7 +112,7 @@ class MFAMethodBackupCodesGenerationValidator(ProtectedActionValidator):
     )
 
     @staticmethod
-    def _validate_mfa_method(mfa: MFAMethod):
+    def _validate_mfa_method(mfa: MFAMethod) -> None:
         if not mfa.is_active:
             raise MFANotEnabledError()
 
@@ -130,7 +130,7 @@ class MFAMethodCodeSerializer(RequestBodyValidator):
 class LoginSerializer(RequestBodyValidator):
     password = CharField(write_only=True)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.fields[User.USERNAME_FIELD] = CharField()
 
@@ -150,7 +150,7 @@ class ChangePrimaryMethodValidator(ProtectedActionValidator):
     method = ChoiceField(choices=available_method_choices())
 
     @staticmethod
-    def _validate_mfa_method(mfa: MFAMethod):
+    def _validate_mfa_method(mfa: MFAMethod) -> None:
         pass
 
 

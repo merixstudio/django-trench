@@ -8,12 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from trench.serializers import TokenSerializer
-from trench.views import (
-    MFAFirstStepMixin,
-    MFASecondStepMixin,
-    MFAStepMixin,
-    User,
-)
+from trench.views import MFAFirstStepMixin, MFASecondStepMixin, MFAStepMixin, User
 
 
 class MFAAuthTokenView(MFAStepMixin):

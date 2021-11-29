@@ -35,7 +35,7 @@ Features
 Supported versions
 ******************
 
-* Python 3.6, 3.7, 3.8
+* Python 3.7, 3.8, 3.9
 * Django 2.0, 2.1, 2.2, 3.0
 * Django REST Framework 3.10
 
@@ -93,3 +93,62 @@ You can also check our live `demo`_.
 .. _django-rest-framework-jwt: https://github.com/GetBlimp/django-rest-framework-jwt
 .. _djangorestframework-simplejwt: https://github.com/davesque/django-rest-framework-simplejwt
 .. _YubiKey: https://www.yubico.com/
+
+
+Local development
+*****************
+
+1. Clone the repo.
+
+2. Crete virtual environment named e.g. :code:`.venv`:
+
+    .. code-block:: shell
+
+        virtualenv .venv
+
+3. Activate the virtual environment:
+
+    .. code-block:: shell
+
+        source .venv/bin/activate
+
+4. Install dependencies:
+
+    .. code-block:: shell
+
+        pip install black mypy
+        pip install -r testproject/requirements.txt
+
+5. Set environment variables:
+
+    .. code-block:: shell
+
+        export PYTHONPATH=./testproject
+        export DJANGO_SETTINGS_MODULE=settings
+        export SECRET_KEY=YOURsecretGOEShere
+
+6. Create a symbolic link to the :code:`trench/` module inside the :code:`testproject/` directory to emulate the :code:`trench` package being installed.
+
+    .. code-block:: shell
+
+        # make sure you run this command from the root directory of this project
+        ln -s ln -s $(pwd)/trench/ $(pwd)/testproject/trench
+
+7. Check whether the tests are passing:
+
+    .. code-block:: shell
+
+        pytest --cov=testproject/trench testproject/tests/
+
+Remember - anytime you change something in the :code:`django-trench` source code you need to re-build and re-install
+the package (steps 6-7) for the changes to be present during e.g. running the tests.
+
+8. [OPTIONAL] To make the tests run faster you can try to execute them in parallel.
+    To do so you need to install the :code:`pytest-xdist` package and run the tests
+    with additional parameter of :code:`-n 8` where :code:`8` stands for the number
+    of threads that will be spawned for executing the tests. Depending on the machine
+    you're using using this tool can speed up the test execution process up to 5 times.
+
+    .. code-block:: shell
+
+        pytest -n 8 --cov=testproject/trench testproject/tests/

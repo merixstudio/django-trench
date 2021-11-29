@@ -11,7 +11,7 @@ from trench.utils import get_mfa_model, user_token_generator
 
 
 class AuthenticateSecondFactorCommand:
-    def __init__(self, mfa_model: Type[MFAMethod]):
+    def __init__(self, mfa_model: Type[MFAMethod]) -> None:
         self._mfa_model = mfa_model
 
     def execute(self, code: str, ephemeral_token: str) -> User:
@@ -21,7 +21,7 @@ class AuthenticateSecondFactorCommand:
         self.is_authenticated(user_id=user.id, code=code)
         return user
 
-    def is_authenticated(self, user_id: int, code: str):
+    def is_authenticated(self, user_id: int, code: str) -> None:
         for auth_method in self._mfa_model.objects.list_active(user_id=user_id):
             validated_backup_code = validate_backup_code_command(
                 value=code, backup_codes=auth_method.backup_codes

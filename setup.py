@@ -6,7 +6,7 @@ from trench import __version__
 setup(
     name="django-trench",
     version=__version__,
-    packages=find_packages(),
+    packages=find_packages(exclude=("testproject", "testproject.*")),
     include_package_data=True,
     license="MIT License",
     description="REST Multi-factor authentication package for Django",
@@ -33,10 +33,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
     ],
 )

@@ -5,7 +5,9 @@ from django.contrib.auth import get_user_model
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
 from trench.backends.twilio import TwilioMessageDispatcher
+from trench.backends.yubikey import YubiKeyMessageDispatcher
 from trench.exceptions import MissingConfigurationError
+
 
 User = get_user_model()
 
@@ -55,8 +57,24 @@ def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, setting
 
 
 @pytest.mark.django_db
-def test_application_backend_generating_url_successfully(active_user_with_application_otp, settings):
+def test_application_backend_generating_url_successfully(
+    active_user_with_application_otp, settings
+):
     auth_method = active_user_with_application_otp.mfa_methods.get(name="app")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["app"]
-    response = ApplicationMessageDispatcher(mfa_method=auth_method, config=conf).dispatch_message()
-    assert response.data.get("details")[:44] == "otpauth://totp/MyApplication:imhotep?secret="
+    response = ApplicationMessageDispatcher(
+        mfa_method=auth_method, config=conf
+    ).dispatch_message()
+    assert (
+        response.data.get("details")[:44]
+        == "otpauth://totp/MyApplication:imhotep?secret="
+    )
+
+
+@pytest.mark.django_db
+def test_yubikey_backend(active_user_with_many_otp_methods, settings):
+    user, code = active_user_with_many_otp_methods
+    config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
+    auth_method = user.mfa_methods.get(name="yubi")
+    dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
+    dispatcher.confirm_activation(code)

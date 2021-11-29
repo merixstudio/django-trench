@@ -14,7 +14,7 @@ class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
     def dispatch_message(self) -> DispatchResponse:
         return SuccessfulDispatchResponse(details=_("Generate code using YubiKey"))
 
-    def confirm_activation(self, code: str):
+    def confirm_activation(self, code: str) -> None:
         self._mfa_method.secret = OTP(code).device_id
         self._mfa_method.save(update_fields=("secret",))
 

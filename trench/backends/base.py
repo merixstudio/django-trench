@@ -12,7 +12,7 @@ from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
 
 
 class AbstractMessageDispatcher(ABC):
-    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]):
+    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]) -> None:
         self._mfa_method = mfa_method
         self._config = config
         self._to = self._get_source_field()
@@ -29,7 +29,7 @@ class AbstractMessageDispatcher(ABC):
             return source
         return None
 
-    def _get_nested_attr_value(self, obj, path) -> Optional[str]:
+    def _get_nested_attr_value(self, obj: Model, path: str) -> Optional[str]:
         objects, attr = self._parse_dotted_path(path)
         try:
             _obj = self._get_innermost_object(obj, objects)
@@ -61,12 +61,12 @@ class AbstractMessageDispatcher(ABC):
 
     @abstractmethod
     def dispatch_message(self) -> DispatchResponse:
-        pass
+        raise NotImplementedError  # pragma: no cover
 
     def create_code(self) -> str:
         return self._get_otp().now()
 
-    def confirm_activation(self, code: str):
+    def confirm_activation(self, code: str) -> None:
         pass
 
     def validate_confirmation_code(self, code: str) -> bool:

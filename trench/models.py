@@ -11,7 +11,7 @@ from django.db.models import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from typing import Any, Iterable, List
+from typing import Any, Iterable, Set
 
 from trench.exceptions import MFAMethodDoesNotExistError
 
@@ -79,9 +79,9 @@ class MFAMethod(Model):
         return f"{self.name} (User id: {self.user_id})"
 
     @property
-    def backup_codes(self) -> List[str]:
-        return self._backup_codes.split(",")
+    def backup_codes(self) -> Set[str]:
+        return set(self._backup_codes.split(","))
 
     @backup_codes.setter
-    def backup_codes(self, codes: Iterable):
+    def backup_codes(self, codes: Iterable) -> None:
         self._backup_codes = ",".join(codes)

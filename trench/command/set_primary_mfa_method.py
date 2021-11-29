@@ -2,20 +2,17 @@ from django.db.transaction import atomic
 
 from typing import Type
 
-from trench.exceptions import (
-    MFAMethodDoesNotExistError,
-    MFAPrimaryMethodInactiveError,
-)
+from trench.exceptions import MFAMethodDoesNotExistError, MFAPrimaryMethodInactiveError
 from trench.models import MFAMethod
 from trench.utils import get_mfa_model
 
 
 class SetPrimaryMFAMethodCommand:
-    def __init__(self, mfa_model: Type[MFAMethod]):
+    def __init__(self, mfa_model: Type[MFAMethod]) -> None:
         self._mfa_model = mfa_model
 
     @atomic
-    def execute(self, user_id: int, name: str):
+    def execute(self, user_id: int, name: str) -> None:
         self._mfa_model.objects.filter(user_id=user_id, is_primary=True).update(
             is_primary=False
         )

@@ -1,10 +1,14 @@
-import time
-
 import pytest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
+import time
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED, HTTP_204_NO_CONTENT,
+)
 from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
@@ -24,11 +28,8 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_custom_validity_period(
-    active_user_with_email_otp,
-    settings
-):
-    settings.TRENCH_AUTH['MFA_METHODS']['email']["VALIDITY_PERIOD"] = 3
+def test_custom_validity_period(active_user_with_email_otp, settings):
+    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
 
     client = APIClient()
     first_step = login(active_user_with_email_otp)
@@ -38,22 +39,22 @@ def test_custom_validity_period(
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
-            'ephemeral_token': first_step.data.get('ephemeral_token'),
-            'code': code,
+            "ephemeral_token": first_step.data.get("ephemeral_token"),
+            "code": code,
         },
-        format='json',
+        format="json",
     )
-    assert response.status_code == 401
+    assert response.status_code == HTTP_401_UNAUTHORIZED
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
-            'ephemeral_token': first_step.data.get('ephemeral_token'),
-            'code': handler.create_code(),
+            "ephemeral_token": first_step.data.get("ephemeral_token"),
+            "code": handler.create_code(),
         },
-        format='json',
+        format="json",
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -69,7 +70,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     assert get_username_from_jwt(response) == getattr(
         active_user_with_email_otp,
         User.USERNAME_FIELD,
@@ -89,7 +90,7 @@ def test_wrong_second_step_verification_with_empty_code(active_user_with_email_o
         format="json",
     )
     msg_error = "This field may not be blank."
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("code")[0] == msg_error
 
 
@@ -105,7 +106,7 @@ def test_wrong_second_step_verification_with_wrong_code(active_user_with_email_o
         },
         format="json",
     )
-    assert response.status_code == 401
+    assert response.status_code == HTTP_401_UNAUTHORIZED
     assert response.data.get("error") == "Invalid or expired code."
 
 
@@ -124,7 +125,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
         },
         format="json",
     )
-    assert response.status_code == 401
+    assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
 @pytest.mark.django_db
@@ -140,7 +141,7 @@ def test_second_method_activation(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     client.credentials(
         HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
     )
@@ -175,7 +176,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     client.credentials(
         HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
     )
@@ -186,14 +187,14 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
         path="/auth/email/activate/",
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("error") == "MFA method already active."
 
 
 @pytest.mark.django_db
-def test_use_backup_code(active_user_with_backup_codes):
+def test_use_backup_code(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
 
     response = client.post(
@@ -204,7 +205,7 @@ def test_use_backup_code(active_user_with_backup_codes):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -218,7 +219,7 @@ def test_activation_otp(active_user):
         path="/auth/email/activate/",
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -232,13 +233,13 @@ def test_activation_otp_confirm_wrong(active_user):
         path="/auth/email/activate/",
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     response = client.post(
         path="/auth/email/activate/confirm/",
         data={"code": "test00"},
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     error_code = "code_invalid_or_expired"
     assert response.data.get("code")[0].code == error_code
 
@@ -273,7 +274,7 @@ def test_confirm_activation_otp(active_user):
         format="json",
     )
     # Confirm the response is OK and user gets 5 backup codes
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     assert len(response.json().get("backup_codes")) == 5
 
 
@@ -302,7 +303,7 @@ def test_deactivation_of_primary_method(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
@@ -332,7 +333,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
         },
         format="json",
     )
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     mfa_method_to_be_deactivated.refresh_from_db()
     assert not mfa_method_to_be_deactivated.is_active
 
@@ -365,7 +366,7 @@ def test_deactivation_of_disabled_method(
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("code")[0].code == "not_enabled"
 
 
@@ -400,7 +401,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa != new_primary_method
     assert new_primary_method.name == "sms_twilio"
 
@@ -438,7 +439,7 @@ def test_change_primary_method_with_backup_code(
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
     )[0]
-    assert response.status_code == 204
+    assert response.status_code == HTTP_204_NO_CONTENT
     assert first_primary_method != new_primary_method
     assert new_primary_method.name == "sms_twilio"
 
@@ -471,7 +472,7 @@ def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_method
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("code")[0].code == "code_invalid_or_expired"
 
 
@@ -504,7 +505,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("error") == "Requested MFA method does not exist."
 
 
@@ -535,16 +536,16 @@ def test_change_primary_disabled_method_wrong(active_user):
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data[0].code == "mfa_method_does_not_exist"
 
 
 @pytest.mark.django_db
 def test_confirm_activation_otp_with_backup_code(
-    active_user_with_backup_codes,
+    active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
 
     response = client.post(
@@ -584,7 +585,7 @@ def test_confirm_activation_otp_with_backup_code(
         format="json",
     )
     # Confirm the response is OK and user gets 5 backup codes
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     assert len(response.json().get("backup_codes")) == 5
 
 
@@ -614,7 +615,7 @@ def test_request_codes(active_user_with_email_otp):
         format="json",
     )
     expected_msg = "Email message with MFA code has been sent."
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     assert response.data.get("details") == expected_msg
 
 
@@ -645,7 +646,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("error") == "Requested MFA method does not exist."
 
 
@@ -676,13 +677,13 @@ def test_request_code_non_existing_method(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
-def test_backup_codes_regeneration(active_user_with_backup_codes):
+def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, _ = active_user_with_backup_codes
+    active_user, _ = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.first()
     old_backup_codes = first_primary_method.backup_codes
@@ -708,14 +709,14 @@ def test_backup_codes_regeneration(active_user_with_backup_codes):
         format="json",
     )
     new_backup_codes = active_user.mfa_methods.first().backup_codes
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
     assert old_backup_codes != new_backup_codes
 
 
 @pytest.mark.django_db
-def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
+def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup_codes):
     client = APIClient()
-    active_user, _ = active_user_with_backup_codes
+    active_user, _ = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=first_primary_method)
@@ -734,7 +735,7 @@ def test_backup_codes_regeneration_without_otp(active_user_with_backup_codes):
     )
     response = client.post(path="/auth/email/codes/regenerate/", format="json")
     assert response.data.get("code")[0].code == "required"
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
@@ -773,7 +774,7 @@ def test_backup_codes_regeneration_disabled_method(
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("code")[0].code == "not_enabled"
 
 
@@ -789,7 +790,7 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -804,16 +805,16 @@ def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
         },
         format="json",
     )
-    assert response.status_code == 401
+    assert response.status_code == HTTP_401_UNAUTHORIZED
     assert response.data.get("error") is not None
 
 
 @pytest.mark.django_db
 def test_confirm_yubikey_activation_with_backup_code(
-    active_user_with_backup_codes,
+    active_user_with_encrypted_backup_codes,
 ):
     client = APIClient()
-    active_user, backup_codes = active_user_with_backup_codes
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
     first_step = login(active_user)
     ephemeral_token = first_step.data.get("ephemeral_token")
     response = client.post(
@@ -839,7 +840,7 @@ def test_confirm_yubikey_activation_with_backup_code(
         },
         format="json",
     )
-    assert response.status_code == 400
+    assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("code") is not None
 
 
@@ -850,4 +851,4 @@ def test_get_mfa_config():
         path="/auth/mfa/config/",
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK

@@ -11,7 +11,9 @@ from trench.utils import get_mfa_model
 
 
 class ActivateMFAMethodCommand:
-    def __init__(self, mfa_model: Type[MFAMethod], backup_codes_generator: Callable):
+    def __init__(
+        self, mfa_model: Type[MFAMethod], backup_codes_generator: Callable
+    ) -> None:
         self._mfa_model = mfa_model
         self._backup_codes_generator = backup_codes_generator
 
@@ -27,13 +29,13 @@ class ActivateMFAMethodCommand:
             is_primary=not self._mfa_model.objects.primary_exists(user_id=user_id),
         )
 
+        if rows_affected < 1:
+            raise MFAMethodDoesNotExistError()
+
         backup_codes = regenerate_backup_codes_for_mfa_method_command(
             user_id=user_id,
             name=name,
         )
-
-        if rows_affected < 1:
-            raise MFAMethodDoesNotExistError()
 
         return backup_codes
 

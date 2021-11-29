@@ -6,7 +6,7 @@ from trench.settings import trench_settings
 
 
 class GenerateBackupCodesCommand:
-    def __init__(self, random_string_generator: Callable):
+    def __init__(self, random_string_generator: Callable) -> None:
         self._random_string_generator = random_string_generator
 
     def execute(

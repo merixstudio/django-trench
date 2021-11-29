@@ -2,6 +2,7 @@ import pytest
 
 from django.contrib.auth import get_user_model
 
+from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APIClient
 
 from tests.utils import (
@@ -34,7 +35,7 @@ def test_add_user_mfa(active_user):
         },
         format="json",
     )
-    assert response.status_code == 200
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -45,7 +46,7 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
         is_active=True
     ).count()
     first_step = login(active_user)
-    assert first_step.status_code == 200
+    assert first_step.status_code == HTTP_200_OK
 
     primary_method = active_user.mfa_methods.filter(is_primary=True).first()
     # As user has several methods get first and get sure only 1 is primary
@@ -61,7 +62,7 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
         format="json",
     )
     # Log in the user in the second step and make sure it is correct
-    assert second_step_response.status_code == 200
+    assert second_step_response.status_code == HTTP_200_OK
 
     client.credentials(
         HTTP_AUTHORIZATION=header_template.format(

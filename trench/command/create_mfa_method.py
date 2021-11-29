@@ -7,7 +7,7 @@ from trench.utils import get_mfa_model
 
 
 class CreateMFAMethodCommand:
-    def __init__(self, secret_generator: Callable, mfa_model: Type[MFAMethod]):
+    def __init__(self, secret_generator: Callable, mfa_model: Type[MFAMethod]) -> None:
         self._mfa_model = mfa_model
         self._create_secret = secret_generator
 

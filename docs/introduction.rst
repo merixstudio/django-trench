@@ -22,7 +22,7 @@ Requirements
 Supported versions
 ******************
 
-* Python 3.6, 3.7, 3.8. 3.9
+* Python 3.7, 3.8. 3.9
 * Django 2.x, 3.x,
 * Django REST Framework >= 3.9
 

@@ -16,18 +16,14 @@ from rest_framework.views import APIView
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.activate_mfa_method import activate_mfa_method_command
-from trench.command.authenticate_second_factor import (
-    authenticate_second_step_command,
-)
+from trench.command.authenticate_second_factor import authenticate_second_step_command
 from trench.command.authenticate_user import authenticate_user_command
 from trench.command.create_mfa_method import create_mfa_method_command
-from trench.command.deactivate_mfa_method import deactivate_mfa_method
+from trench.command.deactivate_mfa_method import deactivate_mfa_method_command
 from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
-from trench.command.set_primary_mfa_method import (
-    set_primary_mfa_method_command,
-)
+from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.responses import ErrorResponse
@@ -43,11 +39,7 @@ from trench.serializers import (
     generate_model_serializer,
 )
 from trench.settings import SOURCE_FIELD, trench_settings
-from trench.utils import (
-    available_method_choices,
-    get_mfa_model,
-    user_token_generator,
-)
+from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
 
 class MFAStepMixin(APIView, ABC):
@@ -55,7 +47,7 @@ class MFAStepMixin(APIView, ABC):
 
     @abstractmethod
     def _successful_authentication_response(self, user: User) -> Response:
-        pass
+        raise NotImplementedError
 
 
 class MFAFirstStepMixin(MFAStepMixin, ABC):
@@ -157,7 +149,9 @@ class MFAMethodDeactivationView(APIView):
         if not serializer.is_valid():
             return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
         try:
-            deactivate_mfa_method(mfa_method_name=method, user_id=request.user.id)
+            deactivate_mfa_method_command(
+                mfa_method_name=method, user_id=request.user.id
+            )
             return Response(status=HTTP_204_NO_CONTENT)
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)

@@ -21,7 +21,7 @@ class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
         try:
             client = SmsApiPlClient(access_token=self._config.get(SMSAPI_ACCESS_TOKEN))
             from_number = self._config.get(SMSAPI_FROM_NUMBER)
-            kwargs = {"from_": from_number} if from_number is not None else {}
+            kwargs = {"from_": from_number} if from_number else {}
             client.sms.send(
                 message=self._SMS_BODY + self.create_code(),
                 to=self._to,

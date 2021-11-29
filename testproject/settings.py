@@ -67,7 +67,7 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # noqa: E501
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -113,6 +113,7 @@ JWT_AUTH = {
 SIMPLE_JWT = {
     "USER_ID_FIELD": "username",
     "USER_ID_CLAIM": "username",
+    "ALGORITHM": "HS256",
 }
 
 TRENCH_AUTH = {
@@ -136,7 +137,7 @@ TRENCH_AUTH = {
             "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "SMSAPI_ACCESS_TOKEN": "token",
-            "SMSAPI_FROM_NUMBER": "123 456 789"
+            "SMSAPI_FROM_NUMBER": "123 456 789",
         },
         "email": {
             "VERBOSE_NAME": "email",
@@ -144,8 +145,8 @@ TRENCH_AUTH = {
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
             "SOURCE_FIELD": "email",
             "EMAIL_SUBJECT": "Your verification code",
-            # "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
-            # "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
+            "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
+            "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
         },
         "app": {
             "VERBOSE_NAME": "app",
