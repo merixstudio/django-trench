@@ -7,7 +7,7 @@ on:
     types: [ completed ]
 
 jobs:
-  build-and-publish-to-test:
+  build-and-publish:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     steps:
