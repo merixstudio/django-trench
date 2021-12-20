@@ -3,7 +3,7 @@ name: 'Build and publish to Test PyPI'
 on:
   workflow_run:
     workflows: [ 'develop' ]
-    branches: [ pypi-auto-publishing ]
+    branches: [ staging ]
     types: [ completed ]
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
       steps:
         - uses: actions/checkout@v2
           with:
-            ref: pypi-auto-publishing
+            ref: staging
         - name: Setup Python 3.9
           uses: actions/setup-python@v2
           with:

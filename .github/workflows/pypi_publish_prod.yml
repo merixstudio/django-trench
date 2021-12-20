@@ -2,10 +2,9 @@ name: 'Build and publish to PyPI'
 
 on:
   workflow_run:
-    workflows:
-      - 'develop'
-    types:
-      - completed
+    workflows: [ 'develop' ]
+    tags: '*'
+    types: [ completed ]
 
 jobs:
   build-and-publish-to-test:
@@ -14,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: staging
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
