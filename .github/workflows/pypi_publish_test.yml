@@ -1,10 +1,10 @@
 name: 'Build and publish to Test PyPI'
 
 on:
-  push:
+  workflow_run:
+    workflows: [ 'develop' ]
     branches: [ pypi-auto-publishing ]
-  pull_request:
-    branches: [ pypi-auto-publishing ]
+    types: [ completed ]
 
 jobs:
   on-success:
