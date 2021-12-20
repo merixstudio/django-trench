@@ -5,7 +5,7 @@ on:
     workflows:
       - 'develop'
     branches:
-      - staging
+      - pypi-auto-publishing
     types:
       - completed
     workflow_dispatch:
