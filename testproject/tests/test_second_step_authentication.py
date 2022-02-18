@@ -29,6 +29,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
+    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"]
     settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
 
     client = APIClient()
@@ -55,6 +56,8 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
 
     assert response.status_code == HTTP_200_OK
+
+    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = ORIGINAL_VALIDITY_PERIOD
 
 
 @pytest.mark.django_db
@@ -275,7 +278,7 @@ def test_confirm_activation_otp(active_user):
     )
     # Confirm the response is OK and user gets 5 backup codes
     assert response.status_code == HTTP_200_OK
-    assert len(response.json().get("backup_codes")) == 5
+    assert len(response.json().get("backup_codes")) == 8
 
 
 @pytest.mark.django_db
@@ -586,7 +589,7 @@ def test_confirm_activation_otp_with_backup_code(
     )
     # Confirm the response is OK and user gets 5 backup codes
     assert response.status_code == HTTP_200_OK
-    assert len(response.json().get("backup_codes")) == 5
+    assert len(response.json().get("backup_codes")) == 8
 
 
 @pytest.mark.django_db
@@ -688,6 +691,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     first_primary_method = active_user.mfa_methods.first()
     old_backup_codes = first_primary_method.backup_codes
     handler = get_mfa_handler(mfa_method=first_primary_method)
+    print(handler._config["VALIDITY_PERIOD"])
     login_response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
