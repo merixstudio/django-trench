@@ -79,15 +79,8 @@ We will appreciate your help with translation.
 
 https://www.transifex.com/merixstudio/django-trench/dashboard/
 
-
-Demo project
-************
-
-You can also check our live `demo`_.
-
 .. _backends: https://django-trench.readthedocs.io/en/latest/backends.html
 .. _installation: https://django-trench.readthedocs.io/en/latest/installation.html
-.. _demo: https://django-trench.readthedocs.io/en/latest/demo.html
 .. _django-rest-framework: http://www.django-rest-framework.org
 .. _djoser: https://github.com/sunscrapers/djoser
 .. _django-rest-framework-jwt: https://github.com/GetBlimp/django-rest-framework-jwt

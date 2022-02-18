@@ -691,7 +691,6 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     first_primary_method = active_user.mfa_methods.first()
     old_backup_codes = first_primary_method.backup_codes
     handler = get_mfa_handler(mfa_method=first_primary_method)
-    print(handler._config["VALIDITY_PERIOD"])
     login_response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
