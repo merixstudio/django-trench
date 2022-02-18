@@ -30,7 +30,7 @@ def test_add_user_mfa(active_user):
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_otp_command(secret=secret).now(),
+            "code": create_otp_command(secret=secret, interval=30).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",
