@@ -1,3 +1,5 @@
+from time import sleep
+
 import pytest
 
 from django.contrib.auth import get_user_model
@@ -64,11 +66,9 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
     # Log in the user in the second step and make sure it is correct
     assert second_step_response.status_code == HTTP_200_OK
 
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(second_step_response)
-        )
-    )
+    jwt = get_token_from_response(second_step_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
+    sleep(1)
     active_methods_response = client.get(
         path="/auth/mfa/user-active-methods/",
     )
