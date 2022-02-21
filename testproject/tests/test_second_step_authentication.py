@@ -1,5 +1,4 @@
 from time import sleep
-from typing import Tuple, Optional
 
 import pytest
 
@@ -21,9 +20,9 @@ from tests.utils import (
     get_username_from_jwt,
     header_template,
     login,
+    get_authenticated_api_client_and_mfa_handler,
 )
 
-from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command
 
@@ -133,27 +132,6 @@ def test_wrong_second_step_verification_with_ephemeral_token(
         format="json",
     )
     assert response.status_code == HTTP_401_UNAUTHORIZED
-
-
-def get_authenticated_api_client_and_mfa_handler(user, primary_method: Optional[bool] = None) -> Tuple[APIClient, AbstractMessageDispatcher]:
-    client = APIClient()
-    first_step = login(user)
-    mfa_methods_qs = user.mfa_methods
-    if primary_method is not None:
-        mfa_methods_qs = mfa_methods_qs.filter(is_primary=primary_method)
-    mfa_method = mfa_methods_qs.first()
-    handler = get_mfa_handler(mfa_method=mfa_method)
-    response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    jwt = get_token_from_response(response)
-    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
-    return client, handler
 
 
 @pytest.mark.django_db
