@@ -24,13 +24,13 @@ def test_add_user_mfa(active_user):
     client = APIClient()
     login_response = login(active_user)
     token = get_token_from_response(login_response)
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(token))
     secret = create_secret_command()
     response = client.post(
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_otp_command(secret=secret, interval=30).now(),
+            "code": create_otp_command(secret=secret, interval=60).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",
