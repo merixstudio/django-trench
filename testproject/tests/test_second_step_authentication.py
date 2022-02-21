@@ -346,7 +346,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     )
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa != new_primary_method
     assert new_primary_method.name == "sms_twilio"
@@ -360,7 +360,7 @@ def test_change_primary_method_with_backup_code(
     client, handler = get_authenticated_api_client_and_mfa_handler(
         active_user, primary_method=True
     )
-    first_primary_method = active_user.mfa_methods.filter(is_primary=True)[0]
+    first_primary_method = active_user.mfa_methods.filter(is_primary=True).first()
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
@@ -371,7 +371,7 @@ def test_change_primary_method_with_backup_code(
     )
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert first_primary_method != new_primary_method
     assert new_primary_method.name == "sms_twilio"
@@ -576,7 +576,7 @@ def test_backup_codes_regeneration_disabled_method(
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     sms_method = active_user.mfa_methods.get(
         name="sms_twilio",
     )
