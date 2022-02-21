@@ -288,7 +288,6 @@ def test_deactivation_of_primary_method(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
-    client = APIClient()
     user, _ = active_user_with_many_otp_methods
     client, handler = get_authenticated_api_client_and_mfa_handler(user, primary_method=False)
     first_step = login(user)
@@ -336,7 +335,7 @@ def test_deactivation_of_disabled_method(
 def test_change_primary_method(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods
     client, handler = get_authenticated_api_client_and_mfa_handler(active_user, primary_method=True)
-    primary_mfa = active_user.mfa_methods.filter(is_primary=True)[0]
+    primary_mfa = active_user.mfa_methods.filter(is_primary=True).first()
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
