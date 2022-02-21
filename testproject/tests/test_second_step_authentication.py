@@ -326,6 +326,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
     )
     jwt = get_token_from_response(login_response)
     client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
+    time.sleep(.1)
     response = client.post(
         path=f"/auth/{mfa_method_to_be_deactivated.name}/deactivate/",
         data={
