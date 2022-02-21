@@ -1,9 +1,11 @@
+from time import sleep
+from typing import Tuple, Optional
+
 import pytest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
-import time
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
@@ -20,6 +22,8 @@ from tests.utils import (
     header_template,
     login,
 )
+
+from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command
 
@@ -29,13 +33,14 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
+    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"]
     settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
 
     client = APIClient()
     first_step = login(active_user_with_email_otp)
     handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
     code = handler.create_code()
-    time.sleep(3)
+    sleep(3)
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
@@ -55,6 +60,8 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
 
     assert response.status_code == HTTP_200_OK
+
+    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = ORIGINAL_VALIDITY_PERIOD
 
 
 @pytest.mark.django_db
@@ -128,11 +135,14 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
-@pytest.mark.django_db
-def test_second_method_activation(active_user_with_email_otp):
+def get_authenticated_api_client_and_mfa_handler(user, primary_method: Optional[bool] = None) -> Tuple[APIClient, AbstractMessageDispatcher]:
     client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
+    first_step = login(user)
+    mfa_methods_qs = user.mfa_methods
+    if primary_method is not None:
+        mfa_methods_qs = mfa_methods_qs.filter(is_primary=primary_method)
+    mfa_method = mfa_methods_qs.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
     response = client.post(
         path=PATH_AUTH_JWT_LOGIN_CODE,
         data={
@@ -141,10 +151,14 @@ def test_second_method_activation(active_user_with_email_otp):
         },
         format="json",
     )
-    assert response.status_code == HTTP_200_OK
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
-    )
+    jwt = get_token_from_response(response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
+    return client, handler
+
+
+@pytest.mark.django_db
+def test_second_method_activation(active_user_with_email_otp):
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
 
     # This user should have 1 methods, so we check that it has 1 methods.
     assert len(active_user_with_email_otp.mfa_methods.all()) == 1
@@ -165,21 +179,7 @@ def test_second_method_activation(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_second_method_activation_already_active(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
-    response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    assert response.status_code == HTTP_200_OK
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
-    )
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
 
     # This user should have 1 methods, so we check that it has 1 methods.
     assert len(active_user_with_email_otp.mfa_methods.all()) == 1
@@ -212,9 +212,8 @@ def test_use_backup_code(active_user_with_encrypted_backup_codes):
 def test_activation_otp(active_user):
     client = APIClient()
     first_step = login(active_user)
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(first_step))
-    )
+    jwt = get_token_from_response(first_step)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path="/auth/email/activate/",
         format="json",
@@ -226,9 +225,8 @@ def test_activation_otp(active_user):
 def test_activation_otp_confirm_wrong(active_user):
     client = APIClient()
     first_step = login(active_user)
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(first_step))
-    )
+    jwt = get_token_from_response(first_step)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path="/auth/email/activate/",
         format="json",
@@ -248,11 +246,8 @@ def test_activation_otp_confirm_wrong(active_user):
 def test_confirm_activation_otp(active_user):
     client = APIClient()
     login_response = login(active_user)
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    jwt = get_token_from_response(login_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     client.post(
         path="/auth/email/activate/",
         format="json",
@@ -275,27 +270,12 @@ def test_confirm_activation_otp(active_user):
     )
     # Confirm the response is OK and user gets 5 backup codes
     assert response.status_code == HTTP_200_OK
-    assert len(response.json().get("backup_codes")) == 5
+    assert len(response.json().get("backup_codes")) == 8
 
 
 @pytest.mark.django_db
 def test_deactivation_of_primary_method(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    handler = get_mfa_handler(mfa_method=active_user_with_email_otp.mfa_methods.first())
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
     response = client.post(
         path="/auth/email/deactivate/",
         data={
@@ -308,8 +288,8 @@ def test_deactivation_of_primary_method(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
-    client = APIClient()
     user, _ = active_user_with_many_otp_methods
+    client, handler = get_authenticated_api_client_and_mfa_handler(user, primary_method=False)
     first_step = login(user)
     mfa_method_to_be_deactivated = user.mfa_methods.filter(is_primary=False).first()
     handler = get_mfa_handler(mfa_method=mfa_method_to_be_deactivated)
@@ -321,11 +301,8 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    jwt = get_token_from_response(login_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path=f"/auth/{mfa_method_to_be_deactivated.name}/deactivate/",
         data={
@@ -342,23 +319,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
 def test_deactivation_of_disabled_method(
     active_user_with_email_and_inactive_other_methods_otp,
 ):
-    client = APIClient()
-    first_step = login(active_user_with_email_and_inactive_other_methods_otp)
-    mfa = active_user_with_email_and_inactive_other_methods_otp.mfa_methods.first()
-    handler = get_mfa_handler(mfa_method=mfa)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_and_inactive_other_methods_otp)
     response = client.post(
         path="/auth/sms_twilio/deactivate/",
         data={
@@ -372,24 +333,9 @@ def test_deactivation_of_disabled_method(
 
 @pytest.mark.django_db
 def test_change_primary_method(active_user_with_many_otp_methods):
-    client = APIClient()
     active_user, _ = active_user_with_many_otp_methods
-    first_step = login(active_user)
-    primary_mfa = active_user.mfa_methods.filter(is_primary=True)[0]
-    handler = get_mfa_handler(mfa_method=primary_mfa)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user, primary_method=True)
+    primary_mfa = active_user.mfa_methods.filter(is_primary=True).first()
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
@@ -400,7 +346,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     )
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa != new_primary_method
     assert new_primary_method.name == "sms_twilio"
@@ -410,24 +356,11 @@ def test_change_primary_method(active_user_with_many_otp_methods):
 def test_change_primary_method_with_backup_code(
     active_user_with_many_otp_methods,
 ):
-    client = APIClient()
     active_user, backup_code = active_user_with_many_otp_methods
-    first_step = login(active_user)
-    first_primary_method = active_user.mfa_methods.filter(is_primary=True)[0]
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
+    client, handler = get_authenticated_api_client_and_mfa_handler(
+        active_user, primary_method=True
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    first_primary_method = active_user.mfa_methods.filter(is_primary=True).first()
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
@@ -438,7 +371,7 @@ def test_change_primary_method_with_backup_code(
     )
     new_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert first_primary_method != new_primary_method
     assert new_primary_method.name == "sms_twilio"
@@ -446,23 +379,9 @@ def test_change_primary_method_with_backup_code(
 
 @pytest.mark.django_db
 def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_methods):
-    client = APIClient()
     active_user, _ = active_user_with_many_otp_methods
-    first_step = login(active_user)
-    first_primary_method = active_user.mfa_methods.filter(is_primary=True)[0]
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
+    client, handler = get_authenticated_api_client_and_mfa_handler(
+        active_user, primary_method=True
     )
     response = client.post(
         path="/auth/mfa/change-primary-method/",
@@ -478,24 +397,8 @@ def test_change_primary_method_to_invalid_wrong(active_user_with_many_otp_method
 
 @pytest.mark.django_db
 def test_change_primary_method_to_inactive(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    first_primary_method = active_user_with_email_otp.mfa_methods.filter(
-        is_primary=True
-    )[0]
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
+    client, handler = get_authenticated_api_client_and_mfa_handler(
+        active_user_with_email_otp, primary_method=True
     )
     response = client.post(
         path="/auth/mfa/change-primary-method/",
@@ -523,11 +426,8 @@ def test_change_primary_disabled_method_wrong(active_user):
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    jwt = get_token_from_response(login_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
@@ -556,9 +456,8 @@ def test_confirm_activation_otp_with_backup_code(
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
-    )
+    jwt = get_token_from_response(response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     try:
         response = client.post(
             path="/auth/sms_twilio/activate/",
@@ -586,29 +485,12 @@ def test_confirm_activation_otp_with_backup_code(
     )
     # Confirm the response is OK and user gets 5 backup codes
     assert response.status_code == HTTP_200_OK
-    assert len(response.json().get("backup_codes")) == 5
+    assert len(response.json().get("backup_codes")) == 8
 
 
 @pytest.mark.django_db
 def test_request_codes(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    first_primary_method = active_user_with_email_otp.mfa_methods.first()
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
-
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
     response = client.post(
         path="/auth/code/request/",
         data={"method": "email"},
@@ -621,24 +503,7 @@ def test_request_codes(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_request_codes_wrong(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    first_primary_method = active_user_with_email_otp.mfa_methods.first()
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
-
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
     response = client.post(
         path="/auth/code/request/",
         data={
@@ -652,24 +517,7 @@ def test_request_codes_wrong(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_request_code_non_existing_method(active_user_with_email_otp):
-    client = APIClient()
-    first_step = login(active_user_with_email_otp)
-    first_primary_method = active_user_with_email_otp.mfa_methods.first()
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
-
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user_with_email_otp)
     response = client.post(
         path="/auth/code/request/",
         data={
@@ -696,11 +544,8 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    jwt = get_token_from_response(login_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path="/auth/email/codes/regenerate/",
         data={
@@ -715,24 +560,8 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
 
 @pytest.mark.django_db
 def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup_codes):
-    client = APIClient()
     active_user, _ = active_user_with_encrypted_backup_codes
-    first_step = login(active_user)
-    first_primary_method = active_user.mfa_methods.first()
-    handler = get_mfa_handler(mfa_method=first_primary_method)
-    login_response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    client, handler = get_authenticated_api_client_and_mfa_handler(active_user)
     response = client.post(path="/auth/email/codes/regenerate/", format="json")
     assert response.data.get("code")[0].code == "required"
     assert response.status_code == HTTP_400_BAD_REQUEST
@@ -747,7 +576,7 @@ def test_backup_codes_regeneration_disabled_method(
     first_step = login(active_user)
     first_primary_method = active_user.mfa_methods.filter(
         is_primary=True,
-    )[0]
+    ).first()
     sms_method = active_user.mfa_methods.get(
         name="sms_twilio",
     )
@@ -762,11 +591,8 @@ def test_backup_codes_regeneration_disabled_method(
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(login_response)
-        )
-    )
+    jwt = get_token_from_response(login_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     response = client.post(
         path="/auth/sms_twilio/codes/regenerate/",
         data={
@@ -825,9 +651,8 @@ def test_confirm_yubikey_activation_with_backup_code(
         },
         format="json",
     )
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(get_token_from_response(response))
-    )
+    jwt = get_token_from_response(response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     client.post(
         path="/auth/yubi/activate/",
         format="json",

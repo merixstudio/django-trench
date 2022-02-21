@@ -24,13 +24,13 @@ def test_add_user_mfa(active_user):
     client = APIClient()
     login_response = login(active_user)
     token = get_token_from_response(login_response)
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(token))
     secret = create_secret_command()
     response = client.post(
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_otp_command(secret=secret).now(),
+            "code": create_otp_command(secret=secret, interval=60).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",
@@ -64,11 +64,8 @@ def test_user_with_many_methods(active_user_with_many_otp_methods):
     # Log in the user in the second step and make sure it is correct
     assert second_step_response.status_code == HTTP_200_OK
 
-    client.credentials(
-        HTTP_AUTHORIZATION=header_template.format(
-            get_token_from_response(second_step_response)
-        )
-    )
+    jwt = get_token_from_response(second_step_response)
+    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     active_methods_response = client.get(
         path="/auth/mfa/user-active-methods/",
     )
