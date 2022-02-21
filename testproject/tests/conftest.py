@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 
 from os import environ
+
+from django.db.transaction import atomic
 from testapp.models import User as UserModel
 from typing import Any, Set, Tuple
 from yubico_client import Yubico
@@ -156,6 +158,7 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
 
 
 @pytest.fixture()
+@atomic()
 def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
     user, created = User.objects.get_or_create(
         username="ramses",
