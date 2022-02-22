@@ -11,6 +11,7 @@ from rest_framework.test import APIClient
 
 from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
+from trench.models import MFAMethod
 
 User = get_user_model()
 
@@ -66,3 +67,56 @@ def get_authenticated_api_client_and_mfa_handler(user, primary_method: Optional[
     jwt = get_token_from_response(response)
     client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
     return client, handler
+
+
+class TrenchAPIClient(APIClient):
+    def authenticate(self, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+        response = self._first_factor_request(user=user, path=path)
+        self._update_jwt_from_response(response)
+        return response
+
+    def authenticate_multi_factor(self, mfa_method: MFAMethod, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+        response = self._first_factor_request(user=user, path=path)
+        ephemeral_token = self._extract_ephemeral_token_from_response(response=response)
+        handler = get_mfa_handler(mfa_method=mfa_method)
+        response = self._second_factor_request(handler=handler, ephemeral_token=ephemeral_token)
+        self._update_jwt_from_response(response=response)
+        return response
+
+    def _first_factor_request(self, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+        return self.post(
+            path=path,
+            data={
+                "username": getattr(user, User.USERNAME_FIELD),
+                "password": "secretkey",
+            },
+            format="json",
+        )
+
+    def _second_factor_request(
+        self,
+        ephemeral_token: str,
+        handler: Optional[AbstractMessageDispatcher] = None,
+        code: Optional[str] = None
+    ) -> Response:
+        if handler is None and code is None:
+            raise ValueError("handler and code can't be None simultaneously")
+        return self.post(
+            path=PATH_AUTH_JWT_LOGIN_CODE,
+            data={
+                "ephemeral_token": ephemeral_token,
+                "code": handler.create_code() if code is None else code,
+            },
+            format="json",
+        )
+
+    def _update_jwt_from_response(self, response: Response):
+        jwt = self._get_token_from_response(response)
+        self.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
+
+    def _extract_ephemeral_token_from_response(self, response: Response) -> str:
+        return response.data.get("ephemeral_token")
+
+    @classmethod
+    def _get_token_from_response(cls, response: Response, token_field: str = default_token_field) -> str:
+        return response.data.get(token_field)

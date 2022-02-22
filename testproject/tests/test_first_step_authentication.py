@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_get_emphemeral_token(active_user_with_email_otp):
+def test_get_ephemeral_token(active_user_with_email_otp):
     response = login(active_user_with_email_otp)
     assert response.status_code == HTTP_200_OK
     assert (

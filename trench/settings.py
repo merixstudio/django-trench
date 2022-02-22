@@ -14,7 +14,7 @@ class TrenchAPISettings(APISettings):
     _FIELD_BACKUP_CODES_CHARACTERS = "BACKUP_CODES_CHARACTERS"
     _FIELD_MFA_METHODS = "MFA_METHODS"
     _FIELD_HANDLER = "HANDLER"
-    _RESTRICTED_BACKUP_CODES_CHARACTERS = (",",)
+    _RESTRICTED_BACKUP_CODES_CHARACTERS = tuple()
 
     @property
     def user_settings(self) -> Dict[str, Any]:
