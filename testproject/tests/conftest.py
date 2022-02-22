@@ -3,10 +3,9 @@ import pytest
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from django.db.transaction import atomic
 
 from os import environ
-
-from django.db.transaction import atomic
 from testapp.models import User as UserModel
 from typing import Any, Set, Tuple
 from yubico_client import Yubico
@@ -144,7 +143,7 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
         email="cleopatra@pyramids.eg",
     )
     backup_codes = generate_backup_codes_command()
-    serialized_backup_codes = ",".join(
+    serialized_backup_codes = MFAMethodModel._BACKUP_CODES_DELIMITER.join(
         [make_password(code) if encrypt_codes else code for code in backup_codes]
     )
     if created:
@@ -165,7 +164,9 @@ def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
         email="ramses@thegreat.eg",
     )
     backup_codes = generate_backup_codes_command()
-    encrypted_backup_codes = ",".join([make_password(_) for _ in backup_codes])
+    encrypted_backup_codes = MFAMethodModel._BACKUP_CODES_DELIMITER.join(
+        [make_password(_) for _ in backup_codes]
+    )
     if created:
         user.set_password("secretkey"),
         user.is_active = True
@@ -242,7 +243,9 @@ def active_user_with_yubi() -> UserModel:
         email="ramses@thegreat.eg",
     )
     backup_codes = generate_backup_codes_command()
-    encrypted_backup_codes = ",".join([make_password(_) for _ in backup_codes])
+    encrypted_backup_codes = MFAMethodModel._BACKUP_CODES_DELIMITER.join(
+        [make_password(_) for _ in backup_codes]
+    )
     if created:
         user.set_password("secretkey"),
         user.is_active = True

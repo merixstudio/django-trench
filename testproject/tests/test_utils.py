@@ -8,13 +8,13 @@ from trench.utils import UserTokenGenerator
 
 
 @pytest.mark.django_db
-def test_token_obj_without_token():
+def test_empty_token():
     token = UserTokenGenerator()
     assert token.check_token(user=None, token="") is None
 
 
 @pytest.mark.django_db
-def test_unexisting_user():
+def test_invalid_token():
     token = UserTokenGenerator()
     assert token.check_token(user=None, token="test") is None
 
