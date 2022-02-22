@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 
 import jwt
-from django.contrib.auth.models import AbstractUser
 from rest_framework.response import Response
 from rest_framework.test import APIClient
 from typing import Optional
@@ -23,7 +23,9 @@ class TrenchAPIClient(APIClient):
     PATH_AUTH_TOKEN_LOGIN = "/auth/token/login/"
     PATH_AUTH_TOKEN_LOGIN_CODE = "/auth/token/login/code/"
 
-    def authenticate(self, user: AbstractUser, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+    def authenticate(
+        self, user: AbstractUser, path: str = PATH_AUTH_JWT_LOGIN
+    ) -> Response:
         response = self._first_factor_request(user=user, path=path)
         self._update_jwt_from_response(response)
         return response
@@ -69,7 +71,7 @@ class TrenchAPIClient(APIClient):
             path=path,
             data={
                 "ephemeral_token": ephemeral_token,
-                "code": handler.create_code() if code is None else code,
+                "code": handler.create_code() if code is None else code,  # type: ignore
             },
             format="json",
         )
