@@ -17,9 +17,27 @@ from trench.backends.provider import get_mfa_handler
 from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
+from trench.exceptions import MFAMethodDoesNotExistError
+from trench.models import MFAMethod
 
 
 User = get_user_model()
+
+
+@pytest.mark.django_db
+def test_mfa_method_manager(active_user):
+    with pytest.raises(MFAMethodDoesNotExistError):
+        MFAMethod.objects.get_primary_active_name(user_id=active_user.id)
+
+
+@pytest.mark.django_db
+def test_mfa_model(active_user_with_email_otp):
+    mfa_method = active_user_with_email_otp.mfa_methods.first()
+    assert "email" in str(mfa_method)
+
+    mfa_method.backup_codes = ["test1", "test2"]
+    assert mfa_method.backup_codes == ["test1", "test2"]
+    mfa_method.backup_codes = ""
 
 
 @pytest.mark.django_db

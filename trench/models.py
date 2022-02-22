@@ -11,7 +11,7 @@ from django.db.models import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from typing import Any, Iterable, Set
+from typing import Any, Iterable
 
 from trench.exceptions import MFAMethodDoesNotExistError
 
