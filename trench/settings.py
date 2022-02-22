@@ -5,7 +5,7 @@ import string
 from rest_framework.settings import APISettings, perform_import
 from typing import Any, Dict
 
-from trench.exceptions import MethodHandlerMissingError, RestrictedCharInBackupCodeError
+from trench.exceptions import MethodHandlerMissingError
 
 
 class TrenchAPISettings(APISettings):
@@ -14,7 +14,6 @@ class TrenchAPISettings(APISettings):
     _FIELD_BACKUP_CODES_CHARACTERS = "BACKUP_CODES_CHARACTERS"
     _FIELD_MFA_METHODS = "MFA_METHODS"
     _FIELD_HANDLER = "HANDLER"
-    _RESTRICTED_BACKUP_CODES_CHARACTERS = tuple()
 
     @property
     def user_settings(self) -> Dict[str, Any]:
@@ -28,12 +27,6 @@ class TrenchAPISettings(APISettings):
         return val
 
     def _validate(self, attribute: str, value: Any) -> None:
-        if attribute == self._FIELD_BACKUP_CODES_CHARACTERS:
-            if any(char in value for char in self._RESTRICTED_BACKUP_CODES_CHARACTERS):
-                raise RestrictedCharInBackupCodeError(
-                    attribute_name=attribute,
-                    restricted_chars=self._RESTRICTED_BACKUP_CODES_CHARACTERS,
-                )
         if attribute == self._FIELD_MFA_METHODS:
             for method_name, method_config in value.items():
                 if self._FIELD_HANDLER not in method_config:
