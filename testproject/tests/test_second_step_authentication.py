@@ -1,38 +1,37 @@
-from time import sleep
-
 import pytest
 
 from django.contrib.auth import get_user_model
 
 from rest_framework.status import (
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED, HTTP_204_NO_CONTENT,
+    HTTP_401_UNAUTHORIZED,
 )
 from rest_framework.test import APIClient
+from time import sleep
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
-from tests.utils import (
-    get_username_from_jwt,
-    TrenchAPIClient,
+from tests.utils import TrenchAPIClient
+from trench.backends.provider import get_mfa_handler
+from trench.command.replace_mfa_method_backup_codes import (
+    regenerate_backup_codes_for_mfa_method_command,
 )
 
-from trench.backends.provider import get_mfa_handler
-from trench.command.replace_mfa_method_backup_codes import regenerate_backup_codes_for_mfa_method_command
 
 User = get_user_model()
 
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
-    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"]
+    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"][
+        "VALIDITY_PERIOD"
+    ]
     settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
 
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
-    response_first_step = client._first_factor_request(
-        user=active_user_with_email_otp
-    )
+    response_first_step = client._first_factor_request(user=active_user_with_email_otp)
     ephemeral_token = client._extract_ephemeral_token_from_response(
         response=response_first_step
     )
@@ -51,7 +50,9 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = ORIGINAL_VALIDITY_PERIOD
+    settings.TRENCH_AUTH["MFA_METHODS"]["email"][
+        "VALIDITY_PERIOD"
+    ] = ORIGINAL_VALIDITY_PERIOD
 
 
 @pytest.mark.django_db
@@ -62,7 +63,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
         mfa_method=mfa_method, user=active_user_with_email_otp
     )
     assert response.status_code == HTTP_200_OK
-    assert get_username_from_jwt(response) == getattr(
+    assert client.get_username_from_jwt(response=response) == getattr(
         active_user_with_email_otp,
         User.USERNAME_FIELD,
     )
@@ -71,9 +72,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_wrong_second_step_verification_with_empty_code(active_user_with_email_otp):
     client = TrenchAPIClient()
-    response_first_step = client._first_factor_request(
-        user=active_user_with_email_otp
-    )
+    response_first_step = client._first_factor_request(user=active_user_with_email_otp)
     ephemeral_token = client._extract_ephemeral_token_from_response(
         response=response_first_step
     )
@@ -88,9 +87,7 @@ def test_wrong_second_step_verification_with_empty_code(active_user_with_email_o
 @pytest.mark.django_db
 def test_wrong_second_step_verification_with_wrong_code(active_user_with_email_otp):
     client = TrenchAPIClient()
-    response_first_step = client._first_factor_request(
-        user=active_user_with_email_otp
-    )
+    response_first_step = client._first_factor_request(user=active_user_with_email_otp)
     ephemeral_token = client._extract_ephemeral_token_from_response(
         response=response_first_step
     )
@@ -354,9 +351,13 @@ def test_change_primary_method_with_invalid_code(active_user_with_many_otp_metho
 @pytest.mark.django_db
 def test_change_primary_method_to_inactive(active_user_with_email_otp):
     client = TrenchAPIClient()
-    primary_mfa_method = active_user_with_email_otp.mfa_methods.filter(is_primary=True).first()
+    primary_mfa_method = active_user_with_email_otp.mfa_methods.filter(
+        is_primary=True
+    ).first()
     handler = get_mfa_handler(mfa_method=primary_mfa_method)
-    client.authenticate_multi_factor(mfa_method=primary_mfa_method, user=active_user_with_email_otp)
+    client.authenticate_multi_factor(
+        mfa_method=primary_mfa_method, user=active_user_with_email_otp
+    )
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
@@ -412,7 +413,9 @@ def test_confirm_activation_otp_with_backup_code(
 def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
-    client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user_with_email_otp)
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_otp
+    )
     response = client.post(
         path="/auth/code/request/",
         data={"method": "email"},
@@ -427,7 +430,9 @@ def test_request_code_for_active_mfa_method(active_user_with_email_otp):
 def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
-    client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user_with_email_otp)
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_otp
+    )
     response = client.post(
         path="/auth/code/request/",
         data={"method": "sms_twilio"},
@@ -441,7 +446,9 @@ def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
 def test_request_code_for_invalid_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
-    client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user_with_email_otp)
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_otp
+    )
     response = client.post(
         path="/auth/code/request/",
         data={"method": "invalid"},
@@ -509,7 +516,9 @@ def test_backup_codes_regeneration_disabled_method(
 def test_yubikey(active_user_with_yubi, offline_yubikey):
     client = TrenchAPIClient()
     yubikey_method = active_user_with_yubi.mfa_methods.first()
-    response = client.authenticate_multi_factor(mfa_method=yubikey_method, user=active_user_with_yubi)
+    response = client.authenticate_multi_factor(
+        mfa_method=yubikey_method, user=active_user_with_yubi
+    )
     assert response.status_code == HTTP_200_OK
 
 
@@ -517,7 +526,9 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
 def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
     client = TrenchAPIClient()
     yubikey_method = active_user_with_yubi.mfa_methods.first()
-    response = client.authenticate_multi_factor(mfa_method=yubikey_method, user=active_user_with_yubi)
+    response = client.authenticate_multi_factor(
+        mfa_method=yubikey_method, user=active_user_with_yubi
+    )
     assert response.status_code == HTTP_401_UNAUTHORIZED
     assert response.data.get("error") is not None
 

@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
-from tests.utils import PATH_AUTH_JWT_LOGIN, get_username_from_jwt, TrenchAPIClient
+from tests.utils import TrenchAPIClient
 from trench.utils import user_token_generator
 
 
@@ -19,8 +19,9 @@ def test_get_ephemeral_token(active_user_with_email_otp):
     assert (
         user_token_generator.check_token(
             user=None,
-            token=client._extract_ephemeral_token_from_response(response=response)
-        ) == active_user_with_email_otp
+            token=client._extract_ephemeral_token_from_response(response=response),
+        )
+        == active_user_with_email_otp
     )
 
 
@@ -36,7 +37,7 @@ def test_get_jwt_without_otp(active_user):
     client = TrenchAPIClient()
     response = client.authenticate(user=active_user)
     assert response.status_code == HTTP_200_OK
-    assert get_username_from_jwt(response) == getattr(
+    assert client.get_username_from_jwt(response=response) == getattr(
         active_user,
         User.USERNAME_FIELD,
     )
@@ -57,7 +58,7 @@ def test_login_disabled_user(inactive_user):
 def test_login_missing_field(active_user):
     client = TrenchAPIClient()
     response = client.post(
-        path=PATH_AUTH_JWT_LOGIN,
+        path=client.PATH_AUTH_JWT_LOGIN,
         data={
             "username": "",
             "password": "secretkey",
@@ -72,7 +73,7 @@ def test_login_missing_field(active_user):
 def test_login_wrong_password(active_user):
     client = TrenchAPIClient()
     response = client.post(
-        path=PATH_AUTH_JWT_LOGIN,
+        path=client.PATH_AUTH_JWT_LOGIN,
         data={
             "username": getattr(
                 active_user,

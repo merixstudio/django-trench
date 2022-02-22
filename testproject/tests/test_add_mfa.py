@@ -4,10 +4,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.status import HTTP_200_OK
 
-from tests.utils import (
-    TrenchAPIClient,
-)
-
+from tests.utils import TrenchAPIClient
 from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
 

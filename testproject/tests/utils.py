@@ -1,43 +1,29 @@
-from typing import Optional, Tuple
-
-import pytest
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
 import jwt
+from django.contrib.auth.models import AbstractUser
 from rest_framework.response import Response
 from rest_framework.test import APIClient
+from typing import Optional
 
 from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.models import MFAMethod
 
+
 User = get_user_model()
-
-header_template = "Bearer {}"
-default_token_field = "access"
-
-
-def get_token_from_response(response: Response, token_field=default_token_field):
-    return response.data.get(token_field)
-
-
-PATH_AUTH_JWT_LOGIN = "/auth/jwt/login/"
-PATH_AUTH_JWT_LOGIN_CODE = "/auth/jwt/login/code/"
-
-
-def get_username_from_jwt(response, token_field=default_token_field):
-    return jwt.decode(
-        response.data.get(token_field),
-        key=settings.SECRET_KEY,
-        verify=False,
-        algorithms=["HS256"],
-    ).get(User.USERNAME_FIELD)
 
 
 class TrenchAPIClient(APIClient):
-    def authenticate(self, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+    _HEADER_TEMPLATE = "Bearer {}"
+    _DEFAULT_TOKEN_FIELD = "access"
+    PATH_AUTH_JWT_LOGIN = "/auth/jwt/login/"
+    PATH_AUTH_JWT_LOGIN_CODE = "/auth/jwt/login/code/"
+    PATH_AUTH_TOKEN_LOGIN = "/auth/token/login/"
+    PATH_AUTH_TOKEN_LOGIN_CODE = "/auth/token/login/code/"
+
+    def authenticate(self, user: AbstractUser, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
         response = self._first_factor_request(user=user, path=path)
         self._update_jwt_from_response(response)
         return response
@@ -45,7 +31,7 @@ class TrenchAPIClient(APIClient):
     def authenticate_multi_factor(
         self,
         mfa_method: MFAMethod,
-        user,
+        user: AbstractUser,
         path: str = PATH_AUTH_JWT_LOGIN,
         path_2nd_factor: str = PATH_AUTH_JWT_LOGIN_CODE,
     ) -> Response:
@@ -58,7 +44,9 @@ class TrenchAPIClient(APIClient):
         self._update_jwt_from_response(response=response)
         return response
 
-    def _first_factor_request(self, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+    def _first_factor_request(
+        self, user: AbstractUser, path: str = PATH_AUTH_JWT_LOGIN
+    ) -> Response:
         return self.post(
             path=path,
             data={
@@ -88,11 +76,24 @@ class TrenchAPIClient(APIClient):
 
     def _update_jwt_from_response(self, response: Response):
         jwt = self._get_token_from_response(response)
-        self.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
+        self.credentials(HTTP_AUTHORIZATION=self._HEADER_TEMPLATE.format(jwt))
 
     def _extract_ephemeral_token_from_response(self, response: Response) -> str:
         return response.data.get("ephemeral_token")
 
     @classmethod
-    def _get_token_from_response(cls, response: Response, token_field: str = default_token_field) -> str:
+    def _get_token_from_response(
+        cls, response: Response, token_field: str = _DEFAULT_TOKEN_FIELD
+    ) -> str:
         return response.data.get(token_field)
+
+    @classmethod
+    def get_username_from_jwt(
+        cls, response: Response, token_field: str = _DEFAULT_TOKEN_FIELD
+    ) -> Optional[str]:
+        return jwt.decode(
+            response.data.get(token_field),
+            key=settings.SECRET_KEY,
+            verify=False,
+            algorithms=["HS256"],
+        ).get(User.USERNAME_FIELD)
