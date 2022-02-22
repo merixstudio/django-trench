@@ -13,12 +13,8 @@ from rest_framework.test import APIClient
 from twilio.base.exceptions import TwilioException, TwilioRestException
 
 from tests.utils import (
-    PATH_AUTH_JWT_LOGIN_CODE,
-    get_token_from_response,
     get_username_from_jwt,
-    header_template,
-    login,
-    get_authenticated_api_client_and_mfa_handler, TrenchAPIClient,
+    TrenchAPIClient,
 )
 
 from trench.backends.provider import get_mfa_handler

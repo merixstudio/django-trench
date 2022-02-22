@@ -27,18 +27,6 @@ PATH_AUTH_JWT_LOGIN = "/auth/jwt/login/"
 PATH_AUTH_JWT_LOGIN_CODE = "/auth/jwt/login/code/"
 
 
-@pytest.mark.django_db
-def login(user, path=PATH_AUTH_JWT_LOGIN) -> Response:
-    return APIClient().post(
-        path=path,
-        data={
-            "username": getattr(user, User.USERNAME_FIELD),
-            "password": "secretkey",
-        },
-        format="json",
-    )
-
-
 def get_username_from_jwt(response, token_field=default_token_field):
     return jwt.decode(
         response.data.get(token_field),
@@ -48,38 +36,25 @@ def get_username_from_jwt(response, token_field=default_token_field):
     ).get(User.USERNAME_FIELD)
 
 
-def get_authenticated_api_client_and_mfa_handler(user, primary_method: Optional[bool] = None) -> Tuple[APIClient, AbstractMessageDispatcher]:
-    client = APIClient()
-    first_step = login(user)
-    mfa_methods_qs = user.mfa_methods
-    if primary_method is not None:
-        mfa_methods_qs = mfa_methods_qs.filter(is_primary=primary_method)
-    mfa_method = mfa_methods_qs.first()
-    handler = get_mfa_handler(mfa_method=mfa_method)
-    response = client.post(
-        path=PATH_AUTH_JWT_LOGIN_CODE,
-        data={
-            "ephemeral_token": first_step.data.get("ephemeral_token"),
-            "code": handler.create_code(),
-        },
-        format="json",
-    )
-    jwt = get_token_from_response(response)
-    client.credentials(HTTP_AUTHORIZATION=header_template.format(jwt))
-    return client, handler
-
-
 class TrenchAPIClient(APIClient):
     def authenticate(self, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
         response = self._first_factor_request(user=user, path=path)
         self._update_jwt_from_response(response)
         return response
 
-    def authenticate_multi_factor(self, mfa_method: MFAMethod, user, path: str = PATH_AUTH_JWT_LOGIN) -> Response:
+    def authenticate_multi_factor(
+        self,
+        mfa_method: MFAMethod,
+        user,
+        path: str = PATH_AUTH_JWT_LOGIN,
+        path_2nd_factor: str = PATH_AUTH_JWT_LOGIN_CODE,
+    ) -> Response:
         response = self._first_factor_request(user=user, path=path)
         ephemeral_token = self._extract_ephemeral_token_from_response(response=response)
         handler = get_mfa_handler(mfa_method=mfa_method)
-        response = self._second_factor_request(handler=handler, ephemeral_token=ephemeral_token)
+        response = self._second_factor_request(
+            handler=handler, ephemeral_token=ephemeral_token, path=path_2nd_factor
+        )
         self._update_jwt_from_response(response=response)
         return response
 
@@ -97,12 +72,13 @@ class TrenchAPIClient(APIClient):
         self,
         ephemeral_token: str,
         handler: Optional[AbstractMessageDispatcher] = None,
-        code: Optional[str] = None
+        code: Optional[str] = None,
+        path: str = PATH_AUTH_JWT_LOGIN_CODE,
     ) -> Response:
         if handler is None and code is None:
             raise ValueError("handler and code can't be None simultaneously")
         return self.post(
-            path=PATH_AUTH_JWT_LOGIN_CODE,
+            path=path,
             data={
                 "ephemeral_token": ephemeral_token,
                 "code": handler.create_code() if code is None else code,
