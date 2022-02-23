@@ -3,6 +3,13 @@ Changelog
 =========
 
 
+0.3.1 (2022-02-23)
+==================
+
+* Changed `n` time-windows of 1 second intervals to a single time window of `n` seconds interval
+* Tests refactoring
+
+
 0.3.0 (2021-04-30)
 ==================
 
