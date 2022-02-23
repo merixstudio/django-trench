@@ -71,10 +71,10 @@ def test_application_backend_generating_url_successfully(
     )
 
 
-@pytest.mark.django_db
-def test_yubikey_backend(active_user_with_many_otp_methods, settings):
-    user, code = active_user_with_many_otp_methods
-    config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
-    auth_method = user.mfa_methods.get(name="yubi")
-    dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
-    dispatcher.confirm_activation(code)
+# @pytest.mark.django_db
+# def test_yubikey_backend(active_user_with_many_otp_methods, settings):
+#     user, code = active_user_with_many_otp_methods
+#     config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
+#     auth_method = user.mfa_methods.get(name="yubi")
+#     dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
+#     dispatcher.confirm_activation(code)

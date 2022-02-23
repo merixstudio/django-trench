@@ -29,11 +29,11 @@ def test_add_user_mfa(active_user):
     assert response.status_code == HTTP_200_OK
 
 
-@pytest.mark.django_db
-def test_user_with_many_methods(active_user_with_many_otp_methods):
-    active_user, _ = active_user_with_many_otp_methods
-    mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
-    client = TrenchAPIClient()
-    client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user)
-    response = client.get(path="/auth/mfa/user-active-methods/")
-    assert len(response.data) == 4
+# @pytest.mark.django_db
+# def test_user_with_many_methods(active_user_with_many_otp_methods):
+#     active_user, _ = active_user_with_many_otp_methods
+#     mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
+#     client = TrenchAPIClient()
+#     client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user)
+#     response = client.get(path="/auth/mfa/user-active-methods/")
+#     assert len(response.data) == 4
