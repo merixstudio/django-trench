@@ -2,9 +2,12 @@ name: 'Build and publish to Test PyPI'
 
 on:
   workflow_run:
-    workflows: [ 'develop' ]
-    branches: [ staging ]
-    types: [ completed ]
+    workflows:
+      - 'Lint and test'
+    branches:
+      - staging
+    types:
+      - completed
 
 jobs:
   build-and-publish-to-test:

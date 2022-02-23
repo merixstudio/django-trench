@@ -2,9 +2,12 @@ name: 'Build and publish to PyPI'
 
 on:
   workflow_run:
-    workflows: [ 'develop' ]
-    tags: '*'
-    types: [ completed ]
+    workflows:
+      - 'Lint and test'
+    tags:
+      - '*'
+    types:
+      - completed
 
 jobs:
   build-and-publish:
