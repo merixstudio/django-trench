@@ -12,7 +12,6 @@ from trench.exceptions import (
     MFAMethodAlreadyActiveError,
     MFAPrimaryMethodInactiveError,
     OTPCodeMissingError,
-    RestrictedCharInBackupCodeError,
 )
 from trench.models import MFAMethod
 from trench.serializers import (
@@ -21,14 +20,6 @@ from trench.serializers import (
     RequestBodyValidator,
 )
 from trench.settings import DEFAULTS, TrenchAPISettings
-
-
-def test_restricted_char_in_backup_code_error():
-    settings = TrenchAPISettings(
-        user_settings={"BACKUP_CODES_CHARACTERS": ","}, defaults=DEFAULTS
-    )
-    with pytest.raises(RestrictedCharInBackupCodeError):
-        assert settings.BACKUP_CODES_CHARACTERS is not None
 
 
 def test_method_handler_missing_error():
