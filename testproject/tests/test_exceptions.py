@@ -22,6 +22,7 @@ from trench.serializers import (
 from trench.settings import DEFAULTS, TrenchAPISettings
 
 
+@pytest.mark.django_db
 def test_method_handler_missing_error():
     settings = TrenchAPISettings(
         user_settings={"MFA_METHODS": {"method_without_handler": {}}}, defaults=DEFAULTS
@@ -30,12 +31,14 @@ def test_method_handler_missing_error():
         assert settings.MFA_METHODS["method_without_handler"] is None
 
 
+@pytest.mark.django_db
 def test_code_missing_error():
     validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
     with pytest.raises(OTPCodeMissingError):
         validator.validate_code(value="")
 
 
+@pytest.mark.django_db
 def test_request_body_validator():
     validator = RequestBodyValidator()
     with pytest.raises(NotImplementedError):
@@ -44,12 +47,14 @@ def test_request_body_validator():
         validator.update(instance=MFAMethod(), validated_data=OrderedDict())
 
 
+@pytest.mark.django_db
 def test_protected_action_validator():
     validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
     with pytest.raises(NotImplementedError):
         validator._validate_mfa_method(mfa=MFAMethod())
 
 
+@pytest.mark.django_db
 def test_mfa_method_activation_validator():
     validator = MFAMethodActivationConfirmationValidator(
         mfa_method_name="yubi", user=None

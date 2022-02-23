@@ -33,6 +33,12 @@ def tests_setup_and_teardown():
     environ.update(original_environment)
 
 
+@pytest.fixture(autouse=True)
+def clean_users_after_each_test():
+    yield
+    User.objects.all().delete()
+
+
 def mfa_method_creator(
     user: UserModel, method_name: str, is_primary: bool = True, **method_args: Any
 ) -> MFAMethodModel:
