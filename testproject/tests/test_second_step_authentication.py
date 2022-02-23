@@ -24,13 +24,13 @@ from trench.models import MFAMethod
 User = get_user_model()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_mfa_method_manager(active_user):
     with pytest.raises(MFAMethodDoesNotExistError):
         MFAMethod.objects.get_primary_active_name(user_id=active_user.id)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_mfa_model(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     assert "email" in str(mfa_method)
@@ -40,7 +40,7 @@ def test_mfa_model(active_user_with_email_otp):
     mfa_method.backup_codes = ""
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_custom_validity_period(active_user_with_email_otp, settings):
     ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"][
         "VALIDITY_PERIOD"
@@ -73,7 +73,7 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     ] = ORIGINAL_VALIDITY_PERIOD
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_ephemeral_token_verification(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
@@ -87,7 +87,7 @@ def test_ephemeral_token_verification(active_user_with_email_otp):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_wrong_second_step_verification_with_empty_code(active_user_with_email_otp):
     client = TrenchAPIClient()
     response_first_step = client._first_factor_request(user=active_user_with_email_otp)
@@ -102,7 +102,7 @@ def test_wrong_second_step_verification_with_empty_code(active_user_with_email_o
     assert response_second_step.data.get("code")[0] == msg_error
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_wrong_second_step_verification_with_wrong_code(active_user_with_email_otp):
     client = TrenchAPIClient()
     response_first_step = client._first_factor_request(user=active_user_with_email_otp)
@@ -116,7 +116,7 @@ def test_wrong_second_step_verification_with_wrong_code(active_user_with_email_o
     assert response_second_step.data.get("error") == "Invalid or expired code."
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_wrong_second_step_verification_with_ephemeral_token(
     active_user_with_email_otp,
 ):
@@ -129,7 +129,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_second_method_activation(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
@@ -149,7 +149,7 @@ def test_second_method_activation(active_user_with_email_otp):
     assert len(active_user_with_email_otp.mfa_methods.all()) == 2
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_second_method_activation_already_active(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
@@ -165,7 +165,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     assert response.data.get("error") == "MFA method already active."
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_use_backup_code(active_user_with_encrypted_backup_codes):
     client = TrenchAPIClient()
     active_user, backup_codes = active_user_with_encrypted_backup_codes
@@ -179,7 +179,7 @@ def test_use_backup_code(active_user_with_encrypted_backup_codes):
     assert response_second_step.status_code == HTTP_200_OK
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_activation_otp(active_user):
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
@@ -190,7 +190,7 @@ def test_activation_otp(active_user):
     assert response.status_code == HTTP_200_OK
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_activation_otp_confirm_wrong(active_user):
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
@@ -209,7 +209,7 @@ def test_activation_otp_confirm_wrong(active_user):
     assert response.data.get("code")[0].code == error_code
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_confirm_activation_otp(active_user):
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
@@ -234,7 +234,7 @@ def test_confirm_activation_otp(active_user):
     assert active_user.mfa_methods.count() == 0
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_deactivation_of_primary_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -250,28 +250,28 @@ def test_deactivation_of_primary_method(active_user_with_email_otp):
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
-# @pytest.mark.django_db
-# def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
-#     user, _ = active_user_with_many_otp_methods
-#     client = TrenchAPIClient()
-#     mfa_method = user.mfa_methods.filter(is_primary=False).first()
-#     handler = get_mfa_handler(mfa_method=mfa_method)
-#     client.authenticate_multi_factor(mfa_method=mfa_method, user=user)
-#     response = client.post(
-#         path=f"/auth/{mfa_method.name}/deactivate/",
-#         data={"code": handler.create_code()},
-#         format="json",
-#     )
-#     assert response.status_code == HTTP_204_NO_CONTENT
-#     mfa_method.refresh_from_db()
-#     assert not mfa_method.is_active
-#
-#     # revert changes
-#     mfa_method.is_active = True
-#     mfa_method.save()
+@pytest.mark.django_db(transaction=True)
+def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
+    user, _ = active_user_with_many_otp_methods
+    client = TrenchAPIClient()
+    mfa_method = user.mfa_methods.filter(is_primary=False).first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+    client.authenticate_multi_factor(mfa_method=mfa_method, user=user)
+    response = client.post(
+        path=f"/auth/{mfa_method.name}/deactivate/",
+        data={"code": handler.create_code()},
+        format="json",
+    )
+    assert response.status_code == HTTP_204_NO_CONTENT
+    mfa_method.refresh_from_db()
+    assert not mfa_method.is_active
+
+    # revert changes
+    mfa_method.is_active = True
+    mfa_method.save()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_deactivation_of_disabled_method(
     active_user_with_email_and_inactive_other_methods_otp,
 ):
@@ -289,84 +289,84 @@ def test_deactivation_of_disabled_method(
     assert response.data.get("code")[0].code == "not_enabled"
 
 
-# @pytest.mark.django_db
-# def test_change_primary_method(active_user_with_many_otp_methods):
-#     active_user, _ = active_user_with_many_otp_methods
-#     client = TrenchAPIClient()
-#     primary_mfa = active_user.mfa_methods.filter(is_primary=True).first()
-#     handler = get_mfa_handler(mfa_method=primary_mfa)
-#     client.authenticate_multi_factor(mfa_method=primary_mfa, user=active_user)
-#     response = client.post(
-#         path="/auth/mfa/change-primary-method/",
-#         data={
-#             "method": "sms_twilio",
-#             "code": handler.create_code(),
-#         },
-#         format="json",
-#     )
-#     new_primary_method = active_user.mfa_methods.filter(
-#         is_primary=True,
-#     ).first()
-#     assert response.status_code == HTTP_204_NO_CONTENT
-#     assert primary_mfa != new_primary_method
-#     assert new_primary_method.name == "sms_twilio"
-#
-#     # revert changes
-#     new_primary_method.is_primary = False
-#     new_primary_method.save()
-#     primary_mfa.is_primary = True
-#     primary_mfa.save()
+@pytest.mark.django_db(transaction=True)
+def test_change_primary_method(active_user_with_many_otp_methods):
+    active_user, _ = active_user_with_many_otp_methods
+    client = TrenchAPIClient()
+    primary_mfa = active_user.mfa_methods.filter(is_primary=True).first()
+    handler = get_mfa_handler(mfa_method=primary_mfa)
+    client.authenticate_multi_factor(mfa_method=primary_mfa, user=active_user)
+    response = client.post(
+        path="/auth/mfa/change-primary-method/",
+        data={
+            "method": "sms_twilio",
+            "code": handler.create_code(),
+        },
+        format="json",
+    )
+    new_primary_method = active_user.mfa_methods.filter(
+        is_primary=True,
+    ).first()
+    assert response.status_code == HTTP_204_NO_CONTENT
+    assert primary_mfa != new_primary_method
+    assert new_primary_method.name == "sms_twilio"
+
+    # revert changes
+    new_primary_method.is_primary = False
+    new_primary_method.save()
+    primary_mfa.is_primary = True
+    primary_mfa.save()
 
 
-# @pytest.mark.django_db
-# def test_change_primary_method_with_backup_code(
-#     active_user_with_many_otp_methods,
-# ):
-#     active_user, backup_code = active_user_with_many_otp_methods
-#     client = TrenchAPIClient()
-#     primary_mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
-#     client.authenticate_multi_factor(mfa_method=primary_mfa_method, user=active_user)
-#     response = client.post(
-#         path="/auth/mfa/change-primary-method/",
-#         data={
-#             "method": "sms_twilio",
-#             "code": backup_code,
-#         },
-#         format="json",
-#     )
-#     new_primary_method = active_user.mfa_methods.filter(
-#         is_primary=True,
-#     ).first()
-#     assert response.status_code == HTTP_204_NO_CONTENT
-#     assert primary_mfa_method != new_primary_method
-#     assert new_primary_method.name == "sms_twilio"
-#
-#     # revert changes
-#     primary_mfa_method.is_primary = True
-#     primary_mfa_method.save()
-#     new_primary_method.is_primary = False
-#     new_primary_method.save()
+@pytest.mark.django_db(transaction=True)
+def test_change_primary_method_with_backup_code(
+    active_user_with_many_otp_methods,
+):
+    active_user, backup_code = active_user_with_many_otp_methods
+    client = TrenchAPIClient()
+    primary_mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
+    client.authenticate_multi_factor(mfa_method=primary_mfa_method, user=active_user)
+    response = client.post(
+        path="/auth/mfa/change-primary-method/",
+        data={
+            "method": "sms_twilio",
+            "code": backup_code,
+        },
+        format="json",
+    )
+    new_primary_method = active_user.mfa_methods.filter(
+        is_primary=True,
+    ).first()
+    assert response.status_code == HTTP_204_NO_CONTENT
+    assert primary_mfa_method != new_primary_method
+    assert new_primary_method.name == "sms_twilio"
+
+    # revert changes
+    primary_mfa_method.is_primary = True
+    primary_mfa_method.save()
+    new_primary_method.is_primary = False
+    new_primary_method.save()
 
 
-# @pytest.mark.django_db
-# def test_change_primary_method_with_invalid_code(active_user_with_many_otp_methods):
-#     active_user, _ = active_user_with_many_otp_methods
-#     client = TrenchAPIClient()
-#     primary_mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
-#     client.authenticate_multi_factor(mfa_method=primary_mfa_method, user=active_user)
-#     response = client.post(
-#         path="/auth/mfa/change-primary-method/",
-#         data={
-#             "method": "sms_twilio",
-#             "code": "invalid",
-#         },
-#         format="json",
-#     )
-#     assert response.status_code == HTTP_400_BAD_REQUEST
-#     assert response.data.get("code")[0].code == "code_invalid_or_expired"
+@pytest.mark.django_db(transaction=True)
+def test_change_primary_method_with_invalid_code(active_user_with_many_otp_methods):
+    active_user, _ = active_user_with_many_otp_methods
+    client = TrenchAPIClient()
+    primary_mfa_method = active_user.mfa_methods.filter(is_primary=True).first()
+    client.authenticate_multi_factor(mfa_method=primary_mfa_method, user=active_user)
+    response = client.post(
+        path="/auth/mfa/change-primary-method/",
+        data={
+            "method": "sms_twilio",
+            "code": "invalid",
+        },
+        format="json",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data.get("code")[0].code == "code_invalid_or_expired"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_change_primary_method_to_inactive(active_user_with_email_otp):
     client = TrenchAPIClient()
     primary_mfa_method = active_user_with_email_otp.mfa_methods.filter(
@@ -388,7 +388,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
     assert response.data.get("error") == "Requested MFA method does not exist."
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_confirm_activation_otp_with_backup_code(
     active_user_with_encrypted_backup_codes,
 ):
@@ -427,7 +427,7 @@ def test_confirm_activation_otp_with_backup_code(
     active_user.mfa_methods.filter(name="sms_twilio").delete()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -444,7 +444,7 @@ def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     assert response.data.get("details") == expected_msg
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -460,7 +460,7 @@ def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     assert response.data.get("error") == "Requested MFA method does not exist."
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_request_code_for_invalid_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -475,7 +475,7 @@ def test_request_code_for_invalid_mfa_method(active_user_with_email_otp):
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     active_user, _ = active_user_with_encrypted_backup_codes
     client = TrenchAPIClient()
@@ -495,7 +495,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     assert old_backup_codes != new_backup_codes
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup_codes):
     active_user, _ = active_user_with_encrypted_backup_codes
     client = TrenchAPIClient()
@@ -506,31 +506,31 @@ def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
-# @pytest.mark.django_db
-# def test_backup_codes_regeneration_disabled_method(
-#     active_user_with_many_otp_methods,
-# ):
-#     active_user, _ = active_user_with_many_otp_methods
-#     client = TrenchAPIClient()
-#     primary_method = active_user.mfa_methods.filter(is_primary=True).first()
-#     handler = get_mfa_handler(mfa_method=primary_method)
-#     client.authenticate_multi_factor(mfa_method=primary_method, user=active_user)
-#
-#     active_user.mfa_methods.filter(name="sms_twilio").update(is_active=False)
-#
-#     response = client.post(
-#         path="/auth/sms_twilio/codes/regenerate/",
-#         data={"code": handler.create_code()},
-#         format="json",
-#     )
-#     assert response.status_code == HTTP_400_BAD_REQUEST
-#     assert response.data.get("code")[0].code == "not_enabled"
-#
-#     # revert changes
-#     active_user.mfa_methods.filter(name="sms_twilio").update(is_active=True)
+@pytest.mark.django_db(transaction=True)
+def test_backup_codes_regeneration_disabled_method(
+    active_user_with_many_otp_methods,
+):
+    active_user, _ = active_user_with_many_otp_methods
+    client = TrenchAPIClient()
+    primary_method = active_user.mfa_methods.filter(is_primary=True).first()
+    handler = get_mfa_handler(mfa_method=primary_method)
+    client.authenticate_multi_factor(mfa_method=primary_method, user=active_user)
+
+    active_user.mfa_methods.filter(name="sms_twilio").update(is_active=False)
+
+    response = client.post(
+        path="/auth/sms_twilio/codes/regenerate/",
+        data={"code": handler.create_code()},
+        format="json",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data.get("code")[0].code == "not_enabled"
+
+    # revert changes
+    active_user.mfa_methods.filter(name="sms_twilio").update(is_active=True)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_yubikey(active_user_with_yubi, offline_yubikey):
     client = TrenchAPIClient()
     yubikey_method = active_user_with_yubi.mfa_methods.first()
@@ -540,7 +540,7 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
     assert response.status_code == HTTP_200_OK
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
     client = TrenchAPIClient()
     yubikey_method = active_user_with_yubi.mfa_methods.first()
@@ -551,7 +551,7 @@ def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
     assert response.data.get("error") is not None
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_confirm_yubikey_activation_with_backup_code(
     active_user_with_encrypted_backup_codes,
 ):
@@ -578,7 +578,7 @@ def test_confirm_yubikey_activation_with_backup_code(
     assert response.data.get("code") is not None
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_get_mfa_config():
     client = APIClient()
     response = client.get(

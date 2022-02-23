@@ -12,7 +12,7 @@ from trench.exceptions import MissingConfigurationError
 User = get_user_model()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_twilio_backend_without_credentials(active_user_with_twilio_otp, settings):
     auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
@@ -22,7 +22,7 @@ def test_twilio_backend_without_credentials(active_user_with_twilio_otp, setting
     assert response.data.get("details")[:23] == "Unable to create record"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_sms_api_backend_without_credentials(active_user_with_sms_otp, settings):
     auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_api")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_api"]
@@ -32,7 +32,7 @@ def test_sms_api_backend_without_credentials(active_user_with_sms_otp, settings)
     assert response.data.get("details") == "Authorization failed"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_sms_api_backend_with_wrong_credentials(active_user_with_sms_otp, settings):
     auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_api")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_api"]
@@ -45,7 +45,7 @@ def test_sms_api_backend_with_wrong_credentials(active_user_with_sms_otp, settin
     assert "Authorization failed" == response.data.get("details")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, settings):
     auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
@@ -56,7 +56,7 @@ def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, setting
     settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"] = current_source
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_application_backend_generating_url_successfully(
     active_user_with_application_otp, settings
 ):
@@ -71,10 +71,10 @@ def test_application_backend_generating_url_successfully(
     )
 
 
-# @pytest.mark.django_db
-# def test_yubikey_backend(active_user_with_many_otp_methods, settings):
-#     user, code = active_user_with_many_otp_methods
-#     config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
-#     auth_method = user.mfa_methods.get(name="yubi")
-#     dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
-#     dispatcher.confirm_activation(code)
+@pytest.mark.django_db(transaction=True)
+def test_yubikey_backend(active_user_with_many_otp_methods, settings):
+    user, code = active_user_with_many_otp_methods
+    config = settings.TRENCH_AUTH["MFA_METHODS"]["yubi"]
+    auth_method = user.mfa_methods.get(name="yubi")
+    dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
+    dispatcher.confirm_activation(code)

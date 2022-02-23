@@ -10,7 +10,7 @@ from trench.settings import DEFAULTS, TrenchAPISettings
 from trench.utils import get_mfa_model
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_remove_backup_code_from_non_existing_method(
     active_user_with_application_otp, settings
 ):
@@ -22,7 +22,7 @@ def test_remove_backup_code_from_non_existing_method(
         )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes):
     user, codes = active_user_with_non_encrypted_backup_codes
     settings = TrenchAPISettings(
@@ -39,7 +39,7 @@ def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_deactivate_inactive_mfa(active_user_with_application_otp):
     mfa_method = active_user_with_application_otp.mfa_methods.get(name="app")
     mfa_method.is_active = False

@@ -6,7 +6,7 @@ from tests.utils import TrenchAPIClient
 from trench.utils import user_token_generator
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_auth_token_first_step(active_user_with_email_otp):
     client = TrenchAPIClient()
     response = client.authenticate(
@@ -22,7 +22,7 @@ def test_auth_token_first_step(active_user_with_email_otp):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_auth_token_both_steps(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()

@@ -11,7 +11,7 @@ from trench.utils import user_token_generator
 User = get_user_model()
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_get_ephemeral_token(active_user_with_email_otp):
     client = TrenchAPIClient()
     response = client.authenticate(user=active_user_with_email_otp)
@@ -25,14 +25,14 @@ def test_get_ephemeral_token(active_user_with_email_otp):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_deactivated_user(deactivated_user_with_email_otp):
     client = TrenchAPIClient()
     response = client.authenticate(user=deactivated_user_with_email_otp)
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_get_jwt_without_otp(active_user):
     client = TrenchAPIClient()
     response = client.authenticate(user=active_user)
@@ -43,7 +43,7 @@ def test_get_jwt_without_otp(active_user):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_login_disabled_user(inactive_user):
     client = TrenchAPIClient()
     response = client.authenticate(user=inactive_user)
@@ -54,7 +54,7 @@ def test_login_disabled_user(inactive_user):
     )
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_login_missing_field(active_user):
     client = TrenchAPIClient()
     response = client.post(
@@ -69,7 +69,7 @@ def test_login_missing_field(active_user):
     assert "This field may not be blank." in response.data.get(User.USERNAME_FIELD)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_login_wrong_password(active_user):
     client = TrenchAPIClient()
     response = client.post(
