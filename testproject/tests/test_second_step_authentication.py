@@ -178,6 +178,9 @@ def test_use_backup_code(active_user_with_encrypted_backup_codes):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
+    mfa_method = active_user.mfa_methods.first()
+    assert len(mfa_method.backup_codes) == 7
+
 
 @pytest.mark.django_db
 def test_activation_otp(active_user):
