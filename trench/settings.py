@@ -1,11 +1,57 @@
-from django.conf import settings
+from dataclasses import dataclass
+from functools import cached_property
+
+from django.conf import settings, LazySettings
 from django.utils.translation import gettext_lazy as _
 
 import string
 from rest_framework.settings import APISettings, perform_import
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from trench.exceptions import MethodHandlerMissingError
+
+
+@dataclass(frozen=True)
+class MFAMethodConfig:
+    verbose_name: str
+    validity_period: int
+    handler: str
+    source_field: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class TrenchConfig:
+    mfa_methods: Dict[str, MFAMethodConfig]
+    user_mfa_model: str = "trench.MFAMethod"
+    user_active_field: str = "is_active"
+    backup_codes_quantity: int = 5
+    backup_codes_length: int = 12
+    backup_codes_characters: str = string.ascii_letters + string.digits
+    secret_key_length: int = 32
+    default_validity_period: int = 30
+    confirm_disable_with_code: bool = False
+    confirm_backup_codes_regeneration_with_code: bool = True
+    allow_backup_codes_regeneration: bool = True
+    encrypt_backup_codes: bool = True
+    application_issuer_name: str = "MyApplication"
+
+
+class TrenchSettingsParser:
+    _FIELD_TRENCH_AUTH = "TRENCH_AUTH"
+
+    def __init__(self, user_settings: LazySettings):
+        self._user_settings = getattr(user_settings, self._FIELD_TRENCH_AUTH, {})
+
+    @cached_property
+    def get_settings(self) -> TrenchConfig:
+        settings = {}
+        for field in TrenchConfig.__dataclass_fields__:
+            field_name = str(field)
+            if field_name == "mfa_methods":
+                pass  # TODO: perform backend import
+            else:
+                settings[field_name] = getattr(self._user_settings, field_name, getattr(TrenchConfig, field_name))
+        return TrenchConfig(**settings)
 
 
 class TrenchAPISettings(APISettings):

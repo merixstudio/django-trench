@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import get_template
@@ -12,7 +14,7 @@ from trench.responses import (
     FailedDispatchResponse,
     SuccessfulDispatchResponse,
 )
-from trench.settings import EMAIL_HTML_TEMPLATE, EMAIL_PLAIN_TEMPLATE, EMAIL_SUBJECT
+from trench.settings import EMAIL_HTML_TEMPLATE, EMAIL_PLAIN_TEMPLATE, EMAIL_SUBJECT, MFAMethodConfig
 
 
 class SendMailMessageDispatcher(AbstractMessageDispatcher):
@@ -36,3 +38,14 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
         except SMTPException as cause:  # pragma: nocover
             logging.error(cause, exc_info=True)  # pragma: nocover
             return FailedDispatchResponse(details=str(cause))  # pragma: nocover
+
+
+@dataclass(frozen=True)
+class MFAMethodConfigEmail(MFAMethodConfig):
+    verbose_name = _("email")
+    validity_period = 30
+    handler = "trench.backends.basic_mail.SendMailMessageDispatcher"
+    source_field = "email"
+    email_subject: str = _("Your verification code")
+    email_plain_template: str = "trench/backends/email/code.txt"
+    email_html_template: str = "trench/backends/email/code.html"

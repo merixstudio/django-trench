@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from django.utils.translation import gettext_lazy as _
 
 import logging
@@ -7,7 +9,7 @@ from yubico_client.yubico_exceptions import YubicoError
 
 from trench.backends.base import AbstractMessageDispatcher
 from trench.responses import DispatchResponse, SuccessfulDispatchResponse
-from trench.settings import YUBICLOUD_CLIENT_ID
+from trench.settings import YUBICLOUD_CLIENT_ID, MFAMethodConfig
 
 
 class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
@@ -41,3 +43,10 @@ class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
         except (YubicoError, Exception) as cause:
             logging.error(cause, exc_info=True)
             return False
+
+
+@dataclass(frozen=True)
+class MFAMethodConfigYubi(MFAMethodConfig):
+    verbose_name = _("yubi")
+    handler = "trench.backends.yubikey.YubiKeyMessageDispatcher"
+    yubicloud_client_id: str = ""
