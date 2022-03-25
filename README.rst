@@ -130,7 +130,7 @@ Local development
     .. code-block:: shell
 
         # make sure you run this command from the root directory of this project
-        ln -s ln -s $(pwd)/trench/ $(pwd)/testproject/trench
+        ln -s $(pwd)/trench/ $(pwd)/testproject/trench
 
 7. Check whether the tests are passing:
 
