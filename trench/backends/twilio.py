@@ -10,7 +10,7 @@ from trench.responses import (
     FailedDispatchResponse,
     SuccessfulDispatchResponse,
 )
-from trench.settings import TWILIO_VERIFIED_FROM_NUMBER
+from trench.settings import TWILIO_VERIFIED_FROM_NUMBER, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 
 
 class TwilioMessageDispatcher(AbstractMessageDispatcher):
@@ -19,7 +19,7 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
 
     def dispatch_message(self) -> DispatchResponse:
         try:
-            client = Client()
+            client = Client(self._config.get(TWILIO_ACCOUNT_SID), self._config.get(TWILIO_AUTH_TOKEN))
             client.messages.create(
                 body=self._SMS_BODY + self.create_code(),
                 to=self._to,

@@ -132,6 +132,14 @@ TRENCH_AUTH = {
                 "TWILIO_VERIFIED_FROM_NUMBER",
                 default="",
             ),
+            "TWILIO_ACCOUNT_SID": env(
+                "TWILIO_ACCOUNT_SID",
+                default="account_sid",
+            ),
+            "TWILIO_AUTH_TOKEN": env(
+                "TWILIO_AUTH_TOKEN",
+                default="auth_token",
+            ),
         },
         "sms_api": {
             "VERBOSE_NAME": "sms",
