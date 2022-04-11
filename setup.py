@@ -20,6 +20,7 @@ setup(
         "twilio>=6.56.0",
         "yubico-client>=1.13.0",
         "smsapi-client>=2.4.5",
+        "boto3>=1.21.37",
     ],
     classifiers=[
         "Framework :: Django",

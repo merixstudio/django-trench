@@ -59,6 +59,10 @@ SMSAPI_ACCESS_TOKEN = "SMSAPI_ACCESS_TOKEN"
 SMSAPI_FROM_NUMBER = "SMSAPI_FROM_NUMBER"
 TWILIO_VERIFIED_FROM_NUMBER = "TWILIO_VERIFIED_FROM_NUMBER"
 YUBICLOUD_CLIENT_ID = "YUBICLOUD_CLIENT_ID"
+AWS_ACCESS_KEY = "AWS_ACCESS_KEY"
+AWS_SECRET_KEY = "AWS_SECRET_KEY"
+AWS_REGION = "AWS_REGION"
+AWS_FROM_NUMBER = "AWS_FROM_NUMBER"
 
 DEFAULTS = {
     "USER_MFA_MODEL": "trench.MFAMethod",
@@ -88,6 +92,16 @@ DEFAULTS = {
             SOURCE_FIELD: "phone_number",
             SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
             SMSAPI_FROM_NUMBER: "YOUR REGISTERED NUMBER",
+        },
+        "sms_aws": {
+            VERBOSE_NAME: _("sms_aws"),
+            VALIDITY_PERIOD: 30,
+            HANDLER: "trench.backends.aws.AWSMessageDispatcher",
+            SOURCE_FIELD: "phone_number",
+            AWS_ACCESS_KEY: "YOUR AWS ACCESS KEY",
+            AWS_SECRET_KEY: "YOUR AWS SECRET KEY",
+            AWS_REGION: "YOUR AWS REGION",
+            AWS_FROM_NUMBER: "YOUR AWS REGISTERED NUMBER",
         },
         "email": {
             VERBOSE_NAME: _("email"),
