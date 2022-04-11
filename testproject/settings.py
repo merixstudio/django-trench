@@ -141,6 +141,16 @@ TRENCH_AUTH = {
             "SMSAPI_ACCESS_TOKEN": "token",
             "SMSAPI_FROM_NUMBER": "123 456 789",
         },
+        "sms_aws": {
+            "VERBOSE_NAME": "sms_aws",
+            "VALIDITY_PERIOD": 30,
+            "HANDLER": "trench.backends.aws.AWSMessageDispatcher",
+            "SOURCE_FIELD": "phone_number",
+            "AWS_ACCESS_KEY": "access_key",
+            "AWS_SECRET_KEY": "secret_key",
+            "AWS_REGION": "region",
+            "AWS_FROM_NUMBER": "+31123456789",
+        },
         "email": {
             "VERBOSE_NAME": "email",
             "VALIDITY_PERIOD": 60,
