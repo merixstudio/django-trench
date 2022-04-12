@@ -25,7 +25,7 @@ class RemoveBackupCodeCommand:
             backup_codes=set(serialized_codes.split(MFAMethod._BACKUP_CODES_DELIMITER)), code=code
         )
         self._mfa_model.objects.filter(user_id=user_id, name=method_name).update(
-            _backup_codes=codes
+            _backup_codes=MFAMethod._BACKUP_CODES_DELIMITER.join([*codes])
         )
 
     def _remove_code_from_set(self, backup_codes: Set[str], code: str) -> Set[str]:

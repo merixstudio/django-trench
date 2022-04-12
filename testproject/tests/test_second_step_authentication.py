@@ -178,6 +178,22 @@ def test_use_backup_code(active_user_with_encrypted_backup_codes):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
+@pytest.mark.django_db
+def test_use_backup_code_repeated(active_user_with_encrypted_backup_codes):
+    client = TrenchAPIClient()
+    active_user, backup_codes = active_user_with_encrypted_backup_codes
+    response_first_step = client._first_factor_request(user=active_user)
+    ephemeral_token = client._extract_ephemeral_token_from_response(
+        response=response_first_step
+    )
+    response_second_step = client._second_factor_request(
+        code=backup_codes.pop(), ephemeral_token=ephemeral_token
+    )
+    response_second_step = client._second_factor_request(
+        code=backup_codes.pop(), ephemeral_token=ephemeral_token
+    )
+    assert response_second_step.status_code == HTTP_200_OK
+
 
 @pytest.mark.django_db
 def test_activation_otp(active_user):
