@@ -65,11 +65,13 @@ class MFAFirstStepMixin(MFAStepMixin, ABC):
         try:
             mfa_model = get_mfa_model()
             mfa_method = mfa_model.objects.get_primary_active(user_id=user.id)
+            mfa_methods = mfa_model.objects.list_active(user_id=user.id)
             get_mfa_handler(mfa_method=mfa_method).dispatch_message()
             return Response(
                 data={
                     "ephemeral_token": user_token_generator.make_token(user),
                     "method": mfa_method.name,
+                    "methods": [method.name for method in mfa_methods],
                 }
             )
         except MFAMethodDoesNotExistError:

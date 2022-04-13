@@ -16,12 +16,30 @@ def test_get_ephemeral_token(active_user_with_email_otp):
     client = TrenchAPIClient()
     response = client.authenticate(user=active_user_with_email_otp)
     assert response.status_code == HTTP_200_OK
+    assert len(response.json()['methods']) == 1
+    assert response.json()['method'] == "email"
     assert (
         user_token_generator.check_token(
             user=None,
             token=client._extract_ephemeral_token_from_response(response=response),
         )
         == active_user_with_email_otp
+    )
+
+
+@pytest.mark.django_db
+def test_get_ephemeral_token_many_methods(active_user_with_many_otp_methods):
+    client = TrenchAPIClient()
+    response = client.authenticate(user=active_user_with_many_otp_methods[0])
+    assert response.status_code == HTTP_200_OK
+    assert response.json()['method'] == "email"
+    assert len(response.json()['methods']) == 4
+    assert (
+        user_token_generator.check_token(
+            user=None,
+            token=client._extract_ephemeral_token_from_response(response=response),
+        )
+        == active_user_with_many_otp_methods[0]
     )
 
 
