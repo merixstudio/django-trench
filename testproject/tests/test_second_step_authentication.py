@@ -238,12 +238,47 @@ def test_confirm_activation_otp(active_user):
 
 
 @pytest.mark.django_db
-def test_deactivation_of_primary_method(active_user_with_email_otp):
+def test_deactivation_of_an_only_primary_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(
         mfa_method=mfa_method, user=active_user_with_email_otp
+    )
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": handler.create_code()},
+        format="json",
+    )
+    assert response.status_code == HTTP_204_NO_CONTENT
+
+@pytest.mark.django_db
+def test_deactivation_of_an_only_primary_mfa_method_when_other_mfa_inactive(
+    active_user_with_email_and_inactive_other_methods_otp
+):
+    client = TrenchAPIClient()
+    mfa_method = active_user_with_email_and_inactive_other_methods_otp.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_and_inactive_other_methods_otp
+    )
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": handler.create_code()},
+        format="json",
+    )
+    assert response.status_code == HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+def test_deactivation_of_primary_mfa_method_when_other_active_mfa_methods(
+    active_user_with_email_and_active_other_methods_otp
+):
+    client = TrenchAPIClient()
+    mfa_method = active_user_with_email_and_active_other_methods_otp.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_and_active_other_methods_otp
     )
     response = client.post(
         path="/auth/email/deactivate/",
