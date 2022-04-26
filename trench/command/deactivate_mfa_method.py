@@ -14,8 +14,8 @@ class DeactivateMFAMethodCommand:
     @atomic
     def execute(self, mfa_method_name: str, user_id: int) -> None:
         mfa = self._mfa_model.objects.get_by_name(user_id=user_id, name=mfa_method_name)
-        active_mfa_methods = self._mfa_model.objects.list_active(user_id=user_id)
-        if mfa.is_primary and len(active_mfa_methods) > 1:
+        number_of_active_mfa_methods = self._mfa_model.objects.filter(user_id=user_id, is_active=True).count()
+        if mfa.is_primary and number_of_active_mfa_methods > 1:
             raise DeactivationOfPrimaryMFAMethodError()
         if not mfa.is_active:
             raise MFANotEnabledError()
