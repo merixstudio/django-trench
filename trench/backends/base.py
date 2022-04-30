@@ -16,6 +16,7 @@ class AbstractMessageDispatcher(ABC):
         self._mfa_method = mfa_method
         self._config = config
         self._to = self._get_source_field()
+        self.request = None
 
     def _get_source_field(self) -> Optional[str]:
         if SOURCE_FIELD in self._config:

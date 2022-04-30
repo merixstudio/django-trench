@@ -65,7 +65,10 @@ class MFAFirstStepMixin(MFAStepMixin, ABC):
         try:
             mfa_model = get_mfa_model()
             mfa_method = mfa_model.objects.get_primary_active(user_id=user.id)
-            get_mfa_handler(mfa_method=mfa_method).dispatch_message()
+            mfa_methods = mfa_model.objects.list_active(user_id=user.id)
+            mfa_backend = get_mfa_handler(mfa_method=mfa_method)
+            mfa_backend.request = request
+            mfa_backend.dispatch_message()
             return Response(
                 data={
                     "ephemeral_token": user_token_generator.make_token(user),
@@ -114,7 +117,9 @@ class MFAMethodActivationView(APIView):
             )
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
-        return get_mfa_handler(mfa_method=mfa).dispatch_message()
+        mfa_backend = get_mfa_handler(mfa_method=mfa)
+        mfa_backend.request = request
+        return mfa_backend.dispatch_message()
 
 
 class MFAMethodConfirmActivationView(APIView):
@@ -221,7 +226,9 @@ class MFAMethodRequestCodeView(APIView):
                     user_id=request.user.id
                 )
             mfa = mfa_model.objects.get_by_name(user_id=request.user.id, name=method)
-            return get_mfa_handler(mfa_method=mfa).dispatch_message()
+            mfa_backend = get_mfa_handler(mfa_method=mfa)
+            mfa_backend.request = request
+            return mfa_backend.dispatch_message()
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
 
