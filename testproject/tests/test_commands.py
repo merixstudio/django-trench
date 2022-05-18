@@ -50,3 +50,20 @@ def test_deactivate_inactive_mfa(active_user_with_application_otp):
             user_id=active_user_with_application_otp.id,
             mfa_method_name=mfa_method.name,
         )
+
+
+@pytest.mark.django_db
+def test_deactivate_an_only_mfa_method(active_user_with_application_otp):
+    mfa_method = active_user_with_application_otp.mfa_methods.get(name="app")
+    deactivate_mfa_method_command(
+        user_id=active_user_with_application_otp.id,
+        mfa_method_name=mfa_method.name,
+    )
+    mfa_model = get_mfa_model()
+    mfa_method.refresh_from_db()
+    assert mfa_method.is_active is False
+    assert len(
+        mfa_model.objects.list_active(
+            user_id=active_user_with_application_otp.id
+        )
+    ) == 0
