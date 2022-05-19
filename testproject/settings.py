@@ -123,10 +123,20 @@ TRENCH_AUTH = {
     "BACKUP_CODES_QUANTITY": 8,
     "DEFAULT_VALIDITY_PERIOD": 60,
     "MFA_METHODS": {
+        "call_twilio": {
+            "VERBOSE_NAME": "call",
+            "VALIDITY_PERIOD": 60,
+            "HANDLER": "trench.backends.twilio.TwilioCallMessageDispatcher",
+            "SOURCE_FIELD": "phone_number",
+            "TWILIO_VERIFIED_FROM_NUMBER": env(
+                "TWILIO_VERIFIED_FROM_NUMBER",
+                default="",
+            ),
+        },
         "sms_twilio": {
             "VERBOSE_NAME": "sms",
             "VALIDITY_PERIOD": 60,
-            "HANDLER": "trench.backends.twilio.TwilioMessageDispatcher",
+            "HANDLER": "trench.backends.twilio.TwilioSMSMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "TWILIO_VERIFIED_FROM_NUMBER": env(
                 "TWILIO_VERIFIED_FROM_NUMBER",

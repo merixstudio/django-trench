@@ -67,10 +67,17 @@ DEFAULTS = {
     "ENCRYPT_BACKUP_CODES": True,
     "APPLICATION_ISSUER_NAME": "MyApplication",
     "MFA_METHODS": {
+        "call_twilio": {
+            VERBOSE_NAME: _("call_twilio"),
+            VALIDITY_PERIOD: 30,
+            HANDLER: "trench.backends.twilio.TwilioCallMessageDispatcher",
+            SOURCE_FIELD: "phone_number",
+            TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
+        },
         "sms_twilio": {
             VERBOSE_NAME: _("sms_twilio"),
             VALIDITY_PERIOD: 30,
-            HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
+            HANDLER: "trench.backends.twilio.TwilioSMSMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
         },

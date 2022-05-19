@@ -53,7 +53,7 @@ Using Twilio
             "sms_twilio": {
                 VERBOSE_NAME: _("sms_twilio"),
                 VALIDITY_PERIOD: 30,
-                HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
+                HANDLER: "trench.backends.twilio.TwilioSMSMessageDispatcher",
                 SOURCE_FIELD: "phone_number",
                 TWILIO_VERIFIED_FROM_NUMBER: "+48 123 456 789",
             },
@@ -85,6 +85,33 @@ Using SMS API
 :SOURCE_FIELD: Defines the field name in your ``AUTH_USER_MODEL`` to be looked up and used as field containing the phone number of the recipient of the OTP code.
 :SMSAPI_ACCESS_TOKEN: Access token obtained from `SMS API`_
 :SMSAPI_FROM_NUMBER: This will be used as the sender's phone number.
+
+Phone call
+**********
+
+| Phone call backend make call with `Twilio`_ . Credentials can be set in method's specific settings.
+
+Using Twilio
+------------
+
+| If you are using Twilio service for calling then you need to set ``TWILIO_ACCOUNT_SID`` and ``TWILIO_AUTH_TOKEN`` environment variables for Twilio API client to be used as credentials.
+
+.. code-block:: python
+
+    TRENCH_AUTH = {
+        "MFA_METHODS": {
+            "call_twilio": {
+                VERBOSE_NAME: _("call_twilio"),
+                VALIDITY_PERIOD: 30,
+                HANDLER: "trench.backends.twilio.TwilioCallMessageDispatcher",
+                SOURCE_FIELD: "phone_number",
+                TWILIO_VERIFIED_FROM_NUMBER: "+48 123 456 789",
+            },
+        },
+    }
+
+:SOURCE_FIELD: Defines the field name in your ``AUTH_USER_MODEL`` to be looked up and used as field containing the phone number of the recipient of the OTP code.
+:TWILIO_VERIFIED_FROM_NUMBER: This will be used as the sender's phone number. Note: this number must be verified in the Twilio's client panel.
 
 Authentication apps
 *******************

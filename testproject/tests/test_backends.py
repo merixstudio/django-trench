@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
-from trench.backends.twilio import TwilioMessageDispatcher
+from trench.backends.twilio import TwilioSMSMessageDispatcher, TwilioCallMessageDispatcher
 from trench.backends.yubikey import YubiKeyMessageDispatcher
 from trench.exceptions import MissingConfigurationError
 
@@ -13,10 +13,20 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_twilio_backend_without_credentials(active_user_with_twilio_otp, settings):
-    auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
+def test_twilio_sms_backend_without_credentials(active_user_with_twilio_sms_otp, settings):
+    auth_method = active_user_with_twilio_sms_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
-    response = TwilioMessageDispatcher(
+    response = TwilioSMSMessageDispatcher(
+        mfa_method=auth_method, config=conf
+    ).dispatch_message()
+    assert response.data.get("details")[:23] == "Unable to create record"
+
+
+@pytest.mark.django_db
+def test_twilio_call_backend_without_credentials(active_user_with_twilio_call_otp, settings):
+    auth_method = active_user_with_twilio_call_otp.mfa_methods.get(name="call_twilio")
+    conf = settings.TRENCH_AUTH["MFA_METHODS"]["call_twilio"]
+    response = TwilioSMSMessageDispatcher(
         mfa_method=auth_method, config=conf
     ).dispatch_message()
     assert response.data.get("details")[:23] == "Unable to create record"
@@ -46,14 +56,25 @@ def test_sms_api_backend_with_wrong_credentials(active_user_with_sms_otp, settin
 
 
 @pytest.mark.django_db
-def test_sms_backend_misconfiguration_error(active_user_with_twilio_otp, settings):
-    auth_method = active_user_with_twilio_otp.mfa_methods.get(name="sms_twilio")
+def test_twilio_sms_backend_misconfiguration_error(active_user_with_twilio_sms_otp, settings):
+    auth_method = active_user_with_twilio_sms_otp.mfa_methods.get(name="sms_twilio")
     conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]
     current_source = settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"]
     settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"] = "invalid.source"
     with pytest.raises(MissingConfigurationError):
-        SMSAPIMessageDispatcher(mfa_method=auth_method, config=conf).dispatch_message()
+        TwilioSMSMessageDispatcher(mfa_method=auth_method, config=conf).dispatch_message()
     settings.TRENCH_AUTH["MFA_METHODS"]["sms_twilio"]["SOURCE_FIELD"] = current_source
+
+
+@pytest.mark.django_db
+def test_twilio_call_backend_misconfiguration_error(active_user_with_twilio_call_otp, settings):
+    auth_method = active_user_with_twilio_call_otp.mfa_methods.get(name="call_twilio")
+    conf = settings.TRENCH_AUTH["MFA_METHODS"]["call_twilio"]
+    current_source = settings.TRENCH_AUTH["MFA_METHODS"]["call_twilio"]["SOURCE_FIELD"]
+    settings.TRENCH_AUTH["MFA_METHODS"]["call_twilio"]["SOURCE_FIELD"] = "invalid.source"
+    with pytest.raises(MissingConfigurationError):
+        TwilioCallMessageDispatcher(mfa_method=auth_method, config=conf).dispatch_message()
+    settings.TRENCH_AUTH["MFA_METHODS"]["call_twilio"]["SOURCE_FIELD"] = current_source
 
 
 @pytest.mark.django_db

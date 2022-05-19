@@ -95,7 +95,7 @@ def active_user_with_sms_otp() -> UserModel:
 
 
 @pytest.fixture()
-def active_user_with_twilio_otp() -> UserModel:
+def active_user_with_twilio_sms_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"
     )
@@ -104,6 +104,19 @@ def active_user_with_twilio_otp() -> UserModel:
         user.is_active = True
         user.save()
         mfa_method_creator(user=user, method_name="sms_twilio")
+    return user
+
+
+@pytest.fixture()
+def active_user_with_twilio_call_otp() -> UserModel:
+    user, created = User.objects.get_or_create(
+        username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"
+    )
+    if created:
+        user.set_password("secretkey"),
+        user.is_active = True
+        user.save()
+        mfa_method_creator(user=user, method_name="call_twilio")
     return user
 
 
