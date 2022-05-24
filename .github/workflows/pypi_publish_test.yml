@@ -1,0 +1,35 @@
+name: 'Build and publish to Test PyPI'
+
+on:
+  workflow_run:
+    workflows:
+      - 'Lint and test'
+    branches:
+      - staging
+    types:
+      - completed
+
+jobs:
+  build-and-publish-to-test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            ref: staging
+        - name: Setup Python 3.9
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.9
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            python -m pip install build
+        - name: Build a binary wheel and a source tarball
+          run: |
+            python -m build --sdist --wheel --outdir dist/
+        - name: Publish distribution to Test PyPI
+          uses: pypa/gh-action-pypi-publish@master
+          with:
+            user: __token__
+            password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+            repository_url: https://test.pypi.org/legacy/

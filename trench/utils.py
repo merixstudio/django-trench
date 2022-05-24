@@ -45,7 +45,7 @@ class UserTokenGenerator(PasswordResetTokenGenerator):
             return None  # pragma: no cover
 
         if not constant_time_compare(self._make_token_with_timestamp(user, ts), token):
-            return None
+            return None  # pragma: no cover
 
         return user
 

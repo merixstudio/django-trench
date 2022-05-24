@@ -3,9 +3,8 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from rest_framework.test import APIClient
 
-from tests.utils import PATH_AUTH_JWT_LOGIN, get_username_from_jwt, login
+from tests.utils import TrenchAPIClient
 from trench.utils import user_token_generator
 
 
@@ -13,12 +12,14 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_get_emphemeral_token(active_user_with_email_otp):
-    response = login(active_user_with_email_otp)
+def test_get_ephemeral_token(active_user_with_email_otp):
+    client = TrenchAPIClient()
+    response = client.authenticate(user=active_user_with_email_otp)
     assert response.status_code == HTTP_200_OK
     assert (
         user_token_generator.check_token(
-            user=None, token=response.data.get("ephemeral_token")
+            user=None,
+            token=client._extract_ephemeral_token_from_response(response=response),
         )
         == active_user_with_email_otp
     )
@@ -26,15 +27,17 @@ def test_get_emphemeral_token(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_deactivated_user(deactivated_user_with_email_otp):
-    response = login(deactivated_user_with_email_otp)
+    client = TrenchAPIClient()
+    response = client.authenticate(user=deactivated_user_with_email_otp)
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
 def test_get_jwt_without_otp(active_user):
-    response = login(active_user)
+    client = TrenchAPIClient()
+    response = client.authenticate(user=active_user)
     assert response.status_code == HTTP_200_OK
-    assert get_username_from_jwt(response) == getattr(
+    assert client.get_username_from_jwt(response=response) == getattr(
         active_user,
         User.USERNAME_FIELD,
     )
@@ -42,13 +45,8 @@ def test_get_jwt_without_otp(active_user):
 
 @pytest.mark.django_db
 def test_login_disabled_user(inactive_user):
-    """
-    Default AUTHENTICATION_BACKEND rejects inactive users, so we test
-    against an authentication error or account status.
-    :param inactive_user:
-    :return:
-    """
-    response = login(inactive_user)
+    client = TrenchAPIClient()
+    response = client.authenticate(user=inactive_user)
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert (
         "Unable to login with provided credentials."
@@ -58,15 +56,9 @@ def test_login_disabled_user(inactive_user):
 
 @pytest.mark.django_db
 def test_login_missing_field(active_user):
-    """
-    Default LOGIN rejects wrong username users, so we test
-    against an authentication error.
-    :param active_user:
-    :return:
-    """
-    client = APIClient()
+    client = TrenchAPIClient()
     response = client.post(
-        path=PATH_AUTH_JWT_LOGIN,
+        path=client.PATH_AUTH_JWT_LOGIN,
         data={
             "username": "",
             "password": "secretkey",
@@ -79,15 +71,9 @@ def test_login_missing_field(active_user):
 
 @pytest.mark.django_db
 def test_login_wrong_password(active_user):
-    """
-    Default LOGIN rejects wrong password users, so we test
-    against an authentication error.
-    :param active_user:
-    :return:
-    """
-    client = APIClient()
+    client = TrenchAPIClient()
     response = client.post(
-        path=PATH_AUTH_JWT_LOGIN,
+        path=client.PATH_AUTH_JWT_LOGIN,
         data={
             "username": getattr(
                 active_user,

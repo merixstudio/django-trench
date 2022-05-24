@@ -21,6 +21,12 @@ setup(
         "yubico-client>=1.13.0",
         "smsapi-client>=2.4.5",
     ],
+    extras_require={
+        'docs': [
+            'sphinx >= 1.4',
+            'sphinx_rtd_theme',
+        ]
+    },
     classifiers=[
         "Framework :: Django",
         "Framework :: Django :: 2.0",

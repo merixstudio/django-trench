@@ -3,6 +3,13 @@ Changelog
 =========
 
 
+0.3.1 (2022-02-23)
+==================
+
+* Changed `n` time-windows of 1 second intervals to a single time window of `n` seconds interval
+* Tests refactoring
+
+
 0.3.0 (2021-04-30)
 ==================
 
@@ -13,6 +20,7 @@ Changelog
 * Backwards-compatible code refactoring and cleanup for better maintenance experience.
 * Deactivation of primary MFA method would raise an error instead of randomly selecting new primary method from all active ones.
 * Twilio backend client should be configured via environment variables instead of backend's configuration the `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`.
+* :code:`djoser` integration abandoned due to infrequent updates of the library. Djoser's auth links are no longer supported.
 
 
 0.2.3 (2019-12-16)

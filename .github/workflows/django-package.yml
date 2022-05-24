@@ -1,13 +1,7 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: develop
+name: 'Lint and test'
 
 on:
   push:
-    branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
 
 jobs:
   test:
@@ -29,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install mypy flake8 pytest
+        python -m pip install mypy flake8 pytest pytest-xdist
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
         ln -s $(pwd)/trench/ $(pwd)/testproject/trench
     - name: Lint trench package with flake8
@@ -52,7 +46,7 @@ jobs:
         mypy ./testproject/
     - name: Test with pytest
       run: |
-        python -m pytest --cov-report=xml --cov=testproject/trench testproject/tests/
+        python -m pytest -n 8 --cov-report=xml --cov=testproject/trench testproject/tests/
     - uses: codecov/codecov-action@v1
       with:
         files: ./coverage.xml

@@ -21,8 +21,13 @@ class RemoveBackupCodeCommand:
         )
         if serialized_codes is None:
             raise MFAMethodDoesNotExistError()
-        codes = self._remove_code_from_set(
-            backup_codes=set(serialized_codes.split(",")), code=code
+        codes = MFAMethod._BACKUP_CODES_DELIMITER.join(
+            self._remove_code_from_set(
+                backup_codes=set(
+                    serialized_codes.split(MFAMethod._BACKUP_CODES_DELIMITER)
+                ),
+                code=code,
+            )
         )
         self._mfa_model.objects.filter(user_id=user_id, name=method_name).update(
             _backup_codes=codes
