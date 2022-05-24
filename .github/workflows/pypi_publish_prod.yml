@@ -1,18 +1,14 @@
 name: 'Build and publish to PyPI'
 
 on:
-  workflow_run:
-    workflows:
-      - 'Lint and test'
-    tags:
-      - '*'
+  release:
     types:
-      - completed
+      - created
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'release' && github.event.action == 'created'
     steps:
       - uses: actions/checkout@v2
         with:
