@@ -6,7 +6,7 @@ from trench.command.remove_backup_code import (
     remove_backup_code_command,
 )
 from trench.exceptions import MFAMethodDoesNotExistError, MFANotEnabledError
-from trench.settings import DEFAULTS, TrenchAPISettings
+from trench.settings import DEFAULTS, MfaMethods, TrenchAPISettings
 from trench.utils import get_mfa_model
 
 
@@ -34,14 +34,16 @@ def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes):
     code = next(iter(codes))
     remove_backup_code_command(
         user_id=user.id,
-        method_name="email",
+        method_name=MfaMethods.EMAIL.value,
         code=code,
     )
 
 
 @pytest.mark.django_db
 def test_deactivate_inactive_mfa(active_user_with_application_otp):
-    mfa_method = active_user_with_application_otp.mfa_methods.get(name="app")
+    mfa_method = active_user_with_application_otp.mfa_methods.get(
+        name=MfaMethods.APP.value
+    )
     mfa_method.is_active = False
     mfa_method.is_primary = False
     mfa_method.save()
@@ -54,7 +56,9 @@ def test_deactivate_inactive_mfa(active_user_with_application_otp):
 
 @pytest.mark.django_db
 def test_deactivate_an_only_mfa_method(active_user_with_application_otp):
-    mfa_method = active_user_with_application_otp.mfa_methods.get(name="app")
+    mfa_method = active_user_with_application_otp.mfa_methods.get(
+        name=MfaMethods.APP.value
+    )
     deactivate_mfa_method_command(
         user_id=active_user_with_application_otp.id,
         mfa_method_name=mfa_method.name,
@@ -62,8 +66,7 @@ def test_deactivate_an_only_mfa_method(active_user_with_application_otp):
     mfa_model = get_mfa_model()
     mfa_method.refresh_from_db()
     assert mfa_method.is_active is False
-    assert len(
-        mfa_model.objects.list_active(
-            user_id=active_user_with_application_otp.id
-        )
-    ) == 0
+    assert (
+        len(mfa_model.objects.list_active(user_id=active_user_with_application_otp.id))
+        == 0
+    )

@@ -2,6 +2,8 @@ import datetime
 import environ
 import os
 
+from trench.settings import MfaMethods
+
 
 root = environ.Path(__file__) - 1
 env = environ.Env()
@@ -123,7 +125,7 @@ TRENCH_AUTH = {
     "BACKUP_CODES_QUANTITY": 8,
     "DEFAULT_VALIDITY_PERIOD": 60,
     "MFA_METHODS": {
-        "call_twilio": {
+        MfaMethods.CALL_TWILIO.value: {
             "VERBOSE_NAME": "call",
             "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.twilio.TwilioCallMessageDispatcher",
@@ -133,7 +135,7 @@ TRENCH_AUTH = {
                 default="",
             ),
         },
-        "sms_twilio": {
+        MfaMethods.SMS_TWILIO.value: {
             "VERBOSE_NAME": "sms",
             "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.twilio.TwilioSMSMessageDispatcher",
@@ -143,7 +145,7 @@ TRENCH_AUTH = {
                 default="",
             ),
         },
-        "sms_api": {
+        MfaMethods.SMS_API.value: {
             "VERBOSE_NAME": "sms",
             "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
@@ -151,7 +153,7 @@ TRENCH_AUTH = {
             "SMSAPI_ACCESS_TOKEN": "token",
             "SMSAPI_FROM_NUMBER": "123 456 789",
         },
-        "email": {
+        MfaMethods.EMAIL.value: {
             "VERBOSE_NAME": "email",
             "VALIDITY_PERIOD": 60,
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
@@ -160,13 +162,13 @@ TRENCH_AUTH = {
             "EMAIL_PLAIN_TEMPLATE": "trench/backends/email/code.txt",
             "EMAIL_HTML_TEMPLATE": "trench/backends/email/code.html",
         },
-        "app": {
+        MfaMethods.APP.value: {
             "VERBOSE_NAME": "app",
             "VALIDITY_PERIOD": 60,
             "USES_THIRD_PARTY_CLIENT": True,
             "HANDLER": "trench.backends.application.ApplicationMessageDispatcher",
         },
-        "yubi": {
+        MfaMethods.YUBI.value: {
             "VERBOSE_NAME": "yubi",
             "HANDLER": "trench.backends.yubikey.YubiKeyMessageDispatcher",
             "YUBICLOUD_CLIENT_ID": env("YUBICLOUD_CLIENT_ID", default=""),

@@ -4,6 +4,7 @@ from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.base import AbstractMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.models import MFAMethod
+from trench.settings import MfaMethods
 from trench.utils import UserTokenGenerator
 
 
@@ -22,7 +23,7 @@ def test_invalid_token():
 @pytest.mark.django_db
 def test_create_qr_link(active_user_with_many_otp_methods):
     user, _ = active_user_with_many_otp_methods
-    mfa_method: MFAMethod = user.mfa_methods.filter(name="app").first()
+    mfa_method: MFAMethod = user.mfa_methods.filter(name=MfaMethods.APP.value).first()
     handler: ApplicationMessageDispatcher = get_mfa_handler(mfa_method)
     qr_link = handler._create_qr_link(user=user)
     assert type(qr_link) == str
@@ -49,6 +50,6 @@ def test_validate_code(active_user_with_email_otp):
 @pytest.mark.django_db
 def test_validate_code_yubikey(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods
-    yubi_method = active_user.mfa_methods.get(name="yubi")
+    yubi_method = active_user.mfa_methods.get(name=MfaMethods.YUBI.value)
     handler = get_mfa_handler(mfa_method=yubi_method)
     assert handler.validate_code("t" * 44) is False

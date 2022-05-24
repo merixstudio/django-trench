@@ -19,6 +19,7 @@ from trench.command.replace_mfa_method_backup_codes import (
 )
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
+from trench.settings import MfaMethods
 
 
 User = get_user_model()
@@ -33,7 +34,7 @@ def test_mfa_method_manager(active_user):
 @pytest.mark.django_db
 def test_mfa_model(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
-    assert "email" in str(mfa_method)
+    assert MfaMethods.EMAIL.value in str(mfa_method)
 
     mfa_method.backup_codes = ["test1", "test2"]
     assert mfa_method.backup_codes == ["test1", "test2"]
@@ -42,10 +43,10 @@ def test_mfa_model(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
-    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"][
-        "VALIDITY_PERIOD"
-    ]
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
+    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"][
+        MfaMethods.EMAIL.value
+    ]["VALIDITY_PERIOD"]
+    settings.TRENCH_AUTH["MFA_METHODS"][MfaMethods.EMAIL.value]["VALIDITY_PERIOD"] = 3
 
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
@@ -68,7 +69,7 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"][
+    settings.TRENCH_AUTH["MFA_METHODS"][MfaMethods.EMAIL.value][
         "VALIDITY_PERIOD"
     ] = ORIGINAL_VALIDITY_PERIOD
 
@@ -139,7 +140,7 @@ def test_second_method_activation(active_user_with_email_otp):
     assert len(active_user_with_email_otp.mfa_methods.all()) == 1
     try:
         client.post(
-            path="/auth/sms_twilio/activate/",
+            path=f"/auth/{MfaMethods.SMS_TWILIO}/activate/",
             data={"phone_number": "555-555-555"},
             format="json",
         )
@@ -158,7 +159,7 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
     )
     assert len(active_user_with_email_otp.mfa_methods.all()) == 1
     response = client.post(
-        path="/auth/email/activate/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/",
         format="json",
     )
     assert response.status_code == HTTP_400_BAD_REQUEST
@@ -187,7 +188,7 @@ def test_activation_otp(active_user):
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
     response = client.post(
-        path="/auth/email/activate/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/",
         format="json",
     )
     assert response.status_code == HTTP_200_OK
@@ -198,12 +199,12 @@ def test_activation_otp_confirm_wrong(active_user):
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
     response = client.post(
-        path="/auth/email/activate/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/",
         format="json",
     )
     assert response.status_code == HTTP_200_OK
     response = client.post(
-        path="/auth/email/activate/confirm/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/confirm/",
         data={"code": "test00"},
         format="json",
     )
@@ -219,7 +220,7 @@ def test_confirm_activation_otp(active_user):
 
     # create new MFA method
     client.post(
-        path="/auth/email/activate/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/",
         format="json",
     )
     mfa_method = active_user.mfa_methods.first()
@@ -227,7 +228,7 @@ def test_confirm_activation_otp(active_user):
 
     # activate the newly created MFA method
     response = client.post(
-        path="/auth/email/activate/confirm/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/confirm/",
         data={"code": handler.create_code()},
         format="json",
     )
@@ -246,7 +247,7 @@ def test_deactivation_of_an_only_primary_mfa_method(active_user_with_email_otp):
         mfa_method=mfa_method, user=active_user_with_email_otp
     )
     response = client.post(
-        path="/auth/email/deactivate/",
+        path=f"/auth/{MfaMethods.EMAIL}/deactivate/",
         data={"code": handler.create_code()},
         format="json",
     )
@@ -255,20 +256,19 @@ def test_deactivation_of_an_only_primary_mfa_method(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_deactivation_of_an_only_primary_mfa_method_when_other_mfa_inactive(
-    active_user_with_email_and_inactive_other_methods_otp
+    active_user_with_email_and_inactive_other_methods_otp,
 ):
     client = TrenchAPIClient()
     mfa_method = (
-        active_user_with_email_and_inactive_other_methods_otp.mfa_methods
-        .first()
+        active_user_with_email_and_inactive_other_methods_otp.mfa_methods.first()
     )
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(
         mfa_method=mfa_method,
-        user=active_user_with_email_and_inactive_other_methods_otp
+        user=active_user_with_email_and_inactive_other_methods_otp,
     )
     response = client.post(
-        path="/auth/email/deactivate/",
+        path=f"/auth/{MfaMethods.EMAIL}/deactivate/",
         data={"code": handler.create_code()},
         format="json",
     )
@@ -277,7 +277,7 @@ def test_deactivation_of_an_only_primary_mfa_method_when_other_mfa_inactive(
 
 @pytest.mark.django_db
 def test_deactivation_of_primary_mfa_method_when_other_active_mfa_methods(
-    active_user_with_email_and_active_other_methods_otp
+    active_user_with_email_and_active_other_methods_otp,
 ):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_and_active_other_methods_otp.mfa_methods.first()
@@ -286,7 +286,7 @@ def test_deactivation_of_primary_mfa_method_when_other_active_mfa_methods(
         mfa_method=mfa_method, user=active_user_with_email_and_active_other_methods_otp
     )
     response = client.post(
-        path="/auth/email/deactivate/",
+        path=f"/auth/{MfaMethods.EMAIL}/deactivate/",
         data={"code": handler.create_code()},
         format="json",
     )
@@ -324,7 +324,7 @@ def test_deactivation_of_disabled_method(
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(mfa_method=mfa_method, user=user)
     response = client.post(
-        path="/auth/sms_twilio/deactivate/",
+        path=f"/auth/{MfaMethods.SMS_TWILIO}/deactivate/",
         data={"code": handler.create_code()},
         format="json",
     )
@@ -342,7 +342,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
-            "method": "sms_twilio",
+            "method": MfaMethods.SMS_TWILIO.value,
             "code": handler.create_code(),
         },
         format="json",
@@ -352,7 +352,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa != new_primary_method
-    assert new_primary_method.name == "sms_twilio"
+    assert new_primary_method.name == MfaMethods.SMS_TWILIO.value
 
     # revert changes
     new_primary_method.is_primary = False
@@ -372,7 +372,7 @@ def test_change_primary_method_with_backup_code(
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
-            "method": "sms_twilio",
+            "method": MfaMethods.SMS_TWILIO.value,
             "code": backup_code,
         },
         format="json",
@@ -382,7 +382,7 @@ def test_change_primary_method_with_backup_code(
     ).first()
     assert response.status_code == HTTP_204_NO_CONTENT
     assert primary_mfa_method != new_primary_method
-    assert new_primary_method.name == "sms_twilio"
+    assert new_primary_method.name == MfaMethods.SMS_TWILIO.value
 
     # revert changes
     primary_mfa_method.is_primary = True
@@ -400,7 +400,7 @@ def test_change_primary_method_with_invalid_code(active_user_with_many_otp_metho
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
-            "method": "sms_twilio",
+            "method": MfaMethods.SMS_TWILIO.value,
             "code": "invalid",
         },
         format="json",
@@ -422,7 +422,7 @@ def test_change_primary_method_to_inactive(active_user_with_email_otp):
     response = client.post(
         path="/auth/mfa/change-primary-method/",
         data={
-            "method": "sms_twilio",
+            "method": MfaMethods.SMS_TWILIO.value,
             "code": handler.create_code(),
         },
         format="json",
@@ -446,7 +446,7 @@ def test_confirm_activation_otp_with_backup_code(
     client._update_jwt_from_response(response=response)
     try:
         client.post(
-            path="/auth/sms_twilio/activate/",
+            path=f"/auth/{MfaMethods.SMS_TWILIO}/activate/",
             data={"phone_number": "555-555-555"},
             format="json",
         )
@@ -456,10 +456,10 @@ def test_confirm_activation_otp_with_backup_code(
         pass
 
     backup_codes = regenerate_backup_codes_for_mfa_method_command(
-        user_id=active_user.id, name="sms_twilio"
+        user_id=active_user.id, name=MfaMethods.SMS_TWILIO.value
     )
     response = client.post(
-        path="/auth/sms_twilio/activate/confirm/",
+        path=f"/auth/{MfaMethods.SMS_TWILIO}/activate/confirm/",
         data={"code": backup_codes.pop()},
         format="json",
     )
@@ -467,7 +467,7 @@ def test_confirm_activation_otp_with_backup_code(
     assert len(response.data.get("backup_codes")) == 8
 
     # revert changes
-    active_user.mfa_methods.filter(name="sms_twilio").delete()
+    active_user.mfa_methods.filter(name=MfaMethods.SMS_TWILIO.value).delete()
 
 
 @pytest.mark.django_db
@@ -479,7 +479,7 @@ def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     )
     response = client.post(
         path="/auth/code/request/",
-        data={"method": "email"},
+        data={"method": MfaMethods.EMAIL.value},
         format="json",
     )
     expected_msg = "Email message with MFA code has been sent."
@@ -496,7 +496,7 @@ def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     )
     response = client.post(
         path="/auth/code/request/",
-        data={"method": "sms_twilio"},
+        data={"method": MfaMethods.SMS_TWILIO.value},
         format="json",
     )
     assert response.status_code == HTTP_400_BAD_REQUEST
@@ -559,7 +559,9 @@ def test_backup_codes_regeneration_disabled_method(
     handler = get_mfa_handler(mfa_method=primary_method)
     client.authenticate_multi_factor(mfa_method=primary_method, user=active_user)
 
-    active_user.mfa_methods.filter(name="sms_twilio").update(is_active=False)
+    active_user.mfa_methods.filter(name=MfaMethods.SMS_TWILIO.value).update(
+        is_active=False
+    )
 
     response = client.post(
         path="/auth/sms_twilio/codes/regenerate/",
@@ -570,7 +572,9 @@ def test_backup_codes_regeneration_disabled_method(
     assert response.data.get("code")[0].code == "not_enabled"
 
     # revert changes
-    active_user.mfa_methods.filter(name="sms_twilio").update(is_active=True)
+    active_user.mfa_methods.filter(name=MfaMethods.SMS_TWILIO.value).update(
+        is_active=True
+    )
 
 
 @pytest.mark.django_db
@@ -607,11 +611,11 @@ def test_confirm_yubikey_activation_with_backup_code(
     )
     client._update_jwt_from_response(response=response)
     client.post(
-        path="/auth/yubi/activate/",
+        path=f"/auth/{MfaMethods.YUBI}/activate/",
         format="json",
     )
     response = client.post(
-        path="/auth/yubi/activate/confirm/",
+        path=f"/auth/{MfaMethods.YUBI}/activate/confirm/",
         data={
             "code": backup_codes.pop(),
         },
