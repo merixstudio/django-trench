@@ -14,6 +14,7 @@ from yubico_client.otp import OTP
 from trench.command.create_secret import create_secret_command
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.models import MFAMethod as MFAMethodModel
+from trench.settings import MfaMethods
 
 
 User = get_user_model()
@@ -49,13 +50,13 @@ def mfa_method_creator(
 
 @pytest.fixture()
 def active_user_with_application_otp() -> UserModel:
-    user = active_user_with_email("app")
+    user = active_user_with_email(MfaMethods.APP.value)
     return user
 
 
 @pytest.fixture()
 def active_user_with_email_otp() -> UserModel:
-    user = active_user_with_email("email")
+    user = active_user_with_email(MfaMethods.EMAIL.value)
     return user
 
 
@@ -81,19 +82,19 @@ def deactivated_user_with_email_otp(active_user_with_email_otp) -> UserModel:
 
 @pytest.fixture()
 def active_user_with_sms_otp() -> UserModel:
-    user = active_user_with_phone_number("sms_api")
+    user = active_user_with_phone_number(MfaMethods.SMS_API.value)
     return user
 
 
 @pytest.fixture()
 def active_user_with_twilio_sms_otp() -> UserModel:
-    user = active_user_with_phone_number("sms_twilio")
+    user = active_user_with_phone_number(MfaMethods.SMS_TWILIO.value)
     return user
 
 
 @pytest.fixture()
 def active_user_with_twilio_call_otp() -> UserModel:
-    user = active_user_with_phone_number("call_twilio")
+    user = active_user_with_phone_number(MfaMethods.CALL_TWILIO.value)
     return user
 
 
@@ -119,12 +120,18 @@ def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
-        mfa_method_creator(user=user, method_name="email")
+        mfa_method_creator(user=user, method_name=MfaMethods.EMAIL.value)
         mfa_method_creator(
-            user=user, method_name="sms_twilio", is_primary=False, is_active=False
+            user=user,
+            method_name=MfaMethods.SMS_TWILIO.value,
+            is_primary=False,
+            is_active=False,
         )
         mfa_method_creator(
-            user=user, method_name="app", is_primary=False, is_active=False
+            user=user,
+            method_name=MfaMethods.APP.value,
+            is_primary=False,
+            is_active=False,
         )
     return user
 
@@ -139,9 +146,13 @@ def active_user_with_email_and_active_other_methods_otp() -> UserModel:
         user.set_password("secretkey"),
         user.is_active = True
         user.save()
-        mfa_method_creator(user=user, method_name="email")
-        mfa_method_creator(user=user, method_name="sms_twilio", is_primary=False)
-        mfa_method_creator(user=user, method_name="app", is_primary=False)
+        mfa_method_creator(user=user, method_name=MfaMethods.EMAIL.value)
+        mfa_method_creator(
+            user=user, method_name=MfaMethods.SMS_TWILIO.value, is_primary=False
+        )
+        mfa_method_creator(
+            user=user, method_name=MfaMethods.APP.value, is_primary=False
+        )
     return user
 
 
@@ -169,7 +180,9 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
         user.is_active = True
         user.save()
         mfa_method_creator(
-            user=user, method_name="email", _backup_codes=serialized_backup_codes
+            user=user,
+            method_name=MfaMethods.EMAIL.value,
+            _backup_codes=serialized_backup_codes,
         )
     return user, backup_codes
 
@@ -190,23 +203,25 @@ def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
         user.is_active = True
         user.save()
         mfa_method_creator(
-            user=user, method_name="email", _backup_codes=encrypted_backup_codes
+            user=user,
+            method_name=MfaMethods.EMAIL.value,
+            _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
-            method_name="sms_twilio",
+            method_name=MfaMethods.SMS_TWILIO.value,
             is_primary=False,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
-            method_name="app",
+            method_name=MfaMethods.APP.value,
             is_primary=False,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
-            method_name="yubi",
+            method_name=MfaMethods.YUBI.value,
             is_primary=False,
             _backup_codes=encrypted_backup_codes,
         )
@@ -270,7 +285,7 @@ def active_user_with_yubi() -> UserModel:
         user.save()
         mfa_method_creator(
             user=user,
-            method_name="yubi",
+            method_name=MfaMethods.YUBI.value,
             secret=FAKE_YUBI_SECRET,
             _backup_codes=encrypted_backup_codes,
         )
