@@ -167,6 +167,22 @@ def test_second_method_activation_already_active(active_user_with_email_otp):
 
 
 @pytest.mark.django_db
+def test_second_method_not_exist(active_user_with_email_otp):
+    mfa_method = active_user_with_email_otp.mfa_methods.first()
+    client = TrenchAPIClient()
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_email_otp
+    )
+    assert len(active_user_with_email_otp.mfa_methods.all()) == 1
+    response = client.post(
+        path="/auth/not_existing/activate/",
+        format="json",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data.get("error") == "Requested MFA method does not exist."
+
+
+@pytest.mark.django_db
 def test_use_backup_code(active_user_with_encrypted_backup_codes):
     client = TrenchAPIClient()
     active_user, backup_codes = active_user_with_encrypted_backup_codes

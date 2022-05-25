@@ -7,6 +7,7 @@ from rest_framework.status import HTTP_200_OK
 from tests.utils import TrenchAPIClient
 from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
+from trench.settings import MfaMethods
 
 
 User = get_user_model()
@@ -18,7 +19,7 @@ def test_add_user_mfa(active_user):
     client.authenticate(user=active_user)
     secret = create_secret_command()
     response = client.post(
-        path="/auth/email/activate/",
+        path=f"/auth/{MfaMethods.EMAIL}/activate/",
         data={
             "secret": secret,
             "code": create_otp_command(secret=secret, interval=60).now(),

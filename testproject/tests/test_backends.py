@@ -2,6 +2,7 @@ import pytest
 
 from django.contrib.auth import get_user_model
 
+from tests.conftest import mfa_method_creator
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
 from trench.backends.twilio import (
@@ -115,6 +116,23 @@ def test_twilio_call_backend_misconfiguration_error(
     settings.TRENCH_AUTH["MFA_METHODS"][MfaMethods.CALL_TWILIO.value][
         "SOURCE_FIELD"
     ] = current_source
+
+
+@pytest.mark.django_db
+def test_twilio_call_backend(active_user_with_many_otp_methods, settings):
+    user, code = active_user_with_many_otp_methods
+    mfa_method_creator(
+        user=user, method_name=MfaMethods.CALL_TWILIO.value, is_primary=False
+    )
+    config = settings.TRENCH_AUTH["MFA_METHODS"][MfaMethods.CALL_TWILIO.value]
+    auth_method = user.mfa_methods.get(name=MfaMethods.CALL_TWILIO.value)
+    response = TwilioCallMessageDispatcher(
+        mfa_method=auth_method, config=config
+    ).dispatch_message()
+    assert (
+        response.data.get("details")
+        == "Unable to create record: The requested resource /2010-04-01/Accounts/TEST/Calls.json was not found"
+    )
 
 
 @pytest.mark.django_db
