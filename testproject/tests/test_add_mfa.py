@@ -2,6 +2,7 @@ import pytest
 
 from django.contrib.auth import get_user_model
 
+from flaky import flaky
 from rest_framework.status import HTTP_200_OK
 
 from tests.utils import TrenchAPIClient
@@ -29,6 +30,7 @@ def test_add_user_mfa(active_user):
     assert response.status_code == HTTP_200_OK
 
 
+@flaky
 @pytest.mark.django_db
 def test_user_with_many_methods(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods

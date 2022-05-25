@@ -2,6 +2,7 @@ import pytest
 
 from django.contrib.auth import get_user_model
 
+from flaky import flaky
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -73,6 +74,7 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     ] = ORIGINAL_VALIDITY_PERIOD
 
 
+@flaky
 @pytest.mark.django_db
 def test_ephemeral_token_verification(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -129,6 +131,7 @@ def test_wrong_second_step_verification_with_ephemeral_token(
     assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
+@flaky
 @pytest.mark.django_db
 def test_second_method_activation(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -149,6 +152,7 @@ def test_second_method_activation(active_user_with_email_otp):
     assert len(active_user_with_email_otp.mfa_methods.all()) == 2
 
 
+@flaky
 @pytest.mark.django_db
 def test_second_method_activation_already_active(active_user_with_email_otp):
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -237,6 +241,7 @@ def test_confirm_activation_otp(active_user):
     assert active_user.mfa_methods.count() == 0
 
 
+@flaky
 @pytest.mark.django_db
 def test_deactivation_of_an_only_primary_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
@@ -253,19 +258,19 @@ def test_deactivation_of_an_only_primary_mfa_method(active_user_with_email_otp):
     assert response.status_code == HTTP_204_NO_CONTENT
 
 
+@flaky
 @pytest.mark.django_db
 def test_deactivation_of_an_only_primary_mfa_method_when_other_mfa_inactive(
-    active_user_with_email_and_inactive_other_methods_otp
+    active_user_with_email_and_inactive_other_methods_otp,
 ):
     client = TrenchAPIClient()
     mfa_method = (
-        active_user_with_email_and_inactive_other_methods_otp.mfa_methods
-        .first()
+        active_user_with_email_and_inactive_other_methods_otp.mfa_methods.first()
     )
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(
         mfa_method=mfa_method,
-        user=active_user_with_email_and_inactive_other_methods_otp
+        user=active_user_with_email_and_inactive_other_methods_otp,
     )
     response = client.post(
         path="/auth/email/deactivate/",
@@ -275,9 +280,10 @@ def test_deactivation_of_an_only_primary_mfa_method_when_other_mfa_inactive(
     assert response.status_code == HTTP_204_NO_CONTENT
 
 
+@flaky
 @pytest.mark.django_db
 def test_deactivation_of_primary_mfa_method_when_other_active_mfa_methods(
-    active_user_with_email_and_active_other_methods_otp
+    active_user_with_email_and_active_other_methods_otp,
 ):
     client = TrenchAPIClient()
     mfa_method = active_user_with_email_and_active_other_methods_otp.mfa_methods.first()
@@ -293,6 +299,7 @@ def test_deactivation_of_primary_mfa_method_when_other_active_mfa_methods(
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
+@flaky
 @pytest.mark.django_db
 def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
     user, _ = active_user_with_many_otp_methods
@@ -314,6 +321,7 @@ def test_deactivation_of_secondary_method(active_user_with_many_otp_methods):
     mfa_method.save()
 
 
+@flaky
 @pytest.mark.django_db
 def test_deactivation_of_disabled_method(
     active_user_with_email_and_inactive_other_methods_otp,
@@ -332,6 +340,7 @@ def test_deactivation_of_disabled_method(
     assert response.data.get("code")[0].code == "not_enabled"
 
 
+@flaky
 @pytest.mark.django_db
 def test_change_primary_method(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods
@@ -361,6 +370,7 @@ def test_change_primary_method(active_user_with_many_otp_methods):
     primary_mfa.save()
 
 
+@flaky
 @pytest.mark.django_db
 def test_change_primary_method_with_backup_code(
     active_user_with_many_otp_methods,
@@ -391,6 +401,7 @@ def test_change_primary_method_with_backup_code(
     new_primary_method.save()
 
 
+@flaky
 @pytest.mark.django_db
 def test_change_primary_method_with_invalid_code(active_user_with_many_otp_methods):
     active_user, _ = active_user_with_many_otp_methods
@@ -409,6 +420,7 @@ def test_change_primary_method_with_invalid_code(active_user_with_many_otp_metho
     assert response.data.get("code")[0].code == "code_invalid_or_expired"
 
 
+@flaky
 @pytest.mark.django_db
 def test_change_primary_method_to_inactive(active_user_with_email_otp):
     client = TrenchAPIClient()
@@ -470,6 +482,7 @@ def test_confirm_activation_otp_with_backup_code(
     active_user.mfa_methods.filter(name="sms_twilio").delete()
 
 
+@flaky
 @pytest.mark.django_db
 def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
@@ -487,6 +500,7 @@ def test_request_code_for_active_mfa_method(active_user_with_email_otp):
     assert response.data.get("details") == expected_msg
 
 
+@flaky
 @pytest.mark.django_db
 def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
@@ -503,6 +517,7 @@ def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     assert response.data.get("error") == "Requested MFA method does not exist."
 
 
+@flaky
 @pytest.mark.django_db
 def test_request_code_for_invalid_mfa_method(active_user_with_email_otp):
     client = TrenchAPIClient()
@@ -518,6 +533,7 @@ def test_request_code_for_invalid_mfa_method(active_user_with_email_otp):
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
+@flaky
 @pytest.mark.django_db
 def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     active_user, _ = active_user_with_encrypted_backup_codes
@@ -538,6 +554,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     assert old_backup_codes != new_backup_codes
 
 
+@flaky
 @pytest.mark.django_db
 def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup_codes):
     active_user, _ = active_user_with_encrypted_backup_codes
@@ -549,6 +566,7 @@ def test_backup_codes_regeneration_without_otp(active_user_with_encrypted_backup
     assert response.status_code == HTTP_400_BAD_REQUEST
 
 
+@flaky
 @pytest.mark.django_db
 def test_backup_codes_regeneration_disabled_method(
     active_user_with_many_otp_methods,
@@ -573,6 +591,7 @@ def test_backup_codes_regeneration_disabled_method(
     active_user.mfa_methods.filter(name="sms_twilio").update(is_active=True)
 
 
+@flaky
 @pytest.mark.django_db
 def test_yubikey(active_user_with_yubi, offline_yubikey):
     client = TrenchAPIClient()
@@ -583,6 +602,7 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
     assert response.status_code == HTTP_200_OK
 
 
+@flaky
 @pytest.mark.django_db
 def test_yubikey_exception(active_user_with_yubi, fake_yubikey):
     client = TrenchAPIClient()
