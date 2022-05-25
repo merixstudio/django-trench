@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 import string
+from enum import Enum
 from rest_framework.settings import APISettings, perform_import
 from typing import Any, Dict
 
@@ -41,6 +42,18 @@ class TrenchAPISettings(APISettings):
         return self.__getattr__(attr)
 
 
+class MfaMethods(Enum):
+    CALL_TWILIO = "call_twilio"
+    SMS_TWILIO = "sms_twilio"
+    SMS_API = "sms_api"
+    EMAIL = "email"
+    APP = "app"
+    YUBI = "yubi"
+
+    def __str__(self):
+        return self.value
+
+
 SOURCE_FIELD = "SOURCE_FIELD"
 HANDLER = "HANDLER"
 VALIDITY_PERIOD = "VALIDITY_PERIOD"
@@ -67,14 +80,21 @@ DEFAULTS = {
     "ENCRYPT_BACKUP_CODES": True,
     "APPLICATION_ISSUER_NAME": "MyApplication",
     "MFA_METHODS": {
-        "sms_twilio": {
-            VERBOSE_NAME: _("sms_twilio"),
+        MfaMethods.CALL_TWILIO.value: {
+            VERBOSE_NAME: _("call_twilio"),
             VALIDITY_PERIOD: 30,
-            HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
+            HANDLER: "trench.backends.twilio.TwilioCallMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
         },
-        "sms_api": {
+        MfaMethods.SMS_TWILIO.value: {
+            VERBOSE_NAME: _("sms_twilio"),
+            VALIDITY_PERIOD: 30,
+            HANDLER: "trench.backends.twilio.TwilioSMSMessageDispatcher",
+            SOURCE_FIELD: "phone_number",
+            TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
+        },
+        MfaMethods.SMS_API.value: {
             VERBOSE_NAME: _("sms_api"),
             VALIDITY_PERIOD: 30,
             HANDLER: "trench.backends.sms_api.SMSAPIMessageDispatcher",
@@ -82,7 +102,7 @@ DEFAULTS = {
             SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
             SMSAPI_FROM_NUMBER: "YOUR REGISTERED NUMBER",
         },
-        "email": {
+        MfaMethods.EMAIL.value: {
             VERBOSE_NAME: _("email"),
             VALIDITY_PERIOD: 30,
             HANDLER: "trench.backends.basic_mail.SendMailMessageDispatcher",
@@ -91,13 +111,13 @@ DEFAULTS = {
             EMAIL_PLAIN_TEMPLATE: "trench/backends/email/code.txt",
             EMAIL_HTML_TEMPLATE: "trench/backends/email/code.html",
         },
-        "app": {
+        MfaMethods.APP.value: {
             VERBOSE_NAME: _("app"),
             VALIDITY_PERIOD: 30,
             "USES_THIRD_PARTY_CLIENT": True,
             HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
         },
-        "yubi": {
+        MfaMethods.YUBI.value: {
             VERBOSE_NAME: _("yubi"),
             HANDLER: "trench.backends.yubikey.YubiKeyMessageDispatcher",
             YUBICLOUD_CLIENT_ID: "YOUR KEY",

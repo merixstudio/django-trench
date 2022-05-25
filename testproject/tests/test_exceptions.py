@@ -19,7 +19,7 @@ from trench.serializers import (
     ProtectedActionValidator,
     RequestBodyValidator,
 )
-from trench.settings import DEFAULTS, TrenchAPISettings
+from trench.settings import DEFAULTS, MfaMethods, TrenchAPISettings
 
 
 def test_method_handler_missing_error():
@@ -31,7 +31,9 @@ def test_method_handler_missing_error():
 
 
 def test_code_missing_error():
-    validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
+    validator = ProtectedActionValidator(
+        mfa_method_name=MfaMethods.YUBI.value, user=None
+    )
     with pytest.raises(OTPCodeMissingError):
         validator.validate_code(value="")
 
@@ -45,14 +47,16 @@ def test_request_body_validator():
 
 
 def test_protected_action_validator():
-    validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
+    validator = ProtectedActionValidator(
+        mfa_method_name=MfaMethods.YUBI.value, user=None
+    )
     with pytest.raises(NotImplementedError):
         validator._validate_mfa_method(mfa=MFAMethod())
 
 
 def test_mfa_method_activation_validator():
     validator = MFAMethodActivationConfirmationValidator(
-        mfa_method_name="yubi", user=None
+        mfa_method_name=MfaMethods.YUBI.value, user=None
     )
     with pytest.raises(MFAMethodAlreadyActiveError):
         validator._validate_mfa_method(mfa=MFAMethod(is_active=True))
@@ -65,7 +69,7 @@ def test_primary_method_inactive_error(
     with pytest.raises(MFAPrimaryMethodInactiveError):
         set_primary_mfa_method_command(
             user_id=active_user_with_email_and_inactive_other_methods_otp.id,
-            name="sms_twilio",
+            name=MfaMethods.SMS_TWILIO.value,
         )
 
 
