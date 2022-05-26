@@ -28,10 +28,9 @@ class RegenerateBackupCodesForMFAMethodCommand:
             user_id=user_id, name=name
         ).update(
             _backup_codes=MFAMethod._BACKUP_CODES_DELIMITER.join(
-                [
-                    self._code_hasher(backup_code)
-                    for backup_code in backup_codes
-                ] if self._requires_encryption else backup_codes
+                [self._code_hasher(backup_code) for backup_code in backup_codes]
+                if self._requires_encryption
+                else backup_codes
             ),
         )
 
