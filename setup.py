@@ -22,9 +22,9 @@ setup(
         "smsapi-client>=2.4.5",
     ],
     extras_require={
-        'docs': [
-            'sphinx >= 1.4',
-            'sphinx_rtd_theme',
+        "docs": [
+            "sphinx >= 1.4",
+            "sphinx_rtd_theme",
         ]
     },
     classifiers=[

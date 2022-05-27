@@ -121,11 +121,11 @@ TRENCH_AUTH = {
     "CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE": True,
     "BACKUP_CODES_CHARACTERS": "0123456789",
     "BACKUP_CODES_QUANTITY": 8,
-    "DEFAULT_VALIDITY_PERIOD": 60,
+    "DEFAULT_VALIDITY_PERIOD": 600,
     "MFA_METHODS": {
         "sms_twilio": {
             "VERBOSE_NAME": "sms",
-            "VALIDITY_PERIOD": 60,
+            "VALIDITY_PERIOD": 600,
             "HANDLER": "trench.backends.twilio.TwilioMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "TWILIO_VERIFIED_FROM_NUMBER": env(
@@ -135,7 +135,7 @@ TRENCH_AUTH = {
         },
         "sms_api": {
             "VERBOSE_NAME": "sms",
-            "VALIDITY_PERIOD": 60,
+            "VALIDITY_PERIOD": 600,
             "HANDLER": "trench.backends.sms_api.SMSAPIMessageDispatcher",
             "SOURCE_FIELD": "phone_number",
             "SMSAPI_ACCESS_TOKEN": "token",
@@ -143,7 +143,7 @@ TRENCH_AUTH = {
         },
         "email": {
             "VERBOSE_NAME": "email",
-            "VALIDITY_PERIOD": 60,
+            "VALIDITY_PERIOD": 600,
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
             "SOURCE_FIELD": "email",
             "EMAIL_SUBJECT": "Your verification code",
@@ -152,7 +152,7 @@ TRENCH_AUTH = {
         },
         "app": {
             "VERBOSE_NAME": "app",
-            "VALIDITY_PERIOD": 60,
+            "VALIDITY_PERIOD": 600,
             "USES_THIRD_PARTY_CLIENT": True,
             "HANDLER": "trench.backends.application.ApplicationMessageDispatcher",
         },
