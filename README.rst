@@ -41,7 +41,7 @@ Supported versions
 ******************
 
 * Python 3.7, 3.8, 3.9
-* Django 2.0, 2.1, 2.2, 3.0
+* Django 2.0, 2.1, 2.2, 3.0, 3.1, 3.2
 * Django REST Framework 3.10
 
 | If you are going to use JWT authentication:
