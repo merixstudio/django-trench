@@ -3,7 +3,7 @@ from django.contrib import admin
 from trench.utils import get_mfa_model
 
 
-MFAModel = get_mfa_model()
+MFAMethod = get_mfa_model()
 
 
 @admin.register(MFAMethod)
