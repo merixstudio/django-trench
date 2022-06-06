@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
@@ -24,6 +25,7 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
+from trench.decorators import mfa_login_required
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.responses import ErrorResponse
@@ -210,6 +212,7 @@ class MFAMethodRequestCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
+    @login_required
     def post(request: Request) -> Response:
         serializer = MFAMethodCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
