@@ -1,5 +1,7 @@
 from typing import Callable, Set, Type
 
+from django.db.models import F
+
 from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.command.replace_mfa_method_backup_codes import (
@@ -22,11 +24,11 @@ class ActivateMFAMethodCommand:
 
         get_mfa_handler(mfa).confirm_activation(code)
 
-        rows_affected = self._mfa_model.objects.filter(
+        rows_affected = self._mfa_model.objects.annotate_is_primary_mfa_method().filter(
             user_id=user_id, name=name
         ).update(
             is_active=True,
-            is_primary=not self._mfa_model.objects.primary_exists(user_id=user_id),
+            is_primary=F('is_primary_mfa_method'),
         )
 
         if rows_affected < 1:

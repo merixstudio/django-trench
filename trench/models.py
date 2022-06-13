@@ -2,12 +2,15 @@ from django.conf import settings
 from django.db.models import (
     CASCADE,
     BooleanField,
+    Case,
     CharField,
+    F,
     ForeignKey,
     Manager,
     Model,
     QuerySet,
     TextField,
+    When,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -54,6 +57,11 @@ class MFAUserMethodManager(Manager):
 
     def primary_exists(self, user_id: Any) -> bool:
         return self.filter(user_id=user_id, is_primary=True).exists()
+
+    def annotate_is_primary_mfa_method(self):
+        return self.annotate(is_primary_mfa_method=Case(When(name=F('name'), is_primary=True, then=True),
+                                                        default=False,
+                                                        output_field=BooleanField()))
 
 
 class MFAMethod(Model):
