@@ -4,10 +4,12 @@ from django.db.models import (
     BooleanField,
     Case,
     CharField,
+    Exists,
     F,
     ForeignKey,
     Manager,
     Model,
+    OuterRef,
     QuerySet,
     TextField,
     When,
@@ -59,9 +61,13 @@ class MFAUserMethodManager(Manager):
         return self.filter(user_id=user_id, is_primary=True).exists()
 
     def annotate_is_primary_mfa_method(self):
-        return self.annotate(is_primary_mfa_method=Case(When(name=F('name'), is_primary=True, then=True),
-                                                        default=False,
-                                                        output_field=BooleanField()))
+        primary_method_for_user_queryset = self.model.objects.filter(user_id=OuterRef('user_id'), is_primary=True)
+        return self.annotate(
+            is_primary_mfa_method=Case(When(name=F('name'), is_primary=True, then=True),
+                                       When(~Exists(primary_method_for_user_queryset), then=True),
+                                       default=False,
+                                       output_field=BooleanField()),
+        )
 
 
 class MFAMethod(Model):
