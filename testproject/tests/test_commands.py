@@ -1,5 +1,7 @@
 import pytest
+from unittest import mock
 
+from trench.command.activate_mfa_method import activate_mfa_method_command
 from trench.command.deactivate_mfa_method import deactivate_mfa_method_command
 from trench.command.remove_backup_code import (
     RemoveBackupCodeCommand,
@@ -65,4 +67,45 @@ def test_deactivate_an_only_mfa_method(active_user_with_application_otp):
     assert (
         len(mfa_model.objects.list_active(user_id=active_user_with_application_otp.id))
         == 0
+    )
+
+
+@pytest.mark.django_db
+@mock.patch('trench.backends.application.ApplicationMessageDispatcher.confirm_activation')
+def test_activate_an_only_mfa_method(mock_confirm_activation, active_user_with_deactivated_application_method):
+    mock_confirm_activation.return_value = True
+    mfa_method = active_user_with_deactivated_application_method.mfa_methods.get(name="app")
+    activate_mfa_method_command(
+        user_id=active_user_with_deactivated_application_method.id,
+        name=mfa_method.name,
+        code='123456',
+    )
+    mfa_model = get_mfa_model()
+    mfa_method.refresh_from_db()
+    assert mfa_method.is_active is True
+    assert mfa_method.is_primary is True
+    assert (
+        len(mfa_model.objects.list_active(user_id=active_user_with_deactivated_application_method.id))
+        == 1
+    )
+
+
+@pytest.mark.django_db
+@mock.patch('trench.backends.application.ApplicationMessageDispatcher.confirm_activation')
+def test_activate_mfa_method_without_primary_methods(mock_confirm_activation,
+                                                     active_user_with_multiple_deactivated_methods):
+    mock_confirm_activation.return_value = True
+    mfa_method = active_user_with_multiple_deactivated_methods.mfa_methods.get(name="app")
+    activate_mfa_method_command(
+        user_id=active_user_with_multiple_deactivated_methods.id,
+        name=mfa_method.name,
+        code='123456',
+    )
+    mfa_model = get_mfa_model()
+    mfa_method.refresh_from_db()
+    assert mfa_method.is_active is True
+    assert mfa_method.is_primary is True
+    assert (
+        len(mfa_model.objects.list_active(user_id=active_user_with_multiple_deactivated_methods.id))
+        == 3
     )
