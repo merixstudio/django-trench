@@ -36,7 +36,6 @@ from trench.serializers import (
     MFAMethodCodeSerializer,
     MFAMethodDeactivationValidator,
     UserMFAMethodSerializer,
-    generate_model_serializer,
 )
 from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
@@ -99,17 +98,17 @@ class MFAMethodActivationView(APIView):
             source_field = get_mfa_config_by_name_query(name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
+
+        user = request.user
         if source_field is not None:
-            serializer_class = generate_model_serializer(
-                name="MFAMethodActivationValidator",
-                model=request.user.__class__,
-                fields=(source_field,),
-            )
-            serializer = serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            if not hasattr(user, source_field):
+                model_name = user.__class__.__name__
+                return ErrorResponse(
+                    error=f"Field name `{source_field}` is not valid for model `{model_name}`."
+                )
         try:
             mfa = create_mfa_method_command(
-                user_id=request.user.id,
+                user_id=user.id,
                 name=method,
             )
         except MFAValidationError as cause:
