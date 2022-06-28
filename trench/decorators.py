@@ -1,8 +1,6 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 
-from trench.command.authenticate_second_factor import authenticate_second_step_command
-
 
 def mfa_login_required(
     function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None
@@ -12,13 +10,11 @@ def mfa_login_required(
     to the log-in page if necessary.
     """
 
-    def test(user):
-        # return user.is_verified() or (user.is_authenticated and not user_has_device(user))
-        return authenticate_second_step_command
+    def is_user_authenticated(user):
+        return user.is_authenticated
 
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated,
-        # test,
+        is_user_authenticated,
         login_url=login_url,
         redirect_field_name=redirect_field_name,
     )

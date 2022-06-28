@@ -1,6 +1,6 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from abc import ABC, abstractmethod
@@ -212,7 +212,6 @@ class MFAMethodRequestCodeView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    @login_required
     def post(request: Request) -> Response:
         serializer = MFAMethodCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -227,6 +226,10 @@ class MFAMethodRequestCodeView(APIView):
             return get_mfa_handler(mfa_method=mfa).dispatch_message()
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
+
+    @method_decorator(mfa_login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 class MFAPrimaryMethodChangeView(APIView):
