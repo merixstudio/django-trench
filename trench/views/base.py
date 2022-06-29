@@ -227,9 +227,9 @@ class MFAMethodRequestCodeView(APIView):
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
 
-    @method_decorator(mfa_login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    # @method_decorator(mfa_login_required)
+    # def dispatch(self, *args, **kwargs):
+    #     return super().dispatch(*args, **kwargs)
 
 
 class MFAPrimaryMethodChangeView(APIView):
