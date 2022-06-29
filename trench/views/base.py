@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 
 from abc import ABC, abstractmethod
@@ -24,6 +25,7 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
+from trench.decorators import mfa_login_required
 from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.responses import ErrorResponse
@@ -224,6 +226,10 @@ class MFAMethodRequestCodeView(APIView):
             return get_mfa_handler(mfa_method=mfa).dispatch_message()
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
+
+    # @method_decorator(mfa_login_required)
+    # def dispatch(self, *args, **kwargs):
+    #     return super().dispatch(*args, **kwargs)
 
 
 class MFAPrimaryMethodChangeView(APIView):
