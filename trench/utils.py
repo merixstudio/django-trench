@@ -1,7 +1,6 @@
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.http import base36_to_int, int_to_base36
@@ -12,6 +11,9 @@ from typing import List, Optional, Tuple, Type
 
 from trench.models import MFAMethod
 from trench.settings import VERBOSE_NAME, trench_settings
+
+
+User = get_user_model()
 
 
 class UserTokenGenerator(PasswordResetTokenGenerator):

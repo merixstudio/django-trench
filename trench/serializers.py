@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import Model
 
 from abc import abstractmethod
@@ -20,6 +20,9 @@ from trench.exceptions import (
 from trench.models import MFAMethod
 from trench.settings import trench_settings
 from trench.utils import available_method_choices, get_mfa_model
+
+
+User = get_user_model()
 
 
 def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) -> Type:
