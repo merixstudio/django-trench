@@ -26,7 +26,7 @@ class ActivateMFAMethodCommand:
             user_id=user_id, name=name
         ).update(
             is_active=True,
-            is_primary=not self._mfa_model.objects.primary_exists(user_id=user_id),
+            is_primary=not self._mfa_model.objects.exclude(name=name).primary_exists(user_id=user_id),
         )
 
         if rows_affected < 1:

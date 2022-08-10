@@ -16,7 +16,7 @@ from typing import Any, Iterable
 from trench.exceptions import MFAMethodDoesNotExistError
 
 
-class MFAUserMethodManager(Manager):
+class MFAUserMethodQuerySet(QuerySet):
     def get_by_name(self, user_id: Any, name: str) -> "MFAMethod":
         try:
             return self.get(user_id=user_id, name=name)
@@ -75,7 +75,7 @@ class MFAMethod(Model):
         verbose_name = _("MFA Method")
         verbose_name_plural = _("MFA Methods")
 
-    objects = MFAUserMethodManager()
+    objects = MFAUserMethodQuerySet.as_manager()
 
     def __str__(self) -> str:
         return f"{self.name} (User id: {self.user_id})"
