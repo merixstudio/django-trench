@@ -1,6 +1,10 @@
 from django.urls import path
 
-from trench.views.authtoken import MFAFirstStepAuthTokenView, MFASecondStepAuthTokenView, MFALogoutView
+from trench.views.authtoken import (
+    MFAFirstStepAuthTokenView,
+    MFASecondStepAuthTokenView,
+    MFALogoutView,
+)
 
 
 urlpatterns = (

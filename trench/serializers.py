@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+import logging
 from django.db.models import Model
 
 from abc import abstractmethod
@@ -20,6 +21,9 @@ from trench.exceptions import (
 from trench.models import MFAMethod
 from trench.settings import trench_settings
 from trench.utils import available_method_choices, get_mfa_model
+
+
+User = get_user_model()
 
 
 def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) -> Type:
@@ -74,6 +78,7 @@ class ProtectedActionValidator(RequestBodyValidator):
 
         handler = get_mfa_handler(mfa)
         validation_method = getattr(handler, self._get_validation_method_name())
+
         if validation_method(value):
             return value
 
@@ -155,8 +160,8 @@ class ChangePrimaryMethodValidator(ProtectedActionValidator):
 
 
 class TokenSerializer(ModelSerializer):
-    auth_token = CharField(source="key")
+    token = CharField(source="key")
 
     class Meta:
         model = Token
-        fields = ("auth_token",)
+        fields = ("token",)

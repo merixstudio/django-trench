@@ -78,7 +78,7 @@ class MFAMethod(Model):
     objects = MFAUserMethodManager()
 
     def __str__(self) -> str:
-        return f"{self.name} (User id: {self.user_id})"
+        return f"{self.name} ({self.user})"
 
     @property
     def backup_codes(self) -> Iterable[str]:
