@@ -1,5 +1,5 @@
 Django
-djangorestframework
+djangorestframework<3.14
 django-environ==0.4.5
 django-cors-headers==3.7.0
 djangorestframework-simplejwt>=4.8.0
