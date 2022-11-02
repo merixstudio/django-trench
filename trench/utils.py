@@ -13,7 +13,7 @@ from trench.models import MFAMethod
 from trench.settings import VERBOSE_NAME, trench_settings
 
 
-User = get_user_model()
+User: settings.AUTH_USER_MODEL = get_user_model()
 
 
 class UserTokenGenerator(PasswordResetTokenGenerator):
