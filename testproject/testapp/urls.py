@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.conf.urls import include
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import re_path
 
@@ -21,7 +23,7 @@ schema_view = get_schema_view(
     permission_classes=(AllowAny,),
 )
 
-urlpatterns = (
+urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
     re_path(r"^auth/", include("trench.urls")),
     re_path(r"^auth/jwt/", include("trench.urls.jwt")),
@@ -31,4 +33,9 @@ urlpatterns = (
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),
-)
+]
+
+if settings.DEBUG:
+    # Static files are served by Django in DEBUG mode
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
