@@ -2,6 +2,8 @@ import datetime
 import environ
 import os
 
+from trench import __version__
+
 
 root = environ.Path(__file__) - 1
 env = environ.Env()
@@ -25,7 +27,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
-    "drf_yasg",
+    "drf_spectacular",
     "testapp",
     "trench",
 ]
@@ -99,8 +101,17 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Django Trench example app API",
+    "DESCRIPTION": "This example illustrates the usage of Django Trench package",
+    "VERSION": __version__,
+    "SERVE_INCLUDE_SCHEMA": False,
+    "CONTACT": {"email": "code@merixstudio.com"},
+    "LICENSE": {"name": "MIT License"},
+}
+
 
 AUTH_USER_MODEL = "testapp.User"
 
