@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 
 import logging
 
@@ -11,7 +12,7 @@ from trench.responses import (
 from trench.settings import trench_settings
 
 
-User = get_user_model()
+User: AbstractUser = get_user_model()
 
 
 class ApplicationMessageDispatcher(AbstractMessageDispatcher):
