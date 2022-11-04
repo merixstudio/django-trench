@@ -1,5 +1,5 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 
 from typing import Type
 
@@ -11,7 +11,7 @@ from trench.models import MFAMethod
 from trench.utils import get_mfa_model, user_token_generator
 
 
-User: settings.AUTH_USER_MODEL = get_user_model()
+User: AbstractUser = get_user_model()
 
 
 class AuthenticateSecondFactorCommand:

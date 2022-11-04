@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from abc import ABC, abstractmethod
@@ -43,7 +43,7 @@ from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
 
-User: settings.AUTH_USER_MODEL = get_user_model()
+User: AbstractUser = get_user_model()
 
 
 class MFAStepMixin(APIView, ABC):
