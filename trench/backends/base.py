@@ -49,7 +49,7 @@ class AbstractMessageDispatcher(ABC):
             return None, path
 
     @staticmethod
-    def _get_innermost_object(obj: Model, dotted_path: str = None) -> Model:
+    def _get_innermost_object(obj: Model, dotted_path: Optional[str] = None) -> Model:
         """
         For given object return innermost object.
         """
