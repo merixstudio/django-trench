@@ -29,6 +29,7 @@ from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.responses import ErrorResponse
 from trench.serializers import (
+    ChangePrimaryMethodCodeValidator,
     ChangePrimaryMethodValidator,
     CodeLoginSerializer,
     LoginSerializer,
@@ -235,18 +236,19 @@ class MFAPrimaryMethodChangeView(APIView):
 
     @staticmethod
     def post(request: Request) -> Response:
-        mfa_model = get_mfa_model()
-        mfa_method_name = mfa_model.objects.get_primary_active_name(
-            user_id=request.user.id
+        method_serializer = ChangePrimaryMethodValidator(data=request.data)
+        method_serializer.is_valid(raise_exception=True)
+
+        code_serializer = ChangePrimaryMethodCodeValidator(
+            user=request.user,
+            mfa_method_name=method_serializer.validated_data["method"],
+            data=request.data,
         )
-        serializer = ChangePrimaryMethodValidator(
-            user=request.user, mfa_method_name=mfa_method_name, data=request.data
-        )
-        serializer.is_valid(raise_exception=True)
+        code_serializer.is_valid(raise_exception=True)
         try:
             set_primary_mfa_method_command(
-                user_id=request.user.id, name=serializer.validated_data["method"]
+                user_id=request.user.id, name=method_serializer.validated_data["method"]
             )
             return Response(status=HTTP_204_NO_CONTENT)
-        except MFAValidationError as cause:
+        except (MFAValidationError, MFAMethodDoesNotExistError) as cause:
             return ErrorResponse(error=cause)
