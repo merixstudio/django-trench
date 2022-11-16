@@ -250,5 +250,5 @@ class MFAPrimaryMethodChangeView(APIView):
                 user_id=request.user.id, name=method_serializer.validated_data["method"]
             )
             return Response(status=HTTP_204_NO_CONTENT)
-        except (MFAValidationError, MFAMethodDoesNotExistError) as cause:
+        except MFAValidationError as cause:
             return ErrorResponse(error=cause)
