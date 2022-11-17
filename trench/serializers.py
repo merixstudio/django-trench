@@ -150,12 +150,14 @@ class UserMFAMethodSerializer(ModelSerializer):
         fields = ("name", "is_primary")
 
 
-class ChangePrimaryMethodValidator(ProtectedActionValidator):
-    method = ChoiceField(choices=available_method_choices())
-
+class ChangePrimaryMethodCodeValidator(ProtectedActionValidator):
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod) -> None:
         pass
+
+
+class ChangePrimaryMethodValidator(RequestBodyValidator):
+    method = ChoiceField(choices=available_method_choices())
 
 
 class TokenSerializer(ModelSerializer):
