@@ -194,18 +194,21 @@ def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
             user=user,
             method_name="sms_twilio",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
             method_name="app",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
             method_name="yubi",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
     return user, next(iter(backup_codes))

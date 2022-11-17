@@ -397,10 +397,10 @@ def test_change_primary_method_with_backup_code(
     assert new_primary_method.name == sms_twilio_mfa_method_name
 
     # revert changes
-    primary_mfa_method.is_primary = True
-    primary_mfa_method.save()
     new_primary_method.is_primary = False
     new_primary_method.save()
+    primary_mfa_method.is_primary = True
+    primary_mfa_method.save()
 
 
 @flaky

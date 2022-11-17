@@ -23,7 +23,7 @@ class DeactivateMFAMethodCommand:
             raise MFANotEnabledError()
 
         self._mfa_model.objects.filter(user_id=user_id, name=mfa_method_name).update(
-            is_active=False
+            is_active=False, is_primary=False
         )
 
 
