@@ -23,8 +23,7 @@ class Migration(migrations.Migration):
             constraint=models.CheckConstraint(
                 check=models.Q(
                     models.Q(("is_primary", True), ("is_active", True)),
-                    models.Q(("is_primary", False), ("is_active", True)),
-                    models.Q(("is_primary", False), ("is_active", False)),
+                    models.Q(("is_primary", False)),
                     _connector="OR",
                 ),
                 name="primary_is_active",

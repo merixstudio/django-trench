@@ -84,9 +84,7 @@ class MFAMethod(Model):
                 name="unique_user_is_primary",
             ),
             CheckConstraint(
-                check=(Q(is_primary=True) & Q(is_active=True))
-                | (Q(is_primary=False) & Q(is_active=True))
-                | (Q(is_primary=False) & Q(is_active=False)),
+                check=(Q(is_primary=True) & Q(is_active=True)) | Q(is_primary=False),
                 name="primary_is_active",
             ),
         )
