@@ -27,7 +27,7 @@ from trench.command.replace_mfa_method_backup_codes import (
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
 from trench.exceptions import (
     MFAMethodDoesNotExistError,
-    MFASourceFieldNotExistError,
+    MFASourceFieldDoesNotExistError,
     MFAValidationError,
 )
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
@@ -110,7 +110,7 @@ class MFAMethodActivationView(APIView):
         user = request.user
         try:
             if source_field is not None and not hasattr(user, source_field):
-                raise MFASourceFieldNotExistError(source_field, user.__class__.__name__)
+                raise MFASourceFieldDoesNotExistError(source_field, user.__class__.__name__)
 
             mfa = create_mfa_method_command(
                 user_id=user.id,

@@ -27,7 +27,7 @@ class CodeInvalidOrExpiredError(MFAValidationError):
         )
 
 
-class MFASourceFieldNotExistError(MFAValidationError):
+class MFASourceFieldDoesNotExistError(MFAValidationError):
     def __init__(self, source_field: str, model_name: str) -> None:
         super().__init__(
             detail=_(
