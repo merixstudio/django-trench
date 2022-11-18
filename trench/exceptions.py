@@ -27,6 +27,16 @@ class CodeInvalidOrExpiredError(MFAValidationError):
         )
 
 
+class MFASourceFieldDoesNotExistError(MFAValidationError):
+    def __init__(self, source_field: str, model_name: str) -> None:
+        super().__init__(
+            detail=_(
+                f"Field name `{source_field}` is not valid for model `{model_name}`."
+            ),
+            code="source_field_not_exist",
+        )
+
+
 class OTPCodeMissingError(MFAValidationError):
     def __init__(self) -> None:
         super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")

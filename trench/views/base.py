@@ -25,7 +25,11 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.command.set_primary_mfa_method import set_primary_mfa_method_command
-from trench.exceptions import MFAMethodDoesNotExistError, MFAValidationError
+from trench.exceptions import (
+    MFAMethodDoesNotExistError,
+    MFASourceFieldDoesNotExistError,
+    MFAValidationError,
+)
 from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.responses import ErrorResponse
 from trench.serializers import (
@@ -38,7 +42,6 @@ from trench.serializers import (
     MFAMethodCodeSerializer,
     MFAMethodDeactivationValidator,
     UserMFAMethodSerializer,
-    generate_model_serializer,
 )
 from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
@@ -104,17 +107,13 @@ class MFAMethodActivationView(APIView):
             source_field = get_mfa_config_by_name_query(name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
-        if source_field is not None:
-            serializer_class = generate_model_serializer(
-                name="MFAMethodActivationValidator",
-                model=request.user.__class__,
-                fields=(source_field,),
-            )
-            serializer = serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
+        user = request.user
         try:
+            if source_field is not None and not hasattr(user, source_field):
+                raise MFASourceFieldDoesNotExistError(source_field, user.__class__.__name__)
+
             mfa = create_mfa_method_command(
-                user_id=request.user.id,
+                user_id=user.id,
                 name=method,
             )
         except MFAValidationError as cause:

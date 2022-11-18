@@ -1,12 +1,12 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db.models import Model
 
 from abc import abstractmethod
 from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
-from typing import Any, Iterable, OrderedDict, Type
+from typing import Any, OrderedDict
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.remove_backup_code import remove_backup_code_command
@@ -23,19 +23,7 @@ from trench.settings import trench_settings
 from trench.utils import available_method_choices, get_mfa_model
 
 
-User: settings.AUTH_USER_MODEL = get_user_model()
-
-
-def generate_model_serializer(name: str, model: Model, fields: Iterable[str]) -> Type:
-    meta_subclass = type(
-        "Meta",
-        (object,),
-        {
-            "model": model,
-            "fields": fields,
-        },
-    )
-    return type(name, (ModelSerializer,), {"Meta": meta_subclass})
+User: AbstractUser = get_user_model()
 
 
 class RequestBodyValidator(Serializer):
