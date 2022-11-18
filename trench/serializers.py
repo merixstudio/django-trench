@@ -1,5 +1,5 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db.models import Model
 
 from abc import abstractmethod
@@ -23,7 +23,7 @@ from trench.settings import trench_settings
 from trench.utils import available_method_choices, get_mfa_model
 
 
-User: settings.AUTH_USER_MODEL = get_user_model()
+User: AbstractUser = get_user_model()
 
 
 class RequestBodyValidator(Serializer):
