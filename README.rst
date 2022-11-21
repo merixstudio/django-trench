@@ -150,3 +150,9 @@ the package (steps 6-7) for the changes to be present during e.g. running the te
     .. code-block:: shell
 
         pytest -n 8 --cov=testproject/trench testproject/tests/
+
+9. [OPTIONAL] Check GitHub workflows locally (https://github.com/nektos/act):
+
+    .. code-block:: shell
+
+        act --container-architecture linux/amd64
