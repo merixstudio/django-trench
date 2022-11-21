@@ -16,43 +16,172 @@ jobs:
         include:
           - python-version: 3.7
             django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.10
+          - python-version: 3.7
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.7
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.7
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.13
 
           - python-version: 3.7
             django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.7
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.7
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.7
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.7
             django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.7
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.7
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.7
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.8
             django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.10
+          - python-version: 3.8
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.8
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.8
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.13
 
           - python-version: 3.8
             django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.8
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.8
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.8
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.8
             django-version: Django==3.2
+           djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.8
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.8
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.8
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.8
             django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.8
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.8
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.8
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.8
             django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.8
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.8
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.8
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.9
             django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.9
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.9
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.9
+            django-version: Django==2.2
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.9
             django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.9
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.9
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.9
+            django-version: Django==3.1
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.9
             django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.9
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.9
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.9
+            django-version: Django==3.2
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.9
             django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.9
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.9
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.9
+            django-version: Django==4.0
+            djangorestframework-version: djangorestframework==3.14
 
           - python-version: 3.9
             django-version: Django==4.1
-
+            djangorestframework-version: djangorestframework==3.11
+          - python-version: 3.9
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.12
+          - python-version: 3.9
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.13
+          - python-version: 3.9
+            django-version: Django==4.1
+            djangorestframework-version: djangorestframework==3.14
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -63,7 +192,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install mypy flake8 pytest pytest-xdist flaky
-        python -m pip install ${{ matrix.django-version }}
+        python -m pip install ${{ matrix.django-version }} ${{ matrix.djangorestframework-version }}
         if [ -f testproject/requirements_test.txt ]; then pip install -r testproject/requirements_test.txt; fi
         ln -s $(pwd)/trench/ $(pwd)/testproject/trench
     - name: Lint trench package with flake8
