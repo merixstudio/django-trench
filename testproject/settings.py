@@ -149,7 +149,6 @@ TRENCH_AUTH = {
             "AWS_ACCESS_KEY": "access_key",
             "AWS_SECRET_KEY": "secret_key",
             "AWS_REGION": "region",
-            "AWS_FROM_NUMBER": "+31123456789",
         },
         "email": {
             "VERBOSE_NAME": "email",

@@ -88,4 +88,4 @@ def test_sms_aws_backend_without_credentials(active_user_with_sms_aws_otp, setti
     response = AWSMessageDispatcher(
         mfa_method=auth_method, config=conf
     ).dispatch_message()
-    assert response.data.get("details") == "Could not connect to the endpoint URL: \"https://sns.region.amazonaws.com/\""
+    assert response.data.get("details")[:38] == "Could not connect to the endpoint URL:"
