@@ -9,7 +9,7 @@ yubico-client>=1.13.0
 smsapi-client>=2.4.5
 pyjwt<=2.0.1
 
-drf-spectacular==0.22.1
+drf-spectacular==0.24.2
 
 pytest==6.2.3
 pytest-cov==2.11.1
