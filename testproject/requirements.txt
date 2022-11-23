@@ -11,7 +11,7 @@ pyjwt<=2.0.1
 
 drf-spectacular==0.22.1
 
-pytest==6.2.3
+pytest==6.2.5
 pytest-cov==2.11.1
 pytest-django==4.1.0
 attrs==20.3.0
