@@ -19,6 +19,7 @@ setup(
         "pyotp>=2.6.0",
         "twilio>=6.56.0",
         "yubico-client>=1.13.0",
+        "boto3>=1.21.37",
         "smsapi-client>=2.4.5",
     ],
     extras_require={
