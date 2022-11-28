@@ -86,6 +86,7 @@ MFA method deactivation
 ***********************
 
 | Deactivates the specified method. Depending on :doc: `settings` sends out an authentication code and requires confirmation.
+| If you've set the ``CONFIRM_DISABLE_WITH_CODE`` option to ``True`` in the :doc: `settings` then passing the ``code`` in request payload is required.
 | Note: You can deactivate a primary  MFA method only if it's the last active method assigned to a user.
 | However, you cannot deactivate a primary MFA method if there are other methods active.
 | You should change primary method to a different one first, and then deactivate the method.
@@ -244,7 +245,7 @@ Login - second step (JWT example)
 *************************
 Generate new backup codes
 *************************
-
+| To use this Endpoint you've to set the ``ALLOW_BACKUP_CODES_REGENERATION`` option to ``True`` in the :doc: `settings`.
 | If you've set the ``CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE`` option to ``True`` in the :doc: `settings` then passing the ``code`` in request payload is required.
 
 .. list-table::
@@ -379,3 +380,4 @@ Change user's primary MFA method
                 "error": "MFA Method selected as new primary method is not active"
             }
       - **HTTP status:** ``400 BAD REQUEST``
+
