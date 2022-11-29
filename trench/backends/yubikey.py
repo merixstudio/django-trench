@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.utils.translation import gettext_lazy as _
 
 import logging
@@ -11,7 +13,7 @@ from trench.settings import YUBICLOUD_CLIENT_ID
 
 
 class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, url_name: Optional[str] = None) -> DispatchResponse:
         return SuccessfulDispatchResponse(details=_("Generate code using YubiKey"))
 
     def confirm_activation(self, code: str) -> None:

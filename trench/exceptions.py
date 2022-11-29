@@ -42,6 +42,14 @@ class OTPCodeMissingError(MFAValidationError):
         super().__init__(detail=_("OTP code not provided."), code="otp_code_missing")
 
 
+class GetCodeFromApplicationException(MFAValidationError):
+    def __init__(self) -> None:
+        super().__init__(
+            detail=_("Get code from OTP application."),
+            code="get_code_from_application"
+        )
+
+
 class MFAMethodDoesNotExistError(MFAValidationError):
     def __init__(self) -> None:
         super().__init__(

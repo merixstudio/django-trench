@@ -46,7 +46,6 @@ from trench.serializers import (
 from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
-
 User: AbstractUser = get_user_model()
 
 
@@ -70,6 +69,7 @@ class MFAFirstStepMixin(MFAStepMixin, ABC):
             )
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
+
         try:
             mfa_model = get_mfa_model()
             mfa_method = mfa_model.objects.get_primary_active(user_id=user.id)
@@ -110,7 +110,10 @@ class MFAMethodActivationView(APIView):
         user = request.user
         try:
             if source_field is not None and not hasattr(user, source_field):
-                raise MFASourceFieldDoesNotExistError(source_field, user.__class__.__name__)
+                raise MFASourceFieldDoesNotExistError(
+                    source_field,
+                    user.__class__.__name__
+                )
 
             mfa = create_mfa_method_command(
                 user_id=user.id,
@@ -224,8 +227,13 @@ class MFAMethodRequestCodeView(APIView):
                 method = mfa_model.objects.get_primary_active_name(
                     user_id=request.user.id
                 )
-            mfa = mfa_model.objects.get_by_name(user_id=request.user.id, name=method)
-            return get_mfa_handler(mfa_method=mfa).dispatch_message()
+            mfa = mfa_model.objects.get_active_by_name(
+                user_id=request.user.id,
+                name=method
+            )
+            return get_mfa_handler(mfa_method=mfa).dispatch_message(
+                url_name=request.resolver_match.url_name
+            )
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
 

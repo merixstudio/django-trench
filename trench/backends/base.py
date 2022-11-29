@@ -60,7 +60,7 @@ class AbstractMessageDispatcher(ABC):
         return obj  # pragma: no cover
 
     @abstractmethod
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, url_name: Optional[str] = None) -> DispatchResponse:
         raise NotImplementedError  # pragma: no cover
 
     def create_code(self) -> str:
