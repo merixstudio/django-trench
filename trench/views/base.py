@@ -46,7 +46,6 @@ from trench.serializers import (
 from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
-
 User: AbstractUser = get_user_model()
 
 
@@ -103,6 +102,18 @@ class MFAMethodActivationView(APIView):
 
     @staticmethod
     def post(request: Request, method: str) -> Response:
+        mfa_model = get_mfa_model()
+        primary_method = mfa_model.objects.fetch_primary_active_name(
+            user_id=request.user.id
+        )
+        if primary_method and primary_method != method:
+            serializer = ChangePrimaryMethodCodeValidator(
+                user=request.user,
+                mfa_method_name=primary_method,
+                data=request.data,
+            )
+            serializer.is_valid(raise_exception=True)
+
         try:
             source_field = get_mfa_config_by_name_query(name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:

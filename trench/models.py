@@ -14,7 +14,7 @@ from django.db.models import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from trench.exceptions import MFAMethodDoesNotExistError
 
@@ -40,6 +40,14 @@ class MFAUserMethodManager(Manager):
         )
         if method_name is None:
             raise MFAMethodDoesNotExistError()
+        return method_name
+
+    def fetch_primary_active_name(self, user_id: Any) -> Optional[str]:
+        method_name = (
+            self.filter(user_id=user_id, is_primary=True, is_active=True)
+            .values_list("name", flat=True)
+            .first()
+        )
         return method_name
 
     def is_active_by_name(self, user_id: Any, name: str) -> bool:

@@ -17,6 +17,14 @@ MFA method activation
     * - Parameters
       - ``:method_name`` - **required**
       - Allowed method names: ``email``, ``app``, ``yubi``, ``sms_api``, ``sms_twilio``
+    * - Payload
+      - .. code-block:: json
+
+            {
+                "code": "123456"
+            }
+
+      - ``code`` - If the user has an active base method, he must provide the code from that method
     * - Successful response
       - .. code-block:: json
 
