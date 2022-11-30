@@ -173,7 +173,7 @@ TRENCH_AUTH = {
         },
         "app": {
             "VERBOSE_NAME": "app",
-            "VALIDITY_PERIOD": 600,
+            "VALIDITY_PERIOD": 30,
             "USES_THIRD_PARTY_CLIENT": True,
             "HANDLER": "trench.backends.application.ApplicationMessageDispatcher",
         },
