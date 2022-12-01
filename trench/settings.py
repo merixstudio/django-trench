@@ -70,30 +70,6 @@ DEFAULTS = {
     "ENCRYPT_BACKUP_CODES": True,
     "APPLICATION_ISSUER_NAME": "MyApplication",
     "MFA_METHODS": {
-        "sms_twilio": {
-            VERBOSE_NAME: _("sms_twilio"),
-            VALIDITY_PERIOD: 30,
-            HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
-            SOURCE_FIELD: "phone_number",
-            TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
-        },
-        "sms_api": {
-            VERBOSE_NAME: _("sms_api"),
-            VALIDITY_PERIOD: 30,
-            HANDLER: "trench.backends.sms_api.SMSAPIMessageDispatcher",
-            SOURCE_FIELD: "phone_number",
-            SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
-            SMSAPI_FROM_NUMBER: "YOUR REGISTERED NUMBER",
-        },
-        "sms_aws": {
-            VERBOSE_NAME: _("sms_aws"),
-            VALIDITY_PERIOD: 30,
-            HANDLER: "trench.backends.aws.AWSMessageDispatcher",
-            SOURCE_FIELD: "phone_number",
-            AWS_ACCESS_KEY: "YOUR AWS ACCESS KEY",
-            AWS_SECRET_KEY: "YOUR AWS SECRET KEY",
-            AWS_REGION: "YOUR AWS REGION",
-        },
         "email": {
             VERBOSE_NAME: _("email"),
             VALIDITY_PERIOD: 30,
@@ -108,11 +84,6 @@ DEFAULTS = {
             VALIDITY_PERIOD: 30,
             "USES_THIRD_PARTY_CLIENT": True,
             HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
-        },
-        "yubi": {
-            VERBOSE_NAME: _("yubi"),
-            HANDLER: "trench.backends.yubikey.YubiKeyMessageDispatcher",
-            YUBICLOUD_CLIENT_ID: "YOUR KEY",
         },
     },
 }

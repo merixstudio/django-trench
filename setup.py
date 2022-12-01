@@ -17,15 +17,17 @@ setup(
     author_email="trench@merixstudio.com",
     install_requires=[
         "pyotp>=2.6.0",
-        "twilio>=6.56.0",
-        "yubico-client>=1.13.0",
-        "boto3>=1.21.37",
-        "smsapi-client>=2.4.5",
     ],
     extras_require={
         "docs": [
             "sphinx >= 1.4",
             "sphinx_rtd_theme",
+        ],
+        "full": [
+            "twilio>=6.56.0",
+            "yubico-client>=1.13.0",
+            "boto3>=1.21.37",
+            "smsapi-client>=2.4.5",
         ]
     },
     classifiers=[
@@ -45,3 +47,4 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
 )
+
