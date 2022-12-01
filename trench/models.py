@@ -88,6 +88,7 @@ class MFAMethod(Model):
                 name="primary_is_active",
             ),
         )
+        ordering = ("-is_primary", "-is_active")
 
     objects = MFAUserMethodManager()
 
