@@ -110,7 +110,10 @@ class MFAMethodActivationView(APIView):
         user = request.user
         try:
             if source_field is not None and not hasattr(user, source_field):
-                raise MFASourceFieldDoesNotExistError(source_field, user.__class__.__name__)
+                raise MFASourceFieldDoesNotExistError(
+                    source_field,
+                    user.__class__.__name__
+                )
 
             mfa = create_mfa_method_command(
                 user_id=user.id,
