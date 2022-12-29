@@ -2,9 +2,10 @@ from django.db.models import Model
 
 from abc import ABC, abstractmethod
 from pyotp import TOTP
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 from trench.command.create_otp import create_otp_command
+from trench.domain.models import MFAMethodConfig
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
@@ -82,5 +83,5 @@ class AbstractMessageDispatcher(ABC):
 
     def _get_valid_window(self) -> int:
         return self._config.get(
-            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
+            VALIDITY_PERIOD, trench_settings.default_validity_period
         )

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from django.utils.translation import gettext_lazy as _
 
@@ -12,7 +11,7 @@ from trench.responses import (
     FailedDispatchResponse,
     SuccessfulDispatchResponse,
 )
-from trench.settings import TWILIO_VERIFIED_FROM_NUMBER, MFAMethodConfig
+from trench.settings import TWILIO_VERIFIED_FROM_NUMBER
 
 
 class TwilioMessageDispatcher(AbstractMessageDispatcher):
@@ -33,10 +32,3 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
             return FailedDispatchResponse(details=cause.msg)
 
 
-@dataclass(frozen=True)
-class MFAMethodConfigTwilio(MFAMethodConfig):
-    verbose_name = _("sms_twilio")
-    validity_period = 30
-    handler = "trench.backends.twilio.TwilioMessageDispatcher"
-    source_field = "phone_number"
-    twilio_verified_from_number: str = ""

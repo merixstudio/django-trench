@@ -20,7 +20,7 @@ from trench.command.replace_mfa_method_backup_codes import (
 )
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
-
+from trench.settings import trench_settings
 
 User = get_user_model()
 
@@ -43,10 +43,10 @@ def test_mfa_model(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
-    ORIGINAL_VALIDITY_PERIOD = settings.TRENCH_AUTH["MFA_METHODS"]["email"][
-        "VALIDITY_PERIOD"
+    ORIGINAL_VALIDITY_PERIOD = trench_settings.mfa_methods["email"][
+        "validity_period"
     ]
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["VALIDITY_PERIOD"] = 3
+    trench_settings.mfa_methods["email"]["validity_period"] = 3
 
     mfa_method = active_user_with_email_otp.mfa_methods.first()
     client = TrenchAPIClient()
@@ -69,7 +69,7 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"][
+    trench_settings.mfa_methods["email"][
         "VALIDITY_PERIOD"
     ] = ORIGINAL_VALIDITY_PERIOD
 
@@ -601,6 +601,7 @@ def test_yubikey(active_user_with_yubi, offline_yubikey):
     response = client.authenticate_multi_factor(
         mfa_method=yubikey_method, user=active_user_with_yubi
     )
+    print(response)
     assert response.status_code == HTTP_200_OK
 
 

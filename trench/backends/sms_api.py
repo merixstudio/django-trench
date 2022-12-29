@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from django.utils.translation import gettext_lazy as _
 
 import logging
@@ -12,7 +10,7 @@ from trench.responses import (
     FailedDispatchResponse,
     SuccessfulDispatchResponse,
 )
-from trench.settings import SMSAPI_ACCESS_TOKEN, SMSAPI_FROM_NUMBER, MFAMethodConfig
+from trench.settings import SMSAPI_ACCESS_TOKEN, SMSAPI_FROM_NUMBER
 
 
 class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
@@ -34,12 +32,3 @@ class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=cause.message)
 
-
-@dataclass(frozen=True)
-class MFAMethodConfigSMSAPI(MFAMethodConfig):
-    verbose_name = _("sms_api")
-    validity_period = 30
-    handler = "trench.backends.sms_api.SMSAPIMessageDispatcher"
-    source_field = "phone_number"
-    smsapi_access_token: str = ""
-    smsapi_from_number: str = ""

@@ -6,7 +6,7 @@ from trench.command.remove_backup_code import (
     remove_backup_code_command,
 )
 from trench.exceptions import MFAMethodDoesNotExistError, MFANotEnabledError
-from trench.settings import DEFAULTS, TrenchAPISettings
+from trench.settings import TrenchSettingsParser
 from trench.utils import get_mfa_model
 
 
@@ -23,13 +23,12 @@ def test_remove_backup_code_from_non_existing_method(
 
 
 @pytest.mark.django_db
-def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes):
+def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes, settings):
     user, codes = active_user_with_non_encrypted_backup_codes
-    settings = TrenchAPISettings(
-        user_settings={"ENCRYPT_BACKUP_CODES": False}, defaults=DEFAULTS
-    )
+    settings.TRENCH_AUTH["ENCRYPT_BACKUP_CODES"] = False
+    trench_settings = TrenchSettingsParser(user_settings=settings).get_settings
     remove_backup_code_command = RemoveBackupCodeCommand(
-        mfa_model=get_mfa_model(), settings=settings
+        mfa_model=get_mfa_model(), settings=trench_settings
     ).execute
     code = next(iter(codes))
     remove_backup_code_command(

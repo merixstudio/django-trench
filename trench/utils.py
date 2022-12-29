@@ -66,11 +66,11 @@ user_token_generator = UserTokenGenerator()
 
 
 def get_mfa_model() -> Type[MFAMethod]:
-    return apps.get_model(trench_settings.USER_MFA_MODEL)
+    return apps.get_model(trench_settings.user_mfa_model)
 
 
 def available_method_choices() -> List[Tuple[str, str]]:
     return [
         (method_name, method_config.get(VERBOSE_NAME, _(method_name)))
-        for method_name, method_config in trench_settings.MFA_METHODS.items()
+        for method_name, method_config in trench_settings.mfa_methods.items()
     ]

@@ -42,7 +42,7 @@ class RegenerateBackupCodesForMFAMethodCommand:
 
 regenerate_backup_codes_for_mfa_method_command = (
     RegenerateBackupCodesForMFAMethodCommand(
-        requires_encryption=trench_settings.ENCRYPT_BACKUP_CODES,
+        requires_encryption=trench_settings.encrypt_backup_codes,
         mfa_model=get_mfa_model(),
         code_hasher=make_password,
         codes_generator=generate_backup_codes_command,
