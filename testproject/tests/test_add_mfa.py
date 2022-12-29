@@ -1,6 +1,5 @@
 import pytest
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 
@@ -10,7 +9,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from tests.utils import TrenchAPIClient
 from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
-
+from trench.settings import trench_settings
 
 User: AbstractUser = get_user_model()
 
@@ -37,7 +36,7 @@ def test_should_fail_on_add_user_mfa_with_invalid_source_field(active_user: User
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
     secret = create_secret_command()
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["SOURCE_FIELD"] = "email_test"
+    trench_settings.mfa_methods["email"]['source_field'] = "email_test"
 
     response = client.post(
         path="/auth/email/activate/",
@@ -53,7 +52,7 @@ def test_should_fail_on_add_user_mfa_with_invalid_source_field(active_user: User
         response.data.get("error")
         == "Field name `email_test` is not valid for model `User`."
     )
-    settings.TRENCH_AUTH["MFA_METHODS"]["email"]["SOURCE_FIELD"] = "email"
+    trench_settings.mfa_methods["email"]['source_field'] = "email"
 
 
 @flaky

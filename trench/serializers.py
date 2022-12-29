@@ -79,7 +79,7 @@ class ProtectedActionValidator(RequestBodyValidator):
 
 
 class MFAMethodDeactivationValidator(ProtectedActionValidator):
-    code = CharField(required=trench_settings.CONFIRM_DISABLE_WITH_CODE)
+    code = CharField(required=trench_settings.confirm_disable_with_code)
 
     @staticmethod
     def _validate_mfa_method(mfa: MFAMethod) -> None:
@@ -100,7 +100,7 @@ class MFAMethodActivationConfirmationValidator(ProtectedActionValidator):
 
 class MFAMethodBackupCodesGenerationValidator(ProtectedActionValidator):
     code = CharField(
-        required=trench_settings.CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE
+        required=trench_settings.confirm_backup_codes_regeneration_with_code
     )
 
     @staticmethod
@@ -114,7 +114,7 @@ class MFAMethodCodeSerializer(RequestBodyValidator):
 
     @staticmethod
     def validate_method(value: str) -> str:
-        if value and value not in trench_settings.MFA_METHODS:
+        if value and value not in trench_settings.mfa_methods:
             raise MFAMethodDoesNotExistError()
         return value
 

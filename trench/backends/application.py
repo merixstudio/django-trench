@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 import logging
 
+
 from trench.backends.base import AbstractMessageDispatcher
 from trench.responses import (
     DispatchResponse,
@@ -27,5 +28,7 @@ class ApplicationMessageDispatcher(AbstractMessageDispatcher):
     def _create_qr_link(self, user: User) -> str:
         return self._get_otp().provisioning_uri(
             getattr(user, User.USERNAME_FIELD),
-            trench_settings.APPLICATION_ISSUER_NAME,
+            trench_settings.application_issuer_name,
         )
+
+

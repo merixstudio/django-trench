@@ -41,3 +41,5 @@ class YubiKeyMessageDispatcher(AbstractMessageDispatcher):
         except (YubicoError, Exception) as cause:
             logging.error(cause, exc_info=True)
             return False
+
+

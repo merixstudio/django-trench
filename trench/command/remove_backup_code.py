@@ -4,12 +4,13 @@ from typing import Any, Set, Type
 
 from trench.exceptions import InvalidCodeError, MFAMethodDoesNotExistError
 from trench.models import MFAMethod
-from trench.settings import TrenchAPISettings, trench_settings
+from trench.settings import trench_settings
 from trench.utils import get_mfa_model
 
+from trench.domain.models import TrenchConfig
 
 class RemoveBackupCodeCommand:
-    def __init__(self, mfa_model: Type[MFAMethod], settings: TrenchAPISettings) -> None:
+    def __init__(self, mfa_model: Type[MFAMethod], settings: TrenchConfig) -> None:
         self._mfa_model = mfa_model
         self._settings = settings
 
@@ -34,7 +35,7 @@ class RemoveBackupCodeCommand:
         )
 
     def _remove_code_from_set(self, backup_codes: Set[str], code: str) -> Set[str]:
-        if not self._settings.ENCRYPT_BACKUP_CODES:
+        if not self._settings.encrypt_backup_codes:
             backup_codes.remove(code)
             return backup_codes
         for backup_code in backup_codes:

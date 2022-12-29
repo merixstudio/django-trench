@@ -19,15 +19,15 @@ from trench.serializers import (
     ProtectedActionValidator,
     RequestBodyValidator,
 )
-from trench.settings import DEFAULTS, TrenchAPISettings
+from trench.settings import TrenchSettingsParser
 
 
-def test_method_handler_missing_error():
-    settings = TrenchAPISettings(
-        user_settings={"MFA_METHODS": {"method_without_handler": {}}}, defaults=DEFAULTS
-    )
+def test_method_handler_missing_error(settings):
+    settings.TRENCH_AUTH["MFA_METHODS"]["method_without_handler"] = {}
+
     with pytest.raises(MethodHandlerMissingError):
-        assert settings.MFA_METHODS["method_without_handler"] is None
+        trench_settings = TrenchSettingsParser(user_settings=settings).get_settings
+        assert trench_settings.mfa_methods["method_without_handler"] == {}
 
 
 def test_code_missing_error():
