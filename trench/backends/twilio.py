@@ -1,4 +1,3 @@
-
 from django.utils.translation import gettext_lazy as _
 
 import logging
@@ -30,5 +29,3 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
         except TwilioRestException as cause:
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=cause.msg)
-
-

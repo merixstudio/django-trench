@@ -1,12 +1,12 @@
-from functools import cached_property
-
-from django.conf import settings, LazySettings
-from typing import Any, Dict
-
+from django.conf import LazySettings, settings
 from django.utils.module_loading import import_string
+
+from functools import cached_property
+from typing import Any, Dict
 
 from trench.domain.models import TrenchConfig
 from trench.exceptions import MethodHandlerMissingError
+
 
 SOURCE_FIELD = "source_field"
 HANDLER = "handler"
@@ -50,29 +50,41 @@ class TrenchSettingsParser:
                 mfa_methods: Dict[str, Dict[str, Any]] = {}
                 custom_mfa_methods = self._user_settings.get(field_name.upper(), None)
                 if custom_mfa_methods:
-                    for mfa_method_name, mfa_method_values in custom_mfa_methods.items():
-
+                    for (
+                        mfa_method_name,
+                        mfa_method_values,
+                    ) in custom_mfa_methods.items():  # noqa: E501
                         mfa_methods[mfa_method_name] = {}
-                        for mfa_method_value_key, mfa_method_value in mfa_method_values.items():
-                            mfa_methods[mfa_method_name][mfa_method_value_key.lower()] = mfa_method_value
+                        for (
+                            mfa_method_value_key,
+                            mfa_method_value,
+                        ) in mfa_method_values.items():  # noqa: E501
+                            mfa_methods[mfa_method_name][
+                                mfa_method_value_key.lower()
+                            ] = mfa_method_value  # noqa: E501
                         if self._FIELD_HANDLER not in mfa_methods[mfa_method_name]:
                             raise MethodHandlerMissingError(method_name=mfa_method_name)
                 else:
-                    for mfa_method_name, mfa_method_config in MFA_METHODS_CONFIGS.items():
+                    for (
+                        mfa_method_name,
+                        mfa_method_config,
+                    ) in MFA_METHODS_CONFIGS.items():  # noqa: E501
                         mfa_method = import_string(mfa_method_config)
                         mfa_methods[mfa_method_name] = {}
                         for mfa_method_field_name in mfa_method.__dataclass_fields__:
-                            mfa_methods[mfa_method_name][mfa_method_field_name] = getattr(
-                                mfa_method,
-                                mfa_method_field_name,
-                                None)
+                            mfa_methods[mfa_method_name][
+                                mfa_method_field_name
+                            ] = getattr(  # noqa: E501
+                                mfa_method, mfa_method_field_name, None
+                            )
                 trench_settings_dict[field_name] = mfa_methods
 
             else:
-                trench_settings_dict[field_name] = self._user_settings.get(field_name.upper(),
-                                                                           getattr(TrenchConfig, field_name))
+                trench_settings_dict[field_name] = self._user_settings.get(
+                    field_name.upper(), getattr(TrenchConfig, field_name)
+                )
 
-        return TrenchConfig(**trench_settings_dict)
+        return TrenchConfig(**trench_settings_dict)  # type: ignore
 
 
 trench_settings = TrenchSettingsParser(user_settings=settings).get_settings

@@ -22,6 +22,7 @@ from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
 from trench.settings import trench_settings
 
+
 User = get_user_model()
 
 
@@ -43,9 +44,7 @@ def test_mfa_model(active_user_with_email_otp):
 
 @pytest.mark.django_db
 def test_custom_validity_period(active_user_with_email_otp, settings):
-    ORIGINAL_VALIDITY_PERIOD = trench_settings.mfa_methods["email"][
-        "validity_period"
-    ]
+    ORIGINAL_VALIDITY_PERIOD = trench_settings.mfa_methods["email"]["validity_period"]
     trench_settings.mfa_methods["email"]["validity_period"] = 3
 
     mfa_method = active_user_with_email_otp.mfa_methods.first()
@@ -69,9 +68,7 @@ def test_custom_validity_period(active_user_with_email_otp, settings):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
-    trench_settings.mfa_methods["email"][
-        "VALIDITY_PERIOD"
-    ] = ORIGINAL_VALIDITY_PERIOD
+    trench_settings.mfa_methods["email"]["VALIDITY_PERIOD"] = ORIGINAL_VALIDITY_PERIOD
 
 
 @flaky

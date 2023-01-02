@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 
 import logging
 
-
 from trench.backends.base import AbstractMessageDispatcher
 from trench.responses import (
     DispatchResponse,
@@ -30,5 +29,3 @@ class ApplicationMessageDispatcher(AbstractMessageDispatcher):
             getattr(user, User.USERNAME_FIELD),
             trench_settings.application_issuer_name,
         )
-
-

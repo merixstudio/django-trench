@@ -1,8 +1,8 @@
+from django.utils.translation import gettext_lazy as _
+
 import string
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
-
-from django.utils.translation import gettext_lazy as _
+from typing import Any, Dict, Optional
 
 
 @dataclass(frozen=True)
@@ -28,6 +28,7 @@ class TrenchConfig:
     allow_backup_codes_regeneration: bool = True
     encrypt_backup_codes: bool = True
     application_issuer_name: str = "MyApplication"
+
 
 @dataclass(frozen=True)
 class MFAMethodConfigAws(MFAMethodConfig):

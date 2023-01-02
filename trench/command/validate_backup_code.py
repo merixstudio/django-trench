@@ -2,8 +2,8 @@ from django.contrib.auth.hashers import check_password
 
 from typing import Iterable, Optional
 
-from trench.settings import trench_settings
 from trench.domain.models import TrenchConfig
+from trench.settings import trench_settings
 
 
 class ValidateBackupCodeCommand:

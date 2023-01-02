@@ -23,7 +23,9 @@ def test_remove_backup_code_from_non_existing_method(
 
 
 @pytest.mark.django_db
-def test_remove_not_encrypted_code(active_user_with_non_encrypted_backup_codes, settings):
+def test_remove_not_encrypted_code(
+    active_user_with_non_encrypted_backup_codes, settings
+):
     user, codes = active_user_with_non_encrypted_backup_codes
     settings.TRENCH_AUTH["ENCRYPT_BACKUP_CODES"] = False
     trench_settings = TrenchSettingsParser(user_settings=settings).get_settings

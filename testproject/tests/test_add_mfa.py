@@ -11,6 +11,7 @@ from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
 from trench.settings import trench_settings
 
+
 User: AbstractUser = get_user_model()
 
 
@@ -36,7 +37,7 @@ def test_should_fail_on_add_user_mfa_with_invalid_source_field(active_user: User
     client = TrenchAPIClient()
     client.authenticate(user=active_user)
     secret = create_secret_command()
-    trench_settings.mfa_methods["email"]['source_field'] = "email_test"
+    trench_settings.mfa_methods["email"]["source_field"] = "email_test"
 
     response = client.post(
         path="/auth/email/activate/",
@@ -52,7 +53,7 @@ def test_should_fail_on_add_user_mfa_with_invalid_source_field(active_user: User
         response.data.get("error")
         == "Field name `email_test` is not valid for model `User`."
     )
-    trench_settings.mfa_methods["email"]['source_field'] = "email"
+    trench_settings.mfa_methods["email"]["source_field"] = "email"
 
 
 @flaky

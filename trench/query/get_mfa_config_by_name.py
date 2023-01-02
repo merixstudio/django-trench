@@ -1,9 +1,9 @@
 from typing import Any, Dict
 
+from trench.domain.models import TrenchConfig
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.settings import trench_settings
 
-from trench.domain.models import TrenchConfig
 
 class GetMFAConfigByNameQuery:
     def __init__(self, settings: TrenchConfig) -> None:

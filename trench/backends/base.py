@@ -2,10 +2,9 @@ from django.db.models import Model
 
 from abc import ABC, abstractmethod
 from pyotp import TOTP
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple
 
 from trench.command.create_otp import create_otp_command
-from trench.domain.models import MFAMethodConfig
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse

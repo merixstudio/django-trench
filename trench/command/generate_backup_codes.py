@@ -21,7 +21,7 @@ class GenerateBackupCodesCommand:
         return {
             self._random_string_generator(
                 trench_settings.backup_codes_length,
-                trench_settings.backup_codes_characters
+                trench_settings.backup_codes_characters,
             )
             for _ in range(trench_settings.backup_codes_quantity)
         }

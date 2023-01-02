@@ -2,12 +2,12 @@ from django.contrib.auth.hashers import check_password
 
 from typing import Any, Set, Type
 
+from trench.domain.models import TrenchConfig
 from trench.exceptions import InvalidCodeError, MFAMethodDoesNotExistError
 from trench.models import MFAMethod
 from trench.settings import trench_settings
 from trench.utils import get_mfa_model
 
-from trench.domain.models import TrenchConfig
 
 class RemoveBackupCodeCommand:
     def __init__(self, mfa_model: Type[MFAMethod], settings: TrenchConfig) -> None:

@@ -10,6 +10,7 @@ from trench.backends.yubikey import YubiKeyMessageDispatcher
 from trench.exceptions import MissingConfigurationError
 from trench.settings import trench_settings
 
+
 User = get_user_model()
 
 
@@ -38,9 +39,7 @@ def test_sms_api_backend_without_credentials(active_user_with_sms_otp, settings)
 def test_sms_api_backend_with_wrong_credentials(active_user_with_sms_otp, settings):
     auth_method = active_user_with_sms_otp.mfa_methods.get(name="sms_api")
     conf = trench_settings.mfa_methods["sms_api"]
-    trench_settings.mfa_methods["sms_api"][
-        "smsapi_access_token"
-    ] = "wrong-token"
+    trench_settings.mfa_methods["sms_api"]["smsapi_access_token"] = "wrong-token"
     response = SMSAPIMessageDispatcher(
         mfa_method=auth_method, config=conf
     ).dispatch_message()

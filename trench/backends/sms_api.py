@@ -31,4 +31,3 @@ class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
         except SmsApiException as cause:
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=cause.message)
-
