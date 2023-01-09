@@ -9,6 +9,7 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
 )
+from django.utils import timezone
 from rest_framework.test import APIClient
 from time import sleep
 from twilio.base.exceptions import TwilioException, TwilioRestException
@@ -19,7 +20,7 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.exceptions import MFAMethodDoesNotExistError
-from trench.models import MFAMethod
+from trench.models import MFAMethod, MFAUsedCode
 
 User = get_user_model()
 
@@ -238,6 +239,48 @@ def test_confirm_activation_otp(active_user):
     assert len(response.data.get("backup_codes")) == 8
     mfa_method.delete()
     assert active_user.mfa_methods.count() == 0
+
+
+@pytest.mark.django_db
+def test_reuse_same_code_after_validity_period(active_user, settings):
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = False
+
+    client = TrenchAPIClient()
+    client.authenticate(user=active_user)
+
+    # create new MFA method
+    client.post(
+        path="/auth/email/activate/",
+        format="json",
+    )
+    mfa_method = active_user.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+
+    # activate the newly created MFA method
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/activate/confirm/",
+        data={"code": code},
+        format="json",
+    )
+    assert response.status_code == HTTP_200_OK
+
+    code = handler.create_code()
+    mfa_reuse_code = MFAUsedCode.objects.filter(code=code, user=active_user).first()
+    mfa_reuse_code.expires_at = timezone.now() - timezone.timedelta(seconds=120)
+    mfa_reuse_code.save()
+    mfa_reuse_code.refresh_from_db()
+
+
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": code},
+        format="json",
+    )
+
+    assert response.status_code == HTTP_204_NO_CONTENT
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = True
 
 
 @pytest.mark.django_db

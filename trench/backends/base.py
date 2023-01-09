@@ -78,10 +78,15 @@ class AbstractMessageDispatcher(ABC):
         method_name = self._mfa_method.name
         valid = self._get_otp().verify(otp=code)
 
+        valid_code = self._get_otp().verify(otp=code)
+        if not valid_code:
+            return False
+
         mfa_used_code_model = get_mfa_used_code_model()
         threshold = timezone.now() + timezone.timedelta(seconds=self._get_valid_window())
 
-        used_code_exist = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__lt=threshold).exists()
+        used_code_exist = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__gt=timezone.now()).exists()
+
         mfa_used_code_model.objects.create(
             user=user,
             code=code,
@@ -92,7 +97,7 @@ class AbstractMessageDispatcher(ABC):
         if used_code_exist and not self._get_allow_reuse_code():
             return False
 
-        return self._get_otp().verify(otp=code)
+        return valid_code
 
     def _get_otp(self) -> TOTP:
         return create_otp_command(
