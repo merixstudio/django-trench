@@ -71,7 +71,7 @@ class ProtectedActionValidator(RequestBodyValidator):
 
         if validated_backup_code:
             remove_backup_code_command(
-                user_id=mfa.user_id, method_name=mfa.name, code=value
+                user_id=mfa.user_id, code=value
             )
             return value
 

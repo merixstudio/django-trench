@@ -83,9 +83,30 @@ class MFAUsedCode(Model):
         return f"{self.id} (User id: {self.user_id})"
 
 
-class MFAMethod(Model):
+class MFABackupCode(Model):
     _BACKUP_CODES_DELIMITER = "|"
+    user = ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=CASCADE,
+        verbose_name=_("user"),
+        related_name="mfa_backup_codes",
+    )
+    _backup_codes = TextField(_("backup codes"))
 
+    class Meta:
+        verbose_name = _("MFA Backup Code")
+        verbose_name_plural = _("MFA Backup Codes")
+
+    @property
+    def backup_codes(self) -> Iterable[str]:
+        return self._backup_codes.split(self._BACKUP_CODES_DELIMITER)
+
+    @backup_codes.setter
+    def backup_codes(self, codes: Iterable) -> None:
+        self._backup_codes = self._BACKUP_CODES_DELIMITER.join(codes)
+
+
+class MFAMethod(Model):
     user = ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=CASCADE,
@@ -96,7 +117,6 @@ class MFAMethod(Model):
     secret = CharField(_("secret"), max_length=255)
     is_primary = BooleanField(_("is primary"), default=False)
     is_active = BooleanField(_("is active"), default=False)
-    _backup_codes = TextField(_("backup codes"), blank=True)
 
     class Meta:
         verbose_name = _("MFA Method")
@@ -117,11 +137,3 @@ class MFAMethod(Model):
 
     def __str__(self) -> str:
         return f"{self.name} (User id: {self.user_id})"
-
-    @property
-    def backup_codes(self) -> Iterable[str]:
-        return self._backup_codes.split(self._BACKUP_CODES_DELIMITER)
-
-    @backup_codes.setter
-    def backup_codes(self, codes: Iterable) -> None:
-        self._backup_codes = self._BACKUP_CODES_DELIMITER.join(codes)

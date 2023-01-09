@@ -50,6 +50,14 @@ class MFAMethodDoesNotExistError(MFAValidationError):
         )
 
 
+class MFABackupCodeError(MFAValidationError):
+    def __init__(self) -> None:
+        super().__init__(
+            detail=_("Backup code failed to create"),
+            code="mfa_backup_code_failed_to_create",
+        )
+
+
 class MFAPrimaryMethodInactiveError(MFAValidationError):
     def __init__(self) -> None:
         super().__init__(

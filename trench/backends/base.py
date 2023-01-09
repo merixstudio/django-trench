@@ -76,6 +76,7 @@ class AbstractMessageDispatcher(ABC):
     def validate_code(self, code: str) -> bool:
         user = self._mfa_method.user
         method_name = self._mfa_method.name
+        valid = self._get_otp().verify(otp=code)
 
         mfa_used_code_model = get_mfa_used_code_model()
         threshold = timezone.now() + timezone.timedelta(seconds=self._get_valid_window())
