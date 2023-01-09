@@ -21,7 +21,6 @@ from trench.command.replace_mfa_method_backup_codes import (
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
 
-
 User = get_user_model()
 
 
@@ -239,6 +238,78 @@ def test_confirm_activation_otp(active_user):
     assert len(response.data.get("backup_codes")) == 8
     mfa_method.delete()
     assert active_user.mfa_methods.count() == 0
+
+
+@pytest.mark.django_db
+def test_fail_to_reuse_same_code(active_user, settings):
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = False
+
+    client = TrenchAPIClient()
+    client.authenticate(user=active_user)
+
+    # create new MFA method
+    client.post(
+        path="/auth/email/activate/",
+        format="json",
+    )
+    mfa_method = active_user.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+
+    # activate the newly created MFA method
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/activate/confirm/",
+        data={"code": code},
+        format="json",
+    )
+    assert response.status_code == HTTP_200_OK
+
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": code},
+        format="json",
+    )
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = True
+
+
+@flaky
+@pytest.mark.django_db
+def test_reuse_same_code_when_allow_reuse_true(active_user):
+    client = TrenchAPIClient()
+    client.authenticate(user=active_user)
+
+    # create new MFA method
+    client.post(
+        path="/auth/email/activate/",
+        format="json",
+    )
+    mfa_method = active_user.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+
+    # activate the newly created MFA method
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/activate/confirm/",
+        data={"code": code},
+        format="json",
+    )
+    assert response.status_code == HTTP_200_OK
+
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": code},
+        format="json",
+    )
+
+    assert response.status_code == HTTP_204_NO_CONTENT
 
 
 @flaky
@@ -544,6 +615,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user)
     old_backup_codes = active_user.mfa_methods.first().backup_codes
+    sleep(30)
     response = client.post(
         path="/auth/email/codes/regenerate/",
         data={

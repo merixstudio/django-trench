@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db.models import (
     CASCADE,
+    IntegerField,
     BooleanField,
     CharField,
     CheckConstraint,
@@ -11,13 +12,15 @@ from django.db.models import (
     QuerySet,
     TextField,
     UniqueConstraint,
+    DateTimeField
 )
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-
+from datetime import datetime
 from typing import Any, Iterable
 
 from trench.exceptions import MFAMethodDoesNotExistError
-
+import uuid
 
 class MFAUserMethodManager(Manager):
     def get_by_name(self, user_id: Any, name: str) -> "MFAMethod":
@@ -57,6 +60,27 @@ class MFAUserMethodManager(Manager):
 
     def primary_exists(self, user_id: Any) -> bool:
         return self.filter(user_id=user_id, is_primary=True).exists()
+
+
+class MFAUsedCode(Model):
+    id = CharField(_("id"), max_length=255, default=uuid.uuid4, primary_key=True)
+    user = ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=CASCADE,
+        verbose_name=_("user"),
+        related_name="mfa_used_codes",
+    )
+    code = CharField(_("code"), max_length=6)
+    used_at = DateTimeField(_("used_at"), default=timezone.now())
+    expires_at = DateTimeField(_("expires_at"))
+    method = CharField(_("method"), max_length=255)
+
+    class Meta:
+        verbose_name = _("MFA Last Used Code")
+        verbose_name_plural = _("MFA Last Used Codes")
+
+    def __str__(self) -> str:
+        return f"{self.id} (User id: {self.user_id})"
 
 
 class MFAMethod(Model):

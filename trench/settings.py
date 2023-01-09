@@ -55,9 +55,11 @@ YUBICLOUD_CLIENT_ID = "YUBICLOUD_CLIENT_ID"
 AWS_ACCESS_KEY = "AWS_ACCESS_KEY"
 AWS_SECRET_KEY = "AWS_SECRET_KEY"
 AWS_REGION = "AWS_REGION"
+ALLOW_REUSE_CODE = "ALLOW_REUSE_CODE"
 
 DEFAULTS = {
     "USER_MFA_MODEL": "trench.MFAMethod",
+    "USER_MFA_USED_CODE_MODEL": "trench.MFAUsedCode",
     "USER_ACTIVE_FIELD": "is_active",
     "BACKUP_CODES_QUANTITY": 5,
     "BACKUP_CODES_LENGTH": 12,  # keep (quantity * length) under 200
@@ -69,6 +71,7 @@ DEFAULTS = {
     "ALLOW_BACKUP_CODES_REGENERATION": True,
     "ENCRYPT_BACKUP_CODES": True,
     "APPLICATION_ISSUER_NAME": "MyApplication",
+    "ALLOW_REUSE_CODE": True,
     "MFA_METHODS": {
         "sms_twilio": {
             VERBOSE_NAME: _("sms_twilio"),

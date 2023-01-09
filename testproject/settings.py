@@ -132,6 +132,7 @@ TRENCH_AUTH = {
     "BACKUP_CODES_CHARACTERS": "0123456789",
     "BACKUP_CODES_QUANTITY": 8,
     "DEFAULT_VALIDITY_PERIOD": 600,
+    "ALLOW_REUSE_CODE": True,
     "MFA_METHODS": {
         "sms_twilio": {
             "VERBOSE_NAME": "sms",
@@ -162,7 +163,7 @@ TRENCH_AUTH = {
         },
         "email": {
             "VERBOSE_NAME": "email",
-            "VALIDITY_PERIOD": 600,
+            "VALIDITY_PERIOD": 30,
             "HANDLER": "trench.backends.basic_mail.SendMailMessageDispatcher",
             "SOURCE_FIELD": "email",
             "EMAIL_SUBJECT": "Your verification code",

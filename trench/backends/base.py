@@ -3,12 +3,13 @@ from django.db.models import Model
 from abc import ABC, abstractmethod
 from pyotp import TOTP
 from typing import Any, Dict, Optional, Tuple
-
+from django.utils import timezone
 from trench.command.create_otp import create_otp_command
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
-from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
+from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, ALLOW_REUSE_CODE, trench_settings
+from trench.utils import get_mfa_used_code_model
 
 
 class AbstractMessageDispatcher(ABC):
@@ -73,6 +74,23 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
+        user = self._mfa_method.user
+        method_name = self._mfa_method.name
+
+        mfa_used_code_model = get_mfa_used_code_model()
+        threshold = timezone.now() + timezone.timedelta(seconds=self._get_valid_window())
+
+        used_code_exist = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__lt=threshold).exists()
+        mfa_used_code_model.objects.create(
+            user=user,
+            code=code,
+            method=method_name,
+            expires_at=threshold
+        )
+
+        if used_code_exist and not self._get_allow_reuse_code():
+            return False
+
         return self._get_otp().verify(otp=code)
 
     def _get_otp(self) -> TOTP:
@@ -84,3 +102,10 @@ class AbstractMessageDispatcher(ABC):
         return self._config.get(
             VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
         )
+
+    def _get_allow_reuse_code(self) -> bool:
+        user_settings = trench_settings.user_settings
+        if "ALLOW_REUSE_CODE" not in user_settings:
+            return trench_settings.ALLOW_REUSE_CODE
+
+        return user_settings["ALLOW_REUSE_CODE"]
