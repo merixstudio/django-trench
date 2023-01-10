@@ -272,7 +272,6 @@ def test_reuse_same_code_after_validity_period(active_user, settings):
     mfa_reuse_code.save()
     mfa_reuse_code.refresh_from_db()
 
-
     response = client.post(
         path="/auth/email/deactivate/",
         data={"code": code},
@@ -317,6 +316,54 @@ def test_fail_to_reuse_same_code(active_user, settings):
     )
 
     assert response.status_code == HTTP_400_BAD_REQUEST
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = True
+
+
+@pytest.mark.django_db
+def test_reuse_same_code_and_fail_to_reuse_same_code_whend_allow_reuse_code_is_false(active_user, settings):
+    client = TrenchAPIClient()
+    client.authenticate(user=active_user)
+
+    # create new MFA method
+    client.post(
+        path="/auth/email/activate/",
+        format="json",
+    )
+    mfa_method = active_user.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
+
+    # activate the newly created MFA method
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/activate/confirm/",
+        data={"code": code},
+        format="json",
+    )
+    assert response.status_code == HTTP_200_OK
+
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/deactivate/",
+        data={"code": code},
+        format="json",
+    )
+
+    assert response.status_code == HTTP_204_NO_CONTENT
+
+    settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = False
+
+    # activate the newly created MFA method
+    code = handler.create_code()
+
+    response = client.post(
+        path="/auth/email/activate/confirm/",
+        data={"code": code},
+        format="json",
+    )
+    assert response.status_code == HTTP_400_BAD_REQUEST
+
     settings.TRENCH_AUTH["ALLOW_REUSE_CODE"] = True
 
 
@@ -658,7 +705,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user)
     old_backup_codes = active_user.mfa_methods.first().backup_codes
-    sleep(30)
+ 
     response = client.post(
         path="/auth/email/codes/regenerate/",
         data={

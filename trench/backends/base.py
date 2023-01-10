@@ -85,6 +85,8 @@ class AbstractMessageDispatcher(ABC):
         threshold = timezone.now() + timezone.timedelta(seconds=self._get_valid_window())
 
         used_code_exist = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__gt=timezone.now()).exists()
+        if used_code_exist and not self._get_allow_reuse_code():
+            return False
 
         mfa_used_code_model.objects.create(
             user=user,
@@ -92,9 +94,6 @@ class AbstractMessageDispatcher(ABC):
             method=method_name,
             expires_at=threshold
         )
-
-        if used_code_exist and not self._get_allow_reuse_code():
-            return False
 
         return valid_code
 
