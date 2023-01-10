@@ -20,7 +20,7 @@ from trench.exceptions import (
 )
 from trench.models import MFAMethod
 from trench.settings import trench_settings
-from trench.utils import available_method_choices, get_mfa_model
+from trench.utils import available_method_choices, get_mfa_model, get_mfa_backup_code_model
 
 
 User: AbstractUser = get_user_model()
@@ -55,21 +55,25 @@ class ProtectedActionValidator(RequestBodyValidator):
         if not value:
             raise OTPCodeMissingError()
         mfa_model = get_mfa_model()
+        mfa_backup_code_model = get_mfa_backup_code_model()
         mfa = mfa_model.objects.get_by_name(
             user_id=self._user.id, name=self._mfa_method_name
         )
+        mfa_backup_code = mfa_backup_code_model.objects.filter(user_id=self._user.id).first()
         self._validate_mfa_method(mfa)
 
-        validated_backup_code = validate_backup_code_command(
-            value=value, backup_codes=mfa.backup_codes
-        )
+        validated_backup_code = False
+        if mfa_backup_code:
+            validated_backup_code = validate_backup_code_command(
+                value=value, backup_codes=mfa_backup_code.backup_codes
+            )
 
         handler = get_mfa_handler(mfa)
         validation_method = getattr(handler, self._get_validation_method_name())
         if validation_method(value):
             return value
 
-        if validated_backup_code:
+        if mfa_backup_code and validated_backup_code:
             remove_backup_code_command(
                 user_id=mfa.user_id, code=value
             )

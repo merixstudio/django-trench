@@ -76,7 +76,6 @@ class AbstractMessageDispatcher(ABC):
     def validate_code(self, code: str) -> bool:
         user = self._mfa_method.user
         method_name = self._mfa_method.name
-        valid = self._get_otp().verify(otp=code)
 
         valid_code = self._get_otp().verify(otp=code)
         if not valid_code:

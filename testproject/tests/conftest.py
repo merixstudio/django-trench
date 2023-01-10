@@ -35,12 +35,12 @@ def tests_setup_and_teardown():
 
 
 def mfa_backup_code_creator(
-    user: UserModel, _backup_code: str,
+    user: UserModel, **method_args: Any,
 ) -> MFABackupCode:
     MFABackupCodeModel = apps.get_model("trench.MFABackupCode")
     return MFABackupCodeModel.objects.create(
         user=user,
-        _backup_code=_backup_code
+        **method_args
     )
 
 
@@ -186,6 +186,7 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
     serialized_backup_codes = MFABackupCode._BACKUP_CODES_DELIMITER.join(
         [make_password(code) if encrypt_codes else code for code in backup_codes]
     )
+    print("190: ", type(serialized_backup_codes))
     if created:
         user.set_password("secretkey"),
         user.is_active = True
@@ -194,7 +195,7 @@ def active_user_with_backup_codes(encrypt_codes: bool) -> Tuple[UserModel, Set[s
             user=user, method_name="email"
         )
         mfa_backup_code_creator(
-            user=user, _backup_code=serialized_backup_codes
+            user=user, _backup_codes=serialized_backup_codes
         )
     return user, backup_codes
 
@@ -236,7 +237,7 @@ def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
             is_active=True
         )
         mfa_backup_code_creator(
-            user=user, _backup_code=encrypted_backup_codes
+            user=user, _backup_codes=encrypted_backup_codes
         )
     return user, next(iter(backup_codes))
 
@@ -302,7 +303,7 @@ def active_user_with_yubi() -> UserModel:
             secret=FAKE_YUBI_SECRET
         )
         mfa_backup_code_creator(
-            user=user, _backup_code=encrypted_backup_codes
+            user=user, _backup_codes=encrypted_backup_codes
         )
     return user
 

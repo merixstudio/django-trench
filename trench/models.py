@@ -90,6 +90,7 @@ class MFABackupCode(Model):
         on_delete=CASCADE,
         verbose_name=_("user"),
         related_name="mfa_backup_codes",
+        primary_key=True
     )
     _backup_codes = TextField(_("backup codes"))
 

@@ -30,12 +30,17 @@ class AuthenticateSecondFactorCommand:
             if get_mfa_handler(mfa_method=auth_method).validate_code(code=code):
                 return
 
+        mfa_backup_code = get_mfa_backup_code_model().objects.filter(user_id=user_id).first()
+        if not mfa_backup_code:
+            raise InvalidCodeError()
+
         validated_backup_code = validate_backup_code_command(
-            value=code, backup_codes=get_mfa_backup_code_model.backup_codes
+            value=code, backup_codes=mfa_backup_code.backup_codes
         )
+
         if validated_backup_code:
             remove_backup_code_command(
-                user_id=auth_method.user_id, code=code
+                user_id=user_id, code=code
             )
             return
 
