@@ -182,8 +182,8 @@ def test_use_backup_code(active_user_with_encrypted_backup_codes):
     )
     assert response_second_step.status_code == HTTP_200_OK
 
-    mfa_method = active_user.mfa_methods.first()
-    assert len(mfa_method.backup_codes) == 7
+    backup_codes = active_user.mfa_backup_codes.first()
+    assert len(backup_codes.values) == 7
 
 
 @pytest.mark.django_db
@@ -631,7 +631,7 @@ def test_confirm_activation_otp_with_backup_code(
         pass
 
     backup_codes = regenerate_backup_codes_for_mfa_method_command(
-        user_id=active_user.id, name="sms_twilio"
+        user_id=active_user.id
     )
     response = client.post(
         path="/auth/sms_twilio/activate/confirm/",
@@ -639,7 +639,8 @@ def test_confirm_activation_otp_with_backup_code(
         format="json",
     )
     assert response.status_code == HTTP_200_OK
-    assert len(response.data.get("backup_codes")) == 8
+    # backup codes will be empty because only it will be created once
+    assert response.data.get("backup_codes") is None
 
     # revert changes
     active_user.mfa_methods.filter(name="sms_twilio").delete()
@@ -704,8 +705,9 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
     mfa_method = active_user.mfa_methods.first()
     handler = get_mfa_handler(mfa_method=mfa_method)
     client.authenticate_multi_factor(mfa_method=mfa_method, user=active_user)
-    old_backup_codes = active_user.mfa_methods.first().backup_codes
- 
+
+    old_backup_codes = active_user.mfa_backup_codes.first().values
+
     response = client.post(
         path="/auth/email/codes/regenerate/",
         data={
@@ -713,7 +715,7 @@ def test_backup_codes_regeneration(active_user_with_encrypted_backup_codes):
         },
         format="json",
     )
-    new_backup_codes = active_user.mfa_methods.first().backup_codes
+    new_backup_codes = active_user.mfa_backup_codes.first().values
     assert response.status_code == HTTP_200_OK
     assert old_backup_codes != new_backup_codes
 
@@ -801,8 +803,7 @@ def test_confirm_yubikey_activation_with_backup_code(
         },
         format="json",
     )
-    assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.data.get("code") is not None
+    assert response.status_code == HTTP_200_OK
 
 
 @pytest.mark.django_db

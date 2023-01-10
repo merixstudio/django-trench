@@ -60,6 +60,7 @@ ALLOW_REUSE_CODE = "ALLOW_REUSE_CODE"
 DEFAULTS = {
     "USER_MFA_MODEL": "trench.MFAMethod",
     "USER_MFA_USED_CODE_MODEL": "trench.MFAUsedCode",
+    "USER_MFA_BACKUP_CODE_MODEL": "trench.MFABackupCodes",
     "USER_ACTIVE_FIELD": "is_active",
     "BACKUP_CODES_QUANTITY": 5,
     "BACKUP_CODES_LENGTH": 12,  # keep (quantity * length) under 200

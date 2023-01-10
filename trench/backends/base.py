@@ -82,10 +82,12 @@ class AbstractMessageDispatcher(ABC):
             return False
 
         mfa_used_code_model = get_mfa_used_code_model()
-        threshold = timezone.now() + timezone.timedelta(seconds=self._get_valid_window())
 
-        used_code_exist = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__gt=timezone.now()).exists()
-        if used_code_exist and not self._get_allow_reuse_code():
+        now = timezone.now()
+        threshold = now + timezone.timedelta(seconds=self._get_valid_window())
+
+        used_code_exists = mfa_used_code_model.objects.filter(user=user, code=code, method=method_name, expires_at__gt=now).exists()
+        if used_code_exists and not self._get_allow_reuse_code():
             return False
 
         mfa_used_code_model.objects.create(

@@ -178,8 +178,7 @@ class MFAMethodBackupCodesRegenerationView(APIView):
             return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
         try:
             backup_codes = regenerate_backup_codes_for_mfa_method_command(
-                user_id=request.user.id,
-                name=method,
+                user_id=request.user.id
             )
             return Response({"backup_codes": backup_codes})
         except MFAValidationError as cause:
