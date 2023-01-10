@@ -71,7 +71,7 @@ class MFAUsedCode(Model):
         related_name="mfa_used_codes",
     )
     code = CharField(_("code"), max_length=6)
-    used_at = DateTimeField(_("used_at"), default=timezone.now())
+    used_at = DateTimeField(_("used_at"), auto_now_add=True)
     expires_at = DateTimeField(_("expires_at"))
     method = CharField(_("method"), max_length=255)
 
