@@ -65,7 +65,7 @@ class ProtectedActionValidator(RequestBodyValidator):
         validated_backup_code = False
         if mfa_backup_code:
             validated_backup_code = validate_backup_code_command(
-                value=value, backup_codes=mfa_backup_code.backup_codes
+                value=value, backup_codes=mfa_backup_code.values
             )
 
         handler = get_mfa_handler(mfa)

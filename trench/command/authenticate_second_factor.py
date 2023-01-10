@@ -35,7 +35,7 @@ class AuthenticateSecondFactorCommand:
             raise InvalidCodeError()
 
         validated_backup_code = validate_backup_code_command(
-            value=code, backup_codes=mfa_backup_code.backup_codes
+            value=code, backup_codes=mfa_backup_code.values
         )
 
         if validated_backup_code:

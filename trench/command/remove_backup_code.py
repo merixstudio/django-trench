@@ -3,34 +3,34 @@ from django.contrib.auth.hashers import check_password
 from typing import Any, Set, Type
 
 from trench.exceptions import InvalidCodeError, MFAMethodDoesNotExistError
-from trench.models import MFABackupCode
+from trench.models import MFABackupCodes
 from trench.settings import TrenchAPISettings, trench_settings
 from trench.utils import get_mfa_backup_code_model
 
 
 class RemoveBackupCodeCommand:
-    def __init__(self, mfa_backup_code_model: Type[MFABackupCode], settings: TrenchAPISettings) -> None:
+    def __init__(self, mfa_backup_code_model: Type[MFABackupCodes], settings: TrenchAPISettings) -> None:
         self._mfa_backup_code_model = mfa_backup_code_model
         self._settings = settings
 
     def execute(self, user_id: Any, code: str) -> None:
         serialized_codes = (
             self._mfa_backup_code_model.objects.filter(user_id=user_id)
-            .values_list("_backup_codes", flat=True)
+            .values_list("_values", flat=True)
             .first()
         )
         if serialized_codes is None:
             raise MFAMethodDoesNotExistError()
-        codes = MFABackupCode._BACKUP_CODES_DELIMITER.join(
+        codes = MFABackupCodes._BACKUP_CODES_DELIMITER.join(
             self._remove_code_from_set(
                 backup_codes=set(
-                    serialized_codes.split(MFABackupCode._BACKUP_CODES_DELIMITER)
+                    serialized_codes.split(MFABackupCodes._BACKUP_CODES_DELIMITER)
                 ),
                 code=code,
             )
         )
         self._mfa_backup_code_model.objects.filter(user_id=user_id).update(
-            _backup_codes=codes
+            _values=codes
         )
 
     def _remove_code_from_set(self, backup_codes: Set[str], code: str) -> Set[str]:

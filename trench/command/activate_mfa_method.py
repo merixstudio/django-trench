@@ -6,7 +6,7 @@ from trench.command.replace_mfa_method_backup_codes import (
     regenerate_backup_codes_for_mfa_method_command,
 )
 from trench.exceptions import MFAMethodDoesNotExistError
-from trench.models import MFAMethod, MFABackupCode
+from trench.models import MFAMethod, MFABackupCodes
 from trench.utils import get_mfa_model
 
 
@@ -19,7 +19,7 @@ class ActivateMFAMethodCommand:
 
     def execute(self, user_id: int, name: str, code: str) -> Optional[Set[str]]:
         mfa = self._mfa_model.objects.get_by_name(user_id=user_id, name=name)
-        print("22: ", mfa)
+
         get_mfa_handler(mfa).confirm_activation(code)
 
         rows_affected = self._mfa_model.objects.filter(
@@ -31,14 +31,14 @@ class ActivateMFAMethodCommand:
 
         if rows_affected < 1:
             raise MFAMethodDoesNotExistError()
-        print("34: ")
-        if MFABackupCode.objects.filter(user_id=user_id).exists():
+
+        if MFABackupCodes.objects.filter(user_id=user_id).exists():
             return None
-        print("37: ")
+
         backup_codes = regenerate_backup_codes_for_mfa_method_command(
             user_id=user_id
         )
-        print("41: ", backup_codes)
+
         return backup_codes
 
 

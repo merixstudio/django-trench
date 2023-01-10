@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 from typing import List, Optional, Tuple, Type
 
-from trench.models import MFAMethod, MFAUsedCode, MFABackupCode
+from trench.models import MFAMethod, MFAUsedCode, MFABackupCodes
 from trench.settings import VERBOSE_NAME, trench_settings
 
 
@@ -73,7 +73,7 @@ def get_mfa_used_code_model() -> Type[MFAUsedCode]:
     return apps.get_model(trench_settings.USER_MFA_USED_CODE_MODEL)
 
 
-def get_mfa_backup_code_model() -> Type[MFABackupCode]:
+def get_mfa_backup_code_model() -> Type[MFABackupCodes]:
     return apps.get_model(trench_settings.USER_MFA_BACKUP_CODE_MODEL)
 
 

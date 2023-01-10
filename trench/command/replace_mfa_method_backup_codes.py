@@ -4,7 +4,7 @@ from typing import Callable, Set, Type
 
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.exceptions import MFABackupCodeError
-from trench.models import MFABackupCode
+from trench.models import MFABackupCodes
 from trench.settings import trench_settings
 from trench.utils import get_mfa_backup_code_model
 
@@ -13,7 +13,7 @@ class RegenerateBackupCodesForMFAMethodCommand:
     def __init__(
         self,
         requires_encryption: bool,
-        mfa_backup_code_model: Type[MFABackupCode],
+        mfa_backup_code_model: Type[MFABackupCodes],
         code_hasher: Callable,
         codes_generator: Callable,
     ) -> None:
@@ -24,8 +24,7 @@ class RegenerateBackupCodesForMFAMethodCommand:
 
     def execute(self, user_id: int) -> Set[str]:
         backup_codes = self._codes_generator()
-        print("27: ")
-        _backup_codes = MFABackupCode._BACKUP_CODES_DELIMITER.join(
+        _backup_codes = MFABackupCodes._BACKUP_CODES_DELIMITER.join(
             [self._code_hasher(backup_code) for backup_code in backup_codes]
             if self._requires_encryption
             else backup_codes
@@ -33,13 +32,13 @@ class RegenerateBackupCodesForMFAMethodCommand:
         if not self.mfa_backup_code_model.objects.filter(user_id=user_id):
             self.mfa_backup_code_model.objects.create(
                 user_id=user_id,
-                _backup_codes=_backup_codes
+                _values=_backup_codes
             )
         else:
             rows_affected = self.mfa_backup_code_model.objects.filter(
                 user_id=user_id
             ).update(
-                _backup_codes=_backup_codes
+                _values=_backup_codes
             )
 
             if rows_affected < 1:
