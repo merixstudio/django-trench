@@ -1,10 +1,10 @@
 from django.db.models import Model
 
 from abc import ABC, abstractmethod
-from pyotp import TOTP
+from pyotp import TOTP, HOTP
 from typing import Any, Dict, Optional, Tuple
 
-from trench.command.create_otp import create_otp_command
+from trench.command.create_otp import create_totp_command, create_hotp_command
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
@@ -64,7 +64,12 @@ class AbstractMessageDispatcher(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def create_code(self) -> str:
-        return self._get_otp().now()
+        if self._mfa_method.is_totp:
+            return self._get_otp().now()
+        else:
+            self._mfa_method.counter += 1
+            self._mfa_method.save()
+            return self._get_otp().at(self._mfa_method.counter)
 
     def confirm_activation(self, code: str) -> None:
         pass
@@ -73,12 +78,18 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
-        return self._get_otp().verify(otp=code)
+        if self._mfa_method.is_totp:
+            return self._get_otp().verify(otp=code)
+        else:
+            return self._get_otp().verify(otp=code, counter=self._mfa_method.counter)
 
-    def _get_otp(self) -> TOTP:
-        return create_otp_command(
-            secret=self._mfa_method.secret, interval=self._get_valid_window()
-        )
+    def _get_otp(self) -> TOTP | HOTP:
+        if self._mfa_method.is_totp:
+            return create_totp_command(
+                secret=self._mfa_method.secret, interval=self._get_valid_window()
+            )
+        else:
+            return create_hotp_command(secret=self._mfa_method.secret)
 
     def _get_valid_window(self) -> int:
         return self._config.get(

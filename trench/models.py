@@ -11,6 +11,7 @@ from django.db.models import (
     QuerySet,
     TextField,
     UniqueConstraint,
+    PositiveIntegerField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -70,6 +71,8 @@ class MFAMethod(Model):
     )
     name = CharField(_("name"), max_length=255)
     secret = CharField(_("secret"), max_length=255)
+    counter = PositiveIntegerField(_("counter"), default=0)
+    is_totp = BooleanField(_("is totp"), default=True)
     is_primary = BooleanField(_("is primary"), default=False)
     is_active = BooleanField(_("is active"), default=False)
     _backup_codes = TextField(_("backup codes"), blank=True)

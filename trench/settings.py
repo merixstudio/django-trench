@@ -44,6 +44,7 @@ class TrenchAPISettings(APISettings):
 SOURCE_FIELD = "SOURCE_FIELD"
 HANDLER = "HANDLER"
 VALIDITY_PERIOD = "VALIDITY_PERIOD"
+USE_TOPT = "USE_TOPT"
 VERBOSE_NAME = "VERBOSE_NAME"
 EMAIL_SUBJECT = "EMAIL_SUBJECT"
 EMAIL_PLAIN_TEMPLATE = "EMAIL_PLAIN_TEMPLATE"
@@ -73,6 +74,7 @@ DEFAULTS = {
         "sms_twilio": {
             VERBOSE_NAME: _("sms_twilio"),
             VALIDITY_PERIOD: 30,
+            USE_TOPT: True,
             HANDLER: "trench.backends.twilio.TwilioMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             TWILIO_VERIFIED_FROM_NUMBER: "YOUR TWILIO REGISTERED NUMBER",
@@ -80,6 +82,7 @@ DEFAULTS = {
         "sms_api": {
             VERBOSE_NAME: _("sms_api"),
             VALIDITY_PERIOD: 30,
+            USE_TOPT: True,
             HANDLER: "trench.backends.sms_api.SMSAPIMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             SMSAPI_ACCESS_TOKEN: "YOUR SMSAPI TOKEN",
@@ -88,6 +91,7 @@ DEFAULTS = {
         "sms_aws": {
             VERBOSE_NAME: _("sms_aws"),
             VALIDITY_PERIOD: 30,
+            USE_TOPT: True,
             HANDLER: "trench.backends.aws.AWSMessageDispatcher",
             SOURCE_FIELD: "phone_number",
             AWS_ACCESS_KEY: "YOUR AWS ACCESS KEY",
@@ -97,6 +101,7 @@ DEFAULTS = {
         "email": {
             VERBOSE_NAME: _("email"),
             VALIDITY_PERIOD: 30,
+            USE_TOPT: True,
             HANDLER: "trench.backends.basic_mail.SendMailMessageDispatcher",
             SOURCE_FIELD: "email",
             EMAIL_SUBJECT: _("Your verification code"),
@@ -106,6 +111,7 @@ DEFAULTS = {
         "app": {
             VERBOSE_NAME: _("app"),
             VALIDITY_PERIOD: 30,
+            USE_TOPT: True,
             "USES_THIRD_PARTY_CLIENT": True,
             HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
         },
