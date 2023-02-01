@@ -106,7 +106,7 @@ class MFAMethodActivationView(APIView):
         try:
             mfa_config = get_mfa_config_by_name_query(name=method)
             source_field = mfa_config.get(SOURCE_FIELD)
-            is_totp = mfa_config.get(USE_TOPT)
+            is_totp = mfa_config.get(USE_TOPT, True)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
         user = request.user

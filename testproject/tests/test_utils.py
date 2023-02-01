@@ -44,6 +44,11 @@ def test_validate_code_totp(active_user_with_email_otp):
 
     assert handler.validate_code(code="123456") is False
     assert handler.validate_code(code=valid_code) is True
+    
+    # both codes are valid during the validitiy window
+    new_valid_code = handler.create_code()
+    assert handler.validate_code(code=valid_code) is True
+    assert handler.validate_code(code=new_valid_code) is True
 
 
 @pytest.mark.django_db
@@ -55,6 +60,7 @@ def test_validate_code_hotp(active_user_with_email_hotp):
     assert handler.validate_code(code="123456") is False
     assert handler.validate_code(code=valid_code) is True
 
+    # creating a new code invalidates the previous one
     new_valid_code = handler.create_code()
     assert handler.validate_code(code=valid_code) is False
     assert handler.validate_code(code=new_valid_code) is True
