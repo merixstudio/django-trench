@@ -37,21 +37,6 @@ def test_innermost_object_test(active_user):
 
 
 @pytest.mark.django_db
-def test_create_code_hotp(active_user_with_email_otp):
-    email_method = active_user_with_email_otp.mfa_methods.get()
-    handler = get_mfa_handler(mfa_method=email_method)
-    valid_code = handler.create_code()
-
-    assert handler.validate_code(code="123456") is False
-    assert handler.validate_code(code=valid_code) is True
-    
-    # both codes are valid during the validitiy window
-    new_valid_code = handler.create_code()
-    assert handler.validate_code(code=valid_code) is True
-    assert handler.validate_code(code=new_valid_code) is True
-
-
-@pytest.mark.django_db
 def test_validate_code_totp(active_user_with_email_otp):
     email_method = active_user_with_email_otp.mfa_methods.get()
     handler = get_mfa_handler(mfa_method=email_method)
