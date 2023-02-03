@@ -111,7 +111,6 @@ DEFAULTS = {
         "app": {
             VERBOSE_NAME: _("app"),
             VALIDITY_PERIOD: 30,
-            USE_TOPT: True,
             "USES_THIRD_PARTY_CLIENT": True,
             HANDLER: "trench.backends.application.ApplicationMessageDispatcher",
         },

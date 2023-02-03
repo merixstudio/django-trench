@@ -43,6 +43,7 @@ def mfa_method_creator(
         is_primary=is_primary,
         name=method_name,
         is_active=method_args.pop("is_active", True),
+        code_generated_at=None,
         **method_args,
     )
 

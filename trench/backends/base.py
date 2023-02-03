@@ -1,6 +1,8 @@
 from django.db.models import Model
+from django.utils import timezone
 
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from pyotp import TOTP, HOTP
 from typing import Any, Dict, Optional, Tuple
 
@@ -64,12 +66,15 @@ class AbstractMessageDispatcher(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def create_code(self) -> str:
+        # totp
         if self._mfa_method.is_totp:
             return self._get_otp().now()
-        else:
-            self._mfa_method.counter += 1
-            self._mfa_method.save()
-            return self._get_otp().at(self._mfa_method.counter)
+
+        # hotp
+        self._mfa_method.counter += 1
+        self._mfa_method.code_generated_at = timezone.now()
+        self._mfa_method.save()
+        return self._get_otp().at(self._mfa_method.counter)
 
     def confirm_activation(self, code: str) -> None:
         pass
@@ -78,18 +83,36 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
+        # totp
         if self._mfa_method.is_totp:
             return self._get_otp().verify(otp=code)
-        else:
-            return self._get_otp().verify(otp=code, counter=self._mfa_method.counter)
+
+        # hotp
+        is_valid = self._get_otp().verify(otp=code, counter=self._mfa_method.counter)
+        if not is_valid or not self._mfa_method.code_generated_at:
+            return False
+
+        min_time = self._mfa_method.code_generated_at
+        max_time = self._mfa_method.code_generated_at + timedelta(
+            seconds=self._get_valid_window()
+        )
+        now = timezone.now()
+        if now < min_time or now > max_time:
+            return False
+
+        self._mfa_method.code_generated_at = None
+        self._mfa_method.save()
+        return True
 
     def _get_otp(self) -> TOTP | HOTP:
+        # totp
         if self._mfa_method.is_totp:
             return create_totp_command(
                 secret=self._mfa_method.secret, interval=self._get_valid_window()
             )
-        else:
-            return create_hotp_command(secret=self._mfa_method.secret)
+
+        # hotp
+        return create_hotp_command(secret=self._mfa_method.secret)
 
     def _get_valid_window(self) -> int:
         return self._config.get(
