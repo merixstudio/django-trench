@@ -11,11 +11,10 @@ class CreateMFAMethodCommand:
         self._mfa_model = mfa_model
         self._create_secret = secret_generator
 
-    def execute(self, user_id: int, name: str, is_totp: bool = True) -> MFAMethod:
+    def execute(self, user_id: int, name: str) -> MFAMethod:
         mfa, created = self._mfa_model.objects.get_or_create(
             user_id=user_id,
             name=name,
-            is_totp=is_totp,
             defaults={
                 "secret": self._create_secret,
                 "is_active": False,

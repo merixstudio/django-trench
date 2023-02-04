@@ -76,20 +76,6 @@ def active_user_with_email_otp() -> UserModel:
 
 
 @pytest.fixture()
-def active_user_with_email_hotp() -> UserModel:
-    user, created = User.objects.get_or_create(
-        username="imhotep",
-        email="imhotep@pyramids.eg",
-    )
-    if created:
-        user.set_password("secretkey"),
-        user.is_active = True
-        user.save()
-        mfa_method_creator(user=user, method_name="email", is_totp=False)
-    return user
-
-
-@pytest.fixture()
 def deactivated_user_with_email_otp(active_user_with_email_otp) -> UserModel:
     active_user_with_email_otp.is_active = False
     active_user_with_email_otp.save()

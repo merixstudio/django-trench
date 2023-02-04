@@ -4,7 +4,10 @@ import logging
 import boto3
 import botocore.exceptions
 
-from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.base import (
+    AbstractMessageDispatcher,
+    AbstractHotpMessageDispatcher,
+)
 from trench.responses import (
     DispatchResponse,
     FailedDispatchResponse,
@@ -12,6 +15,7 @@ from trench.responses import (
 )
 from trench.settings import AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
 from botocore.exceptions import ClientError, EndpointConnectionError
+
 
 class AWSMessageDispatcher(AbstractMessageDispatcher):
     _SMS_BODY = _("Your verification code is: ")
@@ -36,3 +40,7 @@ class AWSMessageDispatcher(AbstractMessageDispatcher):
         except EndpointConnectionError as cause:
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=str(cause))
+
+
+class AWSHotpMessageDispatcher(AbstractHotpMessageDispatcher, AWSMessageDispatcher):
+    pass

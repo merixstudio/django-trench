@@ -2,8 +2,10 @@ import pytest
 
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.basic_mail import SendMailHotpMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.models import MFAMethod
+from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.utils import UserTokenGenerator
 
 
@@ -37,39 +39,65 @@ def test_innermost_object_test(active_user):
 
 
 @pytest.mark.django_db
-def test_validate_code_totp(active_user_with_email_otp):
+def test_validate_code(active_user_with_email_otp):
     email_method = active_user_with_email_otp.mfa_methods.get()
     handler = get_mfa_handler(mfa_method=email_method)
     valid_code = handler.create_code()
 
     assert handler.validate_code(code="123456") is False
     assert handler.validate_code(code=valid_code) is True
-    
+
 
 @pytest.mark.django_db
-def test_validate_code_hotp(active_user_with_email_hotp):
-    email_method = active_user_with_email_hotp.mfa_methods.get()
-    handler = get_mfa_handler(mfa_method=email_method)
-    valid_code = handler.create_code()
+def test_create_code_hotp(active_user_with_email_otp):
+    email_method = active_user_with_email_otp.mfa_methods.get()
+    conf = get_mfa_config_by_name_query(name=email_method.name)
+    handler = SendMailHotpMessageDispatcher(email_method, conf)
+
+    email_method.counter = 0
+    email_method.code_generated_at = None
+    email_method.save()
+
+    handler.create_code()
 
     email_method.refresh_from_db()
+    assert email_method.counter == 1
     assert email_method.code_generated_at is not None
+
+    previous_code_genererated_at = email_method.code_generated_at
+
+    handler.create_code()
+
+    email_method.refresh_from_db()
+    assert email_method.counter == 2
+    assert email_method.code_generated_at > previous_code_genererated_at
+
+
+@pytest.mark.django_db
+def test_validate_code_hotp(active_user_with_email_otp):
+    email_method = active_user_with_email_otp.mfa_methods.get()
+    conf = get_mfa_config_by_name_query(name=email_method.name)
+    handler = SendMailHotpMessageDispatcher(email_method, conf)
+
+    email_method.counter = 0
+    email_method.code_generated_at = None
+    email_method.save()
+
+    valid_code = handler.create_code()
 
     assert handler.validate_code(code="123456") is False
     email_method.refresh_from_db()
     assert email_method.code_generated_at is not None
-    
-    # successful validation clears code generation timestemp
+
     assert handler.validate_code(code=valid_code) is True
     email_method.refresh_from_db()
     assert email_method.code_generated_at is None
-    
-    # subsequently validating the same code twice fails
+
     assert handler.validate_code(code=valid_code) is False
 
-    # creating a new code invalidates the previous one
     valid_code = handler.create_code()
     new_valid_code = handler.create_code()
+
     assert new_valid_code != valid_code
     assert handler.validate_code(code=valid_code) is False
     assert handler.validate_code(code=new_valid_code) is True

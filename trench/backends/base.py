@@ -66,15 +66,7 @@ class AbstractMessageDispatcher(ABC):
         raise NotImplementedError  # pragma: no cover
 
     def create_code(self) -> str:
-        # totp
-        if self._mfa_method.is_totp:
-            return self._get_otp().now()
-
-        # hotp
-        self._mfa_method.counter += 1
-        self._mfa_method.code_generated_at = timezone.now()
-        self._mfa_method.save()
-        return self._get_otp().at(self._mfa_method.counter)
+        return self._get_otp().now()
 
     def confirm_activation(self, code: str) -> None:
         pass
@@ -83,13 +75,32 @@ class AbstractMessageDispatcher(ABC):
         return self.validate_code(code)
 
     def validate_code(self, code: str) -> bool:
-        # totp
-        if self._mfa_method.is_totp:
-            return self._get_otp().verify(otp=code)
+        return self._get_otp().verify(otp=code)
 
-        # hotp
+    def _get_otp(self) -> TOTP:
+        return create_totp_command(
+            secret=self._mfa_method.secret, interval=self._get_valid_window()
+        )
+
+    def _get_valid_window(self) -> int:
+        return self._config.get(
+            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
+        )
+
+
+class AbstractHotpMessageDispatcher(AbstractMessageDispatcher):
+    def create_code(self) -> str:
+        self._mfa_method.counter += 1
+        self._mfa_method.code_generated_at = timezone.now()
+        self._mfa_method.save()
+        return self._get_otp().at(self._mfa_method.counter)
+
+    def validate_code(self, code: str) -> bool:
+        if not self._mfa_method.code_generated_at:
+            return False
+
         is_valid = self._get_otp().verify(otp=code, counter=self._mfa_method.counter)
-        if not is_valid or not self._mfa_method.code_generated_at:
+        if not is_valid:
             return False
 
         min_time = self._mfa_method.code_generated_at
@@ -104,17 +115,5 @@ class AbstractMessageDispatcher(ABC):
         self._mfa_method.save()
         return True
 
-    def _get_otp(self) -> TOTP | HOTP:
-        # totp
-        if self._mfa_method.is_totp:
-            return create_totp_command(
-                secret=self._mfa_method.secret, interval=self._get_valid_window()
-            )
-
-        # hotp
+    def _get_otp(self) -> HOTP:
         return create_hotp_command(secret=self._mfa_method.secret)
-
-    def _get_valid_window(self) -> int:
-        return self._config.get(
-            VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
-        )

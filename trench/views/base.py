@@ -43,7 +43,7 @@ from trench.serializers import (
     MFAMethodDeactivationValidator,
     UserMFAMethodSerializer,
 )
-from trench.settings import SOURCE_FIELD, USE_TOPT, trench_settings
+from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
 
@@ -104,22 +104,20 @@ class MFAMethodActivationView(APIView):
     @staticmethod
     def post(request: Request, method: str) -> Response:
         try:
-            mfa_config = get_mfa_config_by_name_query(name=method)
-            source_field = mfa_config.get(SOURCE_FIELD)
-            is_totp = mfa_config.get(USE_TOPT, True)
+            source_field = get_mfa_config_by_name_query(name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
         user = request.user
         try:
             if source_field is not None and not hasattr(user, source_field):
                 raise MFASourceFieldDoesNotExistError(
-                    source_field, user.__class__.__name__
+                    source_field,
+                    user.__class__.__name__
                 )
 
             mfa = create_mfa_method_command(
                 user_id=user.id,
                 name=method,
-                is_totp=is_totp,
             )
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)

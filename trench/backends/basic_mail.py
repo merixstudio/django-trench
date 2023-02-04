@@ -6,7 +6,10 @@ from django.utils.translation import gettext_lazy as _
 import logging
 from smtplib import SMTPException
 
-from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.base import (
+    AbstractMessageDispatcher,
+    AbstractHotpMessageDispatcher,
+)
 from trench.responses import (
     DispatchResponse,
     FailedDispatchResponse,
@@ -39,3 +42,7 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
         except ConnectionRefusedError as cause:  # pragma: nocover
             logging.error(cause, exc_info=True)  # pragma: nocover
             return FailedDispatchResponse(details=str(cause))  # pragma: nocover
+
+
+class SendMailHotpMessageDispatcher(AbstractHotpMessageDispatcher, SendMailMessageDispatcher):
+    pass

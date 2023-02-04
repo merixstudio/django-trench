@@ -74,7 +74,6 @@ class MFAMethod(Model):
     secret = CharField(_("secret"), max_length=255)
     counter = PositiveIntegerField(_("counter"), default=0)
     code_generated_at = DateTimeField(_("code generated at"), blank=True, null=True)
-    is_totp = BooleanField(_("is totp"), default=True)
     is_primary = BooleanField(_("is primary"), default=False)
     is_active = BooleanField(_("is active"), default=False)
     _backup_codes = TextField(_("backup codes"), blank=True)
