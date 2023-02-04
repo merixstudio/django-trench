@@ -34,5 +34,7 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
             return FailedDispatchResponse(details=cause.msg)
 
 
-class TwilioHotpMessageDispatcher(AbstractHotpMessageDispatcher, TwilioMessageDispatcher):
+class TwilioHotpMessageDispatcher(
+    AbstractHotpMessageDispatcher, TwilioMessageDispatcher
+):
     pass

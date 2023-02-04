@@ -44,5 +44,7 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
             return FailedDispatchResponse(details=str(cause))  # pragma: nocover
 
 
-class SendMailHotpMessageDispatcher(AbstractHotpMessageDispatcher, SendMailMessageDispatcher):
+class SendMailHotpMessageDispatcher(
+    AbstractHotpMessageDispatcher, SendMailMessageDispatcher
+):
     pass

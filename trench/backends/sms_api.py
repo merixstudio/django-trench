@@ -36,5 +36,7 @@ class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
             return FailedDispatchResponse(details=cause.message)
 
 
-class SMSAPIHotpMessageDispatcher(AbstractHotpMessageDispatcher, SMSAPIMessageDispatcher):
+class SMSAPIHotpMessageDispatcher(
+    AbstractHotpMessageDispatcher, SMSAPIMessageDispatcher
+):
     pass
