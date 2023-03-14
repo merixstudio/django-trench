@@ -11,6 +11,7 @@ from django.db.models import (
     QuerySet,
     TextField,
     UniqueConstraint,
+    AutoField,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -61,7 +62,7 @@ class MFAUserMethodManager(Manager):
 
 class MFAMethod(Model):
     _BACKUP_CODES_DELIMITER = "|"
-
+    id = AutoField(primary_key=True)
     user = ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=CASCADE,
