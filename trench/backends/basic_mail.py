@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import get_template
@@ -19,7 +21,7 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
     _KEY_MESSAGE = "message"
     _SUCCESS_DETAILS = _("Email message with MFA code has been sent.")
 
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, url_name: Optional[str] = None) -> DispatchResponse:
         context = {"code": self.create_code()}
         email_plain_template = self._config[EMAIL_PLAIN_TEMPLATE]
         email_html_template = self._config[EMAIL_HTML_TEMPLATE]

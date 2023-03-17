@@ -26,6 +26,12 @@ class MFAUserMethodManager(Manager):
         except self.model.DoesNotExist:
             raise MFAMethodDoesNotExistError()
 
+    def get_active_by_name(self, user_id: Any, name: str) -> "MFAMethod":
+        try:
+            return self.get(user_id=user_id, name=name, is_active=True)
+        except self.model.DoesNotExist:
+            raise MFAMethodDoesNotExistError()
+
     def get_primary_active(self, user_id: Any) -> "MFAMethod":
         try:
             return self.get(user_id=user_id, is_primary=True, is_active=True)

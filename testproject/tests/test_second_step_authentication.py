@@ -8,6 +8,7 @@ from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from rest_framework.test import APIClient
 from time import sleep
@@ -517,6 +518,22 @@ def test_request_code_for_not_inactive_mfa_method(active_user_with_email_otp):
     )
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data.get("error") == "Requested MFA method does not exist."
+
+@flaky
+@pytest.mark.django_db
+def test_request_code_for_application_mfa_method(active_user_with_application_otp):
+    client = TrenchAPIClient()
+    mfa_method = active_user_with_application_otp.mfa_methods.first()
+    client.authenticate_multi_factor(
+        mfa_method=mfa_method, user=active_user_with_application_otp
+    )
+    response = client.post(
+        path="/auth/code/request/",
+        data={"method": "app"},
+        format="json",
+    )
+    assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.data.get("details") == "Get code from OTP application."
 
 
 @flaky

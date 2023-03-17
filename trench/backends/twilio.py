@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.utils.translation import gettext_lazy as _
 
 import logging
@@ -17,7 +19,7 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
     _SMS_BODY = _("Your verification code is: ")
     _SUCCESS_DETAILS = _("SMS message with MFA code has been sent.")
 
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, url_name: Optional[str] = None) -> DispatchResponse:
         try:
             client = Client()
             client.messages.create(
