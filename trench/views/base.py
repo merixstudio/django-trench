@@ -210,7 +210,7 @@ class MFAListActiveUserMethodsView(ListAPIView):
 
     def get_queryset(self) -> QuerySet:
         mfa_model = get_mfa_model()
-        return mfa_model.objects.list_active(user_id=self.request.user.id)
+        return mfa_model.objects.list_active(user_id=self.request.user.id).order_by("-is_primary", "-is_active")
 
 
 class MFAMethodRequestCodeView(APIView):
