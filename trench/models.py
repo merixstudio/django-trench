@@ -83,6 +83,10 @@ class MFAMethod(Model):
         verbose_name_plural = _("MFA Methods")
         constraints = (
             UniqueConstraint(
+                fields=("user", "name"),
+                name="unique_user_method_name",
+            ),
+            UniqueConstraint(
                 condition=Q(is_primary=True),
                 fields=("user",),
                 name="unique_user_is_primary",
