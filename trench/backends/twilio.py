@@ -4,7 +4,10 @@ import logging
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
-from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.base import (
+    AbstractMessageDispatcher,
+    AbstractHotpMessageDispatcher,
+)
 from trench.responses import (
     DispatchResponse,
     FailedDispatchResponse,
@@ -29,3 +32,9 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
         except TwilioRestException as cause:
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=cause.msg)
+
+
+class TwilioHotpMessageDispatcher(
+    AbstractHotpMessageDispatcher, TwilioMessageDispatcher
+):
+    pass

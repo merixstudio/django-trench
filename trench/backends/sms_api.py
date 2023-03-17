@@ -4,7 +4,10 @@ import logging
 from smsapi.client import SmsApiPlClient
 from smsapi.exception import SmsApiException
 
-from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.base import (
+    AbstractMessageDispatcher,
+    AbstractHotpMessageDispatcher,
+)
 from trench.responses import (
     DispatchResponse,
     FailedDispatchResponse,
@@ -31,3 +34,9 @@ class SMSAPIMessageDispatcher(AbstractMessageDispatcher):
         except SmsApiException as cause:
             logging.error(cause, exc_info=True)
             return FailedDispatchResponse(details=cause.message)
+
+
+class SMSAPIHotpMessageDispatcher(
+    AbstractHotpMessageDispatcher, SMSAPIMessageDispatcher
+):
+    pass

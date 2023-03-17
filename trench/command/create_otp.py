@@ -1,10 +1,19 @@
-from pyotp import TOTP
+from pyotp import TOTP, HOTP
 
 
-class CreateOTPCommand:
+class CreateTOTPCommand:
     @staticmethod
     def execute(secret: str, interval: int) -> TOTP:
         return TOTP(secret, interval=interval)
 
 
-create_otp_command = CreateOTPCommand.execute
+create_totp_command = CreateTOTPCommand.execute
+
+
+class CreateHOTPCommand:
+    @staticmethod
+    def execute(secret: str) -> HOTP:
+        return HOTP(secret)
+
+
+create_hotp_command = CreateHOTPCommand.execute

@@ -1,12 +1,14 @@
 from django.conf import settings
 from django.db.models import (
-    CASCADE,
     BooleanField,
+    CASCADE,
     CharField,
     CheckConstraint,
+    DateTimeField,
     ForeignKey,
     Manager,
     Model,
+    PositiveIntegerField,
     Q,
     QuerySet,
     TextField,
@@ -70,6 +72,8 @@ class MFAMethod(Model):
     )
     name = CharField(_("name"), max_length=255)
     secret = CharField(_("secret"), max_length=255)
+    counter = PositiveIntegerField(_("counter"), default=0)
+    code_generated_at = DateTimeField(_("code generated at"), blank=True, null=True)
     is_primary = BooleanField(_("is primary"), default=False)
     is_active = BooleanField(_("is active"), default=False)
     _backup_codes = TextField(_("backup codes"), blank=True)

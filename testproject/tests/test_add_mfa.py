@@ -8,7 +8,7 @@ from flaky import flaky
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from tests.utils import TrenchAPIClient
-from trench.command.create_otp import create_otp_command
+from trench.command.create_otp import create_totp_command
 from trench.command.create_secret import create_secret_command
 
 
@@ -24,7 +24,7 @@ def test_add_user_mfa(active_user):
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_otp_command(secret=secret, interval=60).now(),
+            "code": create_totp_command(secret=secret, interval=60).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",
@@ -43,7 +43,7 @@ def test_should_fail_on_add_user_mfa_with_invalid_source_field(active_user: User
         path="/auth/email/activate/",
         data={
             "secret": secret,
-            "code": create_otp_command(secret=secret, interval=60).now(),
+            "code": create_totp_command(secret=secret, interval=60).now(),
             "user": getattr(active_user, active_user.USERNAME_FIELD),
         },
         format="json",

@@ -1,10 +1,12 @@
 from django.db.models import Model
+from django.utils import timezone
 
 from abc import ABC, abstractmethod
-from pyotp import TOTP
+from datetime import timedelta
+from pyotp import TOTP, HOTP
 from typing import Any, Dict, Optional, Tuple
 
-from trench.command.create_otp import create_otp_command
+from trench.command.create_otp import create_totp_command, create_hotp_command
 from trench.exceptions import MissingConfigurationError
 from trench.models import MFAMethod
 from trench.responses import DispatchResponse
@@ -76,7 +78,7 @@ class AbstractMessageDispatcher(ABC):
         return self._get_otp().verify(otp=code)
 
     def _get_otp(self) -> TOTP:
-        return create_otp_command(
+        return create_totp_command(
             secret=self._mfa_method.secret, interval=self._get_valid_window()
         )
 
@@ -84,3 +86,34 @@ class AbstractMessageDispatcher(ABC):
         return self._config.get(
             VALIDITY_PERIOD, trench_settings.DEFAULT_VALIDITY_PERIOD
         )
+
+
+class AbstractHotpMessageDispatcher(AbstractMessageDispatcher):
+    def create_code(self) -> str:
+        self._mfa_method.counter += 1
+        self._mfa_method.code_generated_at = timezone.now()
+        self._mfa_method.save()
+        return self._get_otp().at(self._mfa_method.counter)
+
+    def validate_code(self, code: str) -> bool:
+        if not self._mfa_method.code_generated_at:
+            return False
+
+        is_valid = self._get_otp().verify(otp=code, counter=self._mfa_method.counter)
+        if not is_valid:
+            return False
+
+        min_time = self._mfa_method.code_generated_at
+        max_time = self._mfa_method.code_generated_at + timedelta(
+            seconds=self._get_valid_window()
+        )
+        now = timezone.now()
+        if now < min_time or now > max_time:
+            return False
+
+        self._mfa_method.code_generated_at = None
+        self._mfa_method.save()
+        return True
+
+    def _get_otp(self) -> HOTP:
+        return create_hotp_command(secret=self._mfa_method.secret)

@@ -2,8 +2,10 @@ import pytest
 
 from trench.backends.application import ApplicationMessageDispatcher
 from trench.backends.base import AbstractMessageDispatcher
+from trench.backends.basic_mail import SendMailHotpMessageDispatcher
 from trench.backends.provider import get_mfa_handler
 from trench.models import MFAMethod
+from trench.query.get_mfa_config_by_name import get_mfa_config_by_name_query
 from trench.utils import UserTokenGenerator
 
 
@@ -44,6 +46,61 @@ def test_validate_code(active_user_with_email_otp):
 
     assert handler.validate_code(code="123456") is False
     assert handler.validate_code(code=valid_code) is True
+
+
+@pytest.mark.django_db
+def test_create_code_hotp(active_user_with_email_otp):
+    email_method = active_user_with_email_otp.mfa_methods.get()
+    conf = get_mfa_config_by_name_query(name=email_method.name)
+    handler = SendMailHotpMessageDispatcher(email_method, conf)
+
+    email_method.counter = 0
+    email_method.code_generated_at = None
+    email_method.save()
+
+    handler.create_code()
+
+    email_method.refresh_from_db()
+    assert email_method.counter == 1
+    assert email_method.code_generated_at is not None
+
+    previous_code_genererated_at = email_method.code_generated_at
+
+    handler.create_code()
+
+    email_method.refresh_from_db()
+    assert email_method.counter == 2
+    assert email_method.code_generated_at > previous_code_genererated_at
+
+
+@pytest.mark.django_db
+def test_validate_code_hotp(active_user_with_email_otp):
+    email_method = active_user_with_email_otp.mfa_methods.get()
+    conf = get_mfa_config_by_name_query(name=email_method.name)
+    handler = SendMailHotpMessageDispatcher(email_method, conf)
+
+    email_method.counter = 0
+    email_method.code_generated_at = None
+    email_method.save()
+
+    valid_code = handler.create_code()
+
+    assert handler.validate_code(code="123456") is False
+    email_method.refresh_from_db()
+    assert email_method.code_generated_at is not None
+
+    assert handler.validate_code(code=valid_code) is True
+    email_method.refresh_from_db()
+    assert email_method.code_generated_at is None
+
+    assert handler.validate_code(code=valid_code) is False
+
+    valid_code = handler.create_code()
+    new_valid_code = handler.create_code()
+
+    assert new_valid_code != valid_code
+    assert handler.validate_code(code=valid_code) is False
+    assert handler.validate_code(code=new_valid_code) is True
 
 
 @pytest.mark.django_db
