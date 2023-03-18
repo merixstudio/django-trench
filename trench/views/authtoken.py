@@ -1,4 +1,5 @@
 from django.contrib.auth import user_logged_in, user_logged_out
+from django.contrib.auth.base_user import AbstractBaseUser
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -8,11 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from trench.serializers import TokenSerializer
-from trench.views import MFAFirstStepMixin, MFASecondStepMixin, MFAStepMixin, User
+from trench.views import MFAFirstStepMixin, MFASecondStepMixin, MFAStepMixin
 
 
 class MFAAuthTokenView(MFAStepMixin):
-    def _successful_authentication_response(self, user: User) -> Response:
+    def _successful_authentication_response(self, user: AbstractBaseUser) -> Response:
         token, _ = Token.objects.get_or_create(user=user)
         user_logged_in.send(sender=user.__class__, request=self.request, user=user)
         return Response(data=TokenSerializer(token).data)

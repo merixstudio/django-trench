@@ -114,7 +114,7 @@ Local development
 
     .. code-block:: shell
 
-        pip install black mypy
+        pip install black mypy djangorestframework-stubs
         pip install -r testproject/requirements.txt
 
 5. Set environment variables:

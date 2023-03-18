@@ -1,3 +1,5 @@
+from typing import Type
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 
@@ -12,7 +14,7 @@ from trench.responses import (
 from trench.settings import trench_settings
 
 
-User: AbstractUser = get_user_model()
+User: Type[AbstractUser] = get_user_model()
 
 
 class ApplicationMessageDispatcher(AbstractMessageDispatcher):
@@ -24,7 +26,7 @@ class ApplicationMessageDispatcher(AbstractMessageDispatcher):
             logging.error(cause, exc_info=True)  # pragma: nocover
             return FailedDispatchResponse(details=str(cause))  # pragma: nocover
 
-    def _create_qr_link(self, user: User) -> str:
+    def _create_qr_link(self, user: AbstractUser) -> str:
         return self._get_otp().provisioning_uri(
             getattr(user, User.USERNAME_FIELD),
             trench_settings.APPLICATION_ISSUER_NAME,

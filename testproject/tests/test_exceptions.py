@@ -30,8 +30,9 @@ def test_method_handler_missing_error():
         assert settings.MFA_METHODS["method_without_handler"] is None
 
 
-def test_code_missing_error():
-    validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
+@pytest.mark.django_db
+def test_code_missing_error(active_user):
+    validator = ProtectedActionValidator(mfa_method_name="yubi", user=active_user)
     with pytest.raises(OTPCodeMissingError):
         validator.validate_code(value="")
 
@@ -44,15 +45,17 @@ def test_request_body_validator():
         validator.update(instance=MFAMethod(), validated_data=OrderedDict())
 
 
-def test_protected_action_validator():
-    validator = ProtectedActionValidator(mfa_method_name="yubi", user=None)
+@pytest.mark.django_db
+def test_protected_action_validator(active_user):
+    validator = ProtectedActionValidator(mfa_method_name="yubi", user=active_user)
     with pytest.raises(NotImplementedError):
         validator._validate_mfa_method(mfa=MFAMethod())
 
 
-def test_mfa_method_activation_validator():
+@pytest.mark.django_db
+def test_mfa_method_activation_validator(active_user):
     validator = MFAMethodActivationConfirmationValidator(
-        mfa_method_name="yubi", user=None
+        mfa_method_name="yubi", user=active_user
     )
     with pytest.raises(MFAMethodAlreadyActiveError):
         validator._validate_mfa_method(mfa=MFAMethod(is_active=True))

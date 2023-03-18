@@ -3,17 +3,39 @@ from django.utils.translation import gettext_lazy as _
 
 import string
 from rest_framework.settings import APISettings, perform_import
-from typing import Any, Dict
+from typing import Any, Dict, TYPE_CHECKING
+from typing_extensions import Literal
 
 from trench.exceptions import MethodHandlerMissingError
 
+if TYPE_CHECKING:
+    from rest_framework.settings import DefaultsSettings
+
+    class TrenchDefaultsSettings(DefaultsSettings):
+        USER_MFA_MODEL: str
+        USER_ACTIVE_FIELD: str
+        BACKUP_CODES_QUANTITY: int
+        BACKUP_CODES_LENGTH: int
+        BACKUP_CODES_CHARACTERS: str
+        SECRET_KEY_LENGTH: int
+        DEFAULT_VALIDITY_PERIOD: int
+        CONFIRM_DISABLE_WITH_CODE: bool
+        CONFIRM_BACKUP_CODES_REGENERATION_WITH_CODE: bool
+        ALLOW_BACKUP_CODES_REGENERATION: bool
+        ENCRYPT_BACKUP_CODES: bool
+        APPLICATION_ISSUER_NAME: str
+        MFA_METHODS: dict
+
 
 class TrenchAPISettings(APISettings):
-    _FIELD_USER_SETTINGS = "_user_settings"
-    _FIELD_TRENCH_AUTH = "TRENCH_AUTH"
-    _FIELD_BACKUP_CODES_CHARACTERS = "BACKUP_CODES_CHARACTERS"
-    _FIELD_MFA_METHODS = "MFA_METHODS"
-    _FIELD_HANDLER = "HANDLER"
+    defaults: "TrenchDefaultsSettings"
+    _FIELD_USER_SETTINGS: Literal["_user_settings"] = "_user_settings"
+    _FIELD_TRENCH_AUTH: Literal["TRENCH_AUTH"] = "TRENCH_AUTH"
+    _FIELD_BACKUP_CODES_CHARACTERS: Literal[
+        "BACKUP_CODES_CHARACTERS"
+    ] = "BACKUP_CODES_CHARACTERS"
+    _FIELD_MFA_METHODS: Literal["MFA_METHODS"] = "MFA_METHODS"
+    _FIELD_HANDLER: Literal["HANDLER"] = "HANDLER"
 
     @property
     def user_settings(self) -> Dict[str, Any]:
@@ -56,7 +78,7 @@ AWS_ACCESS_KEY = "AWS_ACCESS_KEY"
 AWS_SECRET_KEY = "AWS_SECRET_KEY"
 AWS_REGION = "AWS_REGION"
 
-DEFAULTS = {
+DEFAULTS: "TrenchDefaultsSettings" = {
     "USER_MFA_MODEL": "trench.MFAMethod",
     "USER_ACTIVE_FIELD": "is_active",
     "BACKUP_CODES_QUANTITY": 5,

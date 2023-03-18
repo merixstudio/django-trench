@@ -15,6 +15,8 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+from typing import Dict
+
 import sphinx_rtd_theme
 
 
@@ -114,7 +116,7 @@ htmlhelp_basename = "django-trench_docs"
 
 # -- Options for LaTeX output ------------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

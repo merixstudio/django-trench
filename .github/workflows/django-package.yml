@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install mypy flake8 pytest pytest-xdist flaky
+        python -m pip install mypy djangorestframework-stubs flake8 pytest pytest-xdist flaky
         if [ -f testproject/requirements.txt ]; then pip install -r testproject/requirements.txt; fi
         ln -s $(pwd)/trench/ $(pwd)/testproject/trench
     - name: Lint trench package with flake8

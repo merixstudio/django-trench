@@ -1,17 +1,13 @@
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.models import AbstractUser
-
+from django.contrib.auth import authenticate
+from django.contrib.auth.base_user import AbstractBaseUser
 from rest_framework.request import Request
 
 from trench.exceptions import UnauthenticatedError
 
 
-User: AbstractUser = get_user_model()
-
-
 class AuthenticateUserCommand:
     @staticmethod
-    def execute(request: Request, username: str, password: str) -> User:
+    def execute(request: Request, username: str, password: str) -> AbstractBaseUser:
         user = authenticate(
             request=request,
             username=username,
