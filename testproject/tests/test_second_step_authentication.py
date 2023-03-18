@@ -21,7 +21,6 @@ from trench.command.replace_mfa_method_backup_codes import (
 from trench.exceptions import MFAMethodDoesNotExistError
 from trench.models import MFAMethod
 
-
 User = get_user_model()
 
 
@@ -139,11 +138,15 @@ def test_second_method_activation(active_user_with_email_otp):
     client.authenticate_multi_factor(
         mfa_method=mfa_method, user=active_user_with_email_otp
     )
+    handler = get_mfa_handler(mfa_method=mfa_method)
     assert len(active_user_with_email_otp.mfa_methods.all()) == 1
     try:
         client.post(
             path="/auth/sms_twilio/activate/",
-            data={"phone_number": "555-555-555"},
+            data={
+                "phone_number": "555-555-555",
+                "code": handler.create_code()
+            },
             format="json",
         )
     except TwilioException:
@@ -458,10 +461,15 @@ def test_confirm_activation_otp_with_backup_code(
     )
     assert response.status_code == HTTP_200_OK
     client._update_jwt_from_response(response=response)
+    mfa_method = active_user.mfa_methods.first()
+    handler = get_mfa_handler(mfa_method=mfa_method)
     try:
         client.post(
             path="/auth/sms_twilio/activate/",
-            data={"phone_number": "555-555-555"},
+            data={
+                "phone_number": "555-555-555",
+                "code": handler.create_code()
+            },
             format="json",
         )
     except (TwilioRestException, TwilioException):
