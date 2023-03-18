@@ -46,6 +46,7 @@ HANDLER = "HANDLER"
 VALIDITY_PERIOD = "VALIDITY_PERIOD"
 VERBOSE_NAME = "VERBOSE_NAME"
 EMAIL_SUBJECT = "EMAIL_SUBJECT"
+EMAIL_SUBJECT_TEMPLATE = "EMAIL_SUBJECT_TEMPLATE"
 EMAIL_PLAIN_TEMPLATE = "EMAIL_PLAIN_TEMPLATE"
 EMAIL_HTML_TEMPLATE = "EMAIL_HTML_TEMPLATE"
 SMSAPI_ACCESS_TOKEN = "SMSAPI_ACCESS_TOKEN"
@@ -100,6 +101,7 @@ DEFAULTS = {
             HANDLER: "trench.backends.basic_mail.SendMailMessageDispatcher",
             SOURCE_FIELD: "email",
             EMAIL_SUBJECT: _("Your verification code"),
+            EMAIL_SUBJECT_TEMPLATE: "trench/backends/email/code_subject.txt",
             EMAIL_PLAIN_TEMPLATE: "trench/backends/email/code.txt",
             EMAIL_HTML_TEMPLATE: "trench/backends/email/code.html",
         },
