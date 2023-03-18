@@ -1,3 +1,6 @@
+from typing import Union
+
+from django_stubs_ext import StrOrPromise
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
@@ -14,20 +17,20 @@ class DispatchResponse(Response):
 
 class SuccessfulDispatchResponse(DispatchResponse):
     def __init__(
-        self, details: str, status: str = HTTP_200_OK, *args, **kwargs
+        self, details: StrOrPromise, status: int = HTTP_200_OK, *args, **kwargs
     ) -> None:
-        super().__init__(
-            data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
-        )
+        super().__init__({self._FIELD_DETAILS: details}, status, *args, **kwargs)
 
 
 class FailedDispatchResponse(DispatchResponse):
     def __init__(
-        self, details: str, status: str = HTTP_422_UNPROCESSABLE_ENTITY, *args, **kwargs
+        self,
+        details: StrOrPromise,
+        status: int = HTTP_422_UNPROCESSABLE_ENTITY,
+        *args,
+        **kwargs
     ) -> None:
-        super().__init__(
-            data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
-        )
+        super().__init__({self._FIELD_DETAILS: details}, status, *args, **kwargs)
 
 
 class ErrorResponse(Response):
@@ -35,11 +38,9 @@ class ErrorResponse(Response):
 
     def __init__(
         self,
-        error: MFAValidationError,
-        status: str = HTTP_400_BAD_REQUEST,
+        error: Union[StrOrPromise, MFAValidationError],
+        status: int = HTTP_400_BAD_REQUEST,
         *args,
         **kwargs
     ) -> None:
-        super().__init__(
-            data={self._FIELD_ERROR: str(error)}, status=status, *args, **kwargs
-        )
+        super().__init__({self._FIELD_ERROR: str(error)}, status, *args, **kwargs)

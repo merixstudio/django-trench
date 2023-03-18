@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 
 from trench.backends.application import ApplicationMessageDispatcher
@@ -23,7 +25,9 @@ def test_invalid_token():
 def test_create_qr_link(active_user_with_many_otp_methods):
     user, _ = active_user_with_many_otp_methods
     mfa_method: MFAMethod = user.mfa_methods.filter(name="app").first()
-    handler: ApplicationMessageDispatcher = get_mfa_handler(mfa_method)
+    handler: ApplicationMessageDispatcher = cast(
+        ApplicationMessageDispatcher, get_mfa_handler(mfa_method)
+    )
     qr_link = handler._create_qr_link(user=user)
     assert type(qr_link) == str
     assert user.username in qr_link

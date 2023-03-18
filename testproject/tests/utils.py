@@ -65,13 +65,16 @@ class TrenchAPIClient(APIClient):
         code: Optional[str] = None,
         path: str = PATH_AUTH_JWT_LOGIN_CODE,
     ) -> Response:
-        if handler is None and code is None:
-            raise ValueError("handler and code can't be None simultaneously")
+        if code is None:
+            if handler is None:
+                raise ValueError("handler and code can't be None simultaneously")
+            else:
+                code = handler.create_code()
         return self.post(
             path=path,
             data={
                 "ephemeral_token": ephemeral_token,
-                "code": handler.create_code() if code is None else code,  # type: ignore
+                "code": code,
             },
             format="json",
         )

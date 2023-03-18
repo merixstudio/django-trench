@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Model
 
@@ -6,7 +7,7 @@ from abc import abstractmethod
 from rest_framework.authtoken.models import Token
 from rest_framework.fields import CharField, ChoiceField
 from rest_framework.serializers import ModelSerializer, Serializer
-from typing import Any, OrderedDict
+from typing import Any, OrderedDict, Type
 
 from trench.backends.provider import get_mfa_handler
 from trench.command.remove_backup_code import remove_backup_code_command
@@ -23,7 +24,7 @@ from trench.settings import trench_settings
 from trench.utils import available_method_choices, get_mfa_model
 
 
-User: AbstractUser = get_user_model()
+User: Type[AbstractUser] = get_user_model()
 
 
 class RequestBodyValidator(Serializer):
@@ -46,7 +47,9 @@ class ProtectedActionValidator(RequestBodyValidator):
     def _validate_mfa_method(mfa: MFAMethod) -> None:
         raise NotImplementedError
 
-    def __init__(self, mfa_method_name: str, user: User, *args, **kwargs) -> None:
+    def __init__(
+        self, mfa_method_name: str, user: AbstractBaseUser, *args, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._user = user
         self._mfa_method_name = mfa_method_name
@@ -56,7 +59,7 @@ class ProtectedActionValidator(RequestBodyValidator):
             raise OTPCodeMissingError()
         mfa_model = get_mfa_model()
         mfa = mfa_model.objects.get_by_name(
-            user_id=self._user.id, name=self._mfa_method_name
+            user_id=self._user.pk, name=self._mfa_method_name
         )
         self._validate_mfa_method(mfa)
 

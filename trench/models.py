@@ -19,7 +19,7 @@ from typing import Any, Iterable
 from trench.exceptions import MFAMethodDoesNotExistError
 
 
-class MFAUserMethodManager(Manager):
+class MFAUserMethodManager(Manager["MFAMethod"]):
     def get_by_name(self, user_id: Any, name: str) -> "MFAMethod":
         try:
             return self.get(user_id=user_id, name=name)
@@ -96,7 +96,7 @@ class MFAMethod(Model):
     objects = MFAUserMethodManager()
 
     def __str__(self) -> str:
-        return f"{self.name} (User id: {self.user_id})"
+        return f"{self.name} (User id: {self.user_id})"  # type: ignore[attr-defined]
 
     @property
     def backup_codes(self) -> Iterable[str]:
