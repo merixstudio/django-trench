@@ -73,15 +73,21 @@ class MFAFirstStepMixin(MFAStepMixin, ABC):
         try:
             mfa_model = get_mfa_model()
             mfa_method = mfa_model.objects.get_primary_active(user_id=user.id)
-            get_mfa_handler(mfa_method=mfa_method).dispatch_message()
-            return Response(
+            dispatch_response = get_mfa_handler(mfa_method=mfa_method).dispatch_message()
+            return self._token_response(
                 data={
                     "ephemeral_token": user_token_generator.make_token(user),
                     "method": mfa_method.name,
-                }
+                },
+                method=mfa_method,
+                dispatch_response=dispatch_response,
             )
         except MFAMethodDoesNotExistError:
             return self._successful_authentication_response(user=user)
+
+    def _token_response(self, data, method, dispatch_response: DispatchResponse) -> Response
+        '''Hook to permit customising response content'''
+        return Response(data)
 
 
 class MFASecondStepMixin(MFAStepMixin, ABC):
