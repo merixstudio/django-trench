@@ -14,7 +14,7 @@ class DispatchResponse(Response):
 
 class SuccessfulDispatchResponse(DispatchResponse):
     def __init__(
-        self, details: str, status: str = HTTP_200_OK, *args, **kwargs
+        self, details: str, status: int = HTTP_200_OK, *args, **kwargs
     ) -> None:
         super().__init__(
             data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
@@ -23,7 +23,7 @@ class SuccessfulDispatchResponse(DispatchResponse):
 
 class FailedDispatchResponse(DispatchResponse):
     def __init__(
-        self, details: str, status: str = HTTP_422_UNPROCESSABLE_ENTITY, *args, **kwargs
+        self, details: str, status: int = HTTP_422_UNPROCESSABLE_ENTITY, *args, **kwargs
     ) -> None:
         super().__init__(
             data={self._FIELD_DETAILS: details}, status=status, *args, **kwargs
@@ -36,7 +36,7 @@ class ErrorResponse(Response):
     def __init__(
         self,
         error: MFAValidationError,
-        status: str = HTTP_400_BAD_REQUEST,
+        status: int = HTTP_400_BAD_REQUEST,
         *args,
         **kwargs
     ) -> None:
