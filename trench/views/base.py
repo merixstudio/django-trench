@@ -131,8 +131,7 @@ class MFAMethodConfirmActivationView(APIView):
         serializer = MFAMethodActivationConfirmationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             backup_codes = activate_mfa_method_command(
                 user_id=request.user.id,
@@ -152,8 +151,7 @@ class MFAMethodDeactivationView(APIView):
         serializer = MFAMethodDeactivationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             deactivate_mfa_method_command(
                 mfa_method_name=method, user_id=request.user.id
@@ -173,8 +171,7 @@ class MFAMethodBackupCodesRegenerationView(APIView):
         serializer = MFAMethodBackupCodesGenerationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             backup_codes = regenerate_backup_codes_for_mfa_method_command(
                 user_id=request.user.id,
