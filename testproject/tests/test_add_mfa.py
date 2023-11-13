@@ -2,7 +2,6 @@ import pytest
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
 
 from flaky import flaky
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -12,7 +11,7 @@ from trench.command.create_otp import create_otp_command
 from trench.command.create_secret import create_secret_command
 
 
-User: AbstractUser = get_user_model()
+User = get_user_model()
 
 
 @pytest.mark.django_db

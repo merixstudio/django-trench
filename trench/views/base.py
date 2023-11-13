@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
 
@@ -47,7 +46,7 @@ from trench.settings import SOURCE_FIELD, trench_settings
 from trench.utils import available_method_choices, get_mfa_model, user_token_generator
 
 
-User: AbstractUser = get_user_model()
+User = get_user_model()
 
 
 class MFAStepMixin(APIView, ABC):
@@ -132,8 +131,7 @@ class MFAMethodConfirmActivationView(APIView):
         serializer = MFAMethodActivationConfirmationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             backup_codes = activate_mfa_method_command(
                 user_id=request.user.id,
@@ -153,8 +151,7 @@ class MFAMethodDeactivationView(APIView):
         serializer = MFAMethodDeactivationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             deactivate_mfa_method_command(
                 mfa_method_name=method, user_id=request.user.id
@@ -174,8 +171,7 @@ class MFAMethodBackupCodesRegenerationView(APIView):
         serializer = MFAMethodBackupCodesGenerationValidator(
             mfa_method_name=method, user=request.user, data=request.data
         )
-        if not serializer.is_valid():
-            return Response(status=HTTP_400_BAD_REQUEST, data=serializer.errors)
+        serializer.is_valid(raise_exception=True)
         try:
             backup_codes = regenerate_backup_codes_for_mfa_method_command(
                 user_id=request.user.id,

@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from trench.exceptions import UnauthenticatedError
 
 
-User: AbstractUser = get_user_model()
+User = get_user_model()
 
 
 class AuthenticateUserCommand:
