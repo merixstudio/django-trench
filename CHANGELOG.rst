@@ -20,6 +20,7 @@ Changelog
 * Backwards-compatible code refactoring and cleanup for better maintenance experience.
 * Deactivation of primary MFA method would raise an error instead of randomly selecting new primary method from all active ones.
 * Twilio backend client should be configured via environment variables instead of backend's configuration the `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`.
+* :code:`djoser` integration abandoned due to infrequent updates of the library. Djoser's auth links are no longer supported.
 
 
 0.2.3 (2019-12-16)

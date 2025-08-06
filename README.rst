@@ -40,9 +40,9 @@ Features
 Supported versions
 ******************
 
-* Python 3.7, 3.8, 3.9
-* Django 2.0, 2.1, 2.2, 3.0
-* Django REST Framework 3.10
+* Python 3.7, 3.8, 3.9, 3.10
+* Django 2.0, 2.1, 2.2, 3.0, 3.1, 3.2, 4.0, 4.1
+* Django REST Framework 3.10, 3.11, 3.12, 3.13, 3.14
 
 | If you are going to use JWT authentication:
 
@@ -130,7 +130,7 @@ Local development
     .. code-block:: shell
 
         # make sure you run this command from the root directory of this project
-        ln -s ln -s $(pwd)/trench/ $(pwd)/testproject/trench
+        ln -s $(pwd)/trench/ $(pwd)/testproject/trench
 
 7. Check whether the tests are passing:
 

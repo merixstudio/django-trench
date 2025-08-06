@@ -19,12 +19,13 @@ setup(
         "pyotp>=2.6.0",
         "twilio>=6.56.0",
         "yubico-client>=1.13.0",
+        "boto3>=1.21.37",
         "smsapi-client>=2.4.5",
     ],
     extras_require={
-        'docs': [
-            'sphinx >= 1.4',
-            'sphinx_rtd_theme',
+        "docs": [
+            "sphinx >= 1.4",
+            "sphinx_rtd_theme",
         ]
     },
     classifiers=[
@@ -35,6 +36,8 @@ setup(
         "Framework :: Django :: 3.0",
         "Framework :: Django :: 3.1",
         "Framework :: Django :: 3.2",
+        "Framework :: Django :: 4.0",
+        "Framework :: Django :: 4.1",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
@@ -42,5 +45,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

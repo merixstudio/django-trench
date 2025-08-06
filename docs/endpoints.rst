@@ -85,7 +85,11 @@ MFA method activation confirmation
 MFA method deactivation
 ***********************
 
-| Deactivates the specified method. Depeding on :doc: `settings` sends out an authentication code and requires confirmation.
+| Deactivates the specified method. Depending on :doc: `settings` sends out an authentication code and requires confirmation.
+| Note: You can deactivate a primary  MFA method only if it's the last active method assigned to a user.
+| However, you cannot deactivate a primary MFA method if there are other methods active.
+| You should change primary method to a different one first, and then deactivate the method.
+
 
 .. list-table::
     :stub-columns: 1
@@ -348,8 +352,6 @@ Change user's primary MFA method
 ********************************
 
 | Change user's primary authentication method.
-
-| Display methods activated by user
 
 .. list-table::
     :stub-columns: 1

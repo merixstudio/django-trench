@@ -48,7 +48,7 @@ class AbstractMessageDispatcher(ABC):
             return None, path
 
     @staticmethod
-    def _get_innermost_object(obj: Model, dotted_path: str = None) -> Model:
+    def _get_innermost_object(obj: Model, dotted_path: Optional[str] = None) -> Model:
         """
         For given object return innermost object.
         """
@@ -75,8 +75,9 @@ class AbstractMessageDispatcher(ABC):
         return self._get_otp().verify(otp=code)
 
     def _get_otp(self) -> TOTP:
-        return create_otp_command(secret=self._mfa_method.secret,
-                                  interval=self._get_valid_window())
+        return create_otp_command(
+            secret=self._mfa_method.secret, interval=self._get_valid_window()
+        )
 
     def _get_valid_window(self) -> int:
         return self._config.get(VALIDITY_PERIOD,

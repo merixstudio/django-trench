@@ -3,11 +3,14 @@ from django.db.models import (
     CASCADE,
     BooleanField,
     CharField,
+    CheckConstraint,
     ForeignKey,
     Manager,
     Model,
+    Q,
     QuerySet,
     TextField,
+    UniqueConstraint,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -74,6 +77,21 @@ class MFAMethod(Model):
     class Meta:
         verbose_name = _("MFA Method")
         verbose_name_plural = _("MFA Methods")
+        constraints = (
+            UniqueConstraint(
+                fields=("user", "name"),
+                name="unique_user_method_name",
+            ),
+            UniqueConstraint(
+                condition=Q(is_primary=True),
+                fields=("user",),
+                name="unique_user_is_primary",
+            ),
+            CheckConstraint(
+                check=(Q(is_primary=True) & Q(is_active=True)) | Q(is_primary=False),
+                name="primary_is_active",
+            ),
+        )
 
     objects = MFAUserMethodManager()
 

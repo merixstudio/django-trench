@@ -35,5 +35,7 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
             return SuccessfulDispatchResponse(details=self._SUCCESS_DETAILS)
         except SMTPException as cause:  # pragma: nocover
             logging.error(cause, exc_info=True)  # pragma: nocover
-            return FailedDispatchResponse(
-                details=str(cause))  # pragma: nocover
+            return FailedDispatchResponse(details=str(cause))  # pragma: nocover
+        except ConnectionRefusedError as cause:  # pragma: nocover
+            logging.error(cause, exc_info=True)  # pragma: nocover
+            return FailedDispatchResponse(details=str(cause))  # pragma: nocover

@@ -88,7 +88,11 @@ Using SMS API
 
 Authentication apps
 *******************
-| This backend returns OTP based QR link to be scanned by apps like Gooogle Authenticator and Authy.
+| This backend returns OTP based QR link to be scanned by apps like Google Authenticator and Authy.
+
+**Important note:** validity period varies between apps. Use the right value you
+find in a given provider's docs. Setting the wrong value will lead to an error with
+validating MFA code.
 
 .. code-block:: python
 

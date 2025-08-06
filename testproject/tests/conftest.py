@@ -108,6 +108,19 @@ def active_user_with_twilio_otp() -> UserModel:
 
 
 @pytest.fixture()
+def active_user_with_sms_aws_otp() -> UserModel:
+    user, created = User.objects.get_or_create(
+        username="imhotep", email="imhotep@pyramids.eg", phone_number="555-555-555"
+    )
+    if created:
+        user.set_password("secretkey"),
+        user.is_active = True
+        user.save()
+        mfa_method_creator(user=user, method_name="sms_aws")
+    return user
+
+
+@pytest.fixture()
 def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
     user, created = User.objects.get_or_create(
         username="imhotep",
@@ -124,6 +137,22 @@ def active_user_with_email_and_inactive_other_methods_otp() -> UserModel:
         mfa_method_creator(
             user=user, method_name="app", is_primary=False, is_active=False
         )
+    return user
+
+
+@pytest.fixture()
+def active_user_with_email_and_active_other_methods_otp() -> UserModel:
+    user, created = User.objects.get_or_create(
+        username="imhotep",
+        email="imhotep@pyramids.eg",
+    )
+    if created:
+        user.set_password("secretkey"),
+        user.is_active = True
+        user.save()
+        mfa_method_creator(user=user, method_name="email")
+        mfa_method_creator(user=user, method_name="sms_twilio", is_primary=False)
+        mfa_method_creator(user=user, method_name="app", is_primary=False)
     return user
 
 
@@ -178,18 +207,21 @@ def active_user_with_many_otp_methods() -> Tuple[UserModel, str]:
             user=user,
             method_name="sms_twilio",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
             method_name="app",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
         mfa_method_creator(
             user=user,
             method_name="yubi",
             is_primary=False,
+            is_active=True,
             _backup_codes=encrypted_backup_codes,
         )
     return user, next(iter(backup_codes))

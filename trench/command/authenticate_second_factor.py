@@ -1,4 +1,5 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 
 from typing import Type
 
@@ -8,6 +9,9 @@ from trench.command.validate_backup_code import validate_backup_code_command
 from trench.exceptions import InvalidCodeError, InvalidTokenError
 from trench.models import MFAMethod
 from trench.utils import get_mfa_model, user_token_generator
+
+
+User: AbstractUser = get_user_model()
 
 
 class AuthenticateSecondFactorCommand:

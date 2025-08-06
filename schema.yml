@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Your Project API
+  version: 1.0.0
+  description: Your project description
+paths:
+  /auth/{method}/activate/:
+    post:
+      operationId: auth_activate_create
+      parameters:
+      - in: path
+        name: method
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/{method}/activate/confirm/:
+    post:
+      operationId: auth_activate_confirm_create
+      parameters:
+      - in: path
+        name: method
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/{method}/codes/regenerate/:
+    post:
+      operationId: auth_codes_regenerate_create
+      parameters:
+      - in: path
+        name: method
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/{method}/deactivate/:
+    post:
+      operationId: auth_deactivate_create
+      parameters:
+      - in: path
+        name: method
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/code/request/:
+    post:
+      operationId: auth_code_request_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/jwt/login/:
+    post:
+      operationId: auth_jwt_login_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/jwt/login/code/:
+    post:
+      operationId: auth_jwt_login_code_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/mfa/change-primary-method/:
+    post:
+      operationId: auth_mfa_change_primary_method_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /auth/mfa/config/:
+    get:
+      operationId: auth_mfa_config_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/mfa/user-active-methods/:
+    get:
+      operationId: auth_mfa_user_active_methods_list
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserMFAMethod'
+          description: ''
+  /auth/token/login/:
+    post:
+      operationId: auth_token_login_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /auth/token/login/code/:
+    post:
+      operationId: auth_token_login_code_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    UserMFAMethod:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        is_primary:
+          type: boolean
+      required:
+      - name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

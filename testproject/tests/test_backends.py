@@ -3,6 +3,7 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from trench.backends.application import ApplicationMessageDispatcher
+from trench.backends.aws import AWSMessageDispatcher
 from trench.backends.sms_api import SMSAPIMessageDispatcher
 from trench.backends.twilio import TwilioMessageDispatcher
 from trench.backends.yubikey import YubiKeyMessageDispatcher
@@ -78,3 +79,13 @@ def test_yubikey_backend(active_user_with_many_otp_methods, settings):
     auth_method = user.mfa_methods.get(name="yubi")
     dispatcher = YubiKeyMessageDispatcher(mfa_method=auth_method, config=config)
     dispatcher.confirm_activation(code)
+
+
+@pytest.mark.django_db
+def test_sms_aws_backend_without_credentials(active_user_with_sms_aws_otp, settings):
+    auth_method = active_user_with_sms_aws_otp.mfa_methods.get(name="sms_aws")
+    conf = settings.TRENCH_AUTH["MFA_METHODS"]["sms_aws"]
+    response = AWSMessageDispatcher(
+        mfa_method=auth_method, config=conf
+    ).dispatch_message()
+    assert response.data.get("details")[:38] == "Could not connect to the endpoint URL:"
