@@ -145,14 +145,6 @@ class MFAMethodActivationView(APIView):
                 name=method).get(SOURCE_FIELD)
         except MFAMethodDoesNotExistError as cause:
             return ErrorResponse(error=cause)
-        if source_field is not None:
-            serializer_class = generate_model_serializer(
-                name="MFAMethodActivationValidator",
-                model=request.user.__class__,
-                fields=(source_field, ),
-            )
-            serializer = serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
         user = request.user
         try:
             if source_field is not None and not hasattr(user, source_field):
@@ -301,7 +293,7 @@ class MFAPrimaryMethodChangeView(APIView):
         code_serializer.is_valid(raise_exception=True)
         try:
             set_primary_mfa_method_command(
-                user_id=request.user.id, name=serializer.validated_data["method"]
+                user_id=request.user.id, name=method_serializer.validated_data["method"]
             )
             return Response(status=HTTP_204_NO_CONTENT)
         except MFAValidationError as cause:
