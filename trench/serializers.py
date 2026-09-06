@@ -119,6 +119,17 @@ class MFAMethodCodeSerializer(RequestBodyValidator):
         return value
 
 
+class MFAMethodFallbackCodeSerializer(RequestBodyValidator):
+    ephemeral_token = CharField()
+    method = CharField(max_length=255, required=True)
+
+    @staticmethod
+    def validate_method(value: str) -> str:
+        if value and value not in trench_settings.MFA_METHODS:
+            raise MFAMethodDoesNotExistError()
+        return value
+
+
 class LoginSerializer(RequestBodyValidator):
     password = CharField(write_only=True)
 

@@ -17,7 +17,7 @@ class TwilioMessageDispatcher(AbstractMessageDispatcher):
     _SMS_BODY = _("Your verification code is: ")
     _SUCCESS_DETAILS = _("SMS message with MFA code has been sent.")
 
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, request=None) -> DispatchResponse:
         try:
             client = Client()
             client.messages.create(

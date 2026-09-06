@@ -19,7 +19,7 @@ class SendMailMessageDispatcher(AbstractMessageDispatcher):
     _KEY_MESSAGE = "message"
     _SUCCESS_DETAILS = _("Email message with MFA code has been sent.")
 
-    def dispatch_message(self) -> DispatchResponse:
+    def dispatch_message(self, request=None) -> DispatchResponse:
         context = {"code": self.create_code()}
         email_plain_template = self._config[EMAIL_PLAIN_TEMPLATE]
         email_html_template = self._config[EMAIL_HTML_TEMPLATE]

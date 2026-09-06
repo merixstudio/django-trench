@@ -40,6 +40,7 @@ from trench.serializers import (
     MFAMethodActivationConfirmationValidator,
     MFAMethodBackupCodesGenerationValidator,
     MFAMethodCodeSerializer,
+    MFAMethodFallbackCodeSerializer,
     MFAMethodDeactivationValidator,
     UserMFAMethodSerializer,
 )
@@ -73,7 +74,7 @@ class MFAFirstStepMixin(MFAStepMixin, ABC):
         try:
             mfa_model = get_mfa_model()
             mfa_method = mfa_model.objects.get_primary_active(user_id=user.id)
-            get_mfa_handler(mfa_method=mfa_method).dispatch_message()
+            get_mfa_handler(mfa_method=mfa_method).dispatch_message(request=request)
             return Response(
                 data={
                     "ephemeral_token": user_token_generator.make_token(user),
@@ -98,6 +99,42 @@ class MFASecondStepMixin(MFAStepMixin, ABC):
             return ErrorResponse(error=cause, status=HTTP_401_UNAUTHORIZED)
 
 
+class MFASecondStepRequestCodeFallbackView(APIView):
+    permission_classes = (AllowAny,)
+
+    @staticmethod
+    def post(request: Request) -> Response:
+        serializer = MFAMethodFallbackCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            method = serializer.validated_data.get("method")
+            ephemeral_token = serializer.validated_data.get("ephemeral_token")
+            proposed_user = user_token_generator.check_token(None, ephemeral_token)
+
+            mfa_model = get_mfa_model()
+
+            if proposed_user is None:
+                return ErrorResponse(
+                    error="HTTP_401_UNAUTHORIZED", status=HTTP_401_UNAUTHORIZED
+                )
+
+            if method is None:
+                method = mfa_model.objects.get_primary_active_name(
+                    user_id=proposed_user.id
+                )
+            mfa = mfa_model.objects.get_by_name(user_id=proposed_user.id, name=method)
+            if mfa.name in trench_settings.MFA_METHODS and trench_settings.MFA_METHODS[
+                mfa.name
+            ].get("ALLOW_CODE_REQUEST_FALLBACK", False):
+                return get_mfa_handler(mfa_method=mfa).dispatch_message(request=request)
+            else:
+                return ErrorResponse(
+                    error="HTTP_401_UNAUTHORIZED", status=HTTP_401_UNAUTHORIZED
+                )
+        except MFAValidationError as cause:
+            return ErrorResponse(error=cause)
+
+
 class MFAMethodActivationView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -111,8 +148,7 @@ class MFAMethodActivationView(APIView):
         try:
             if source_field is not None and not hasattr(user, source_field):
                 raise MFASourceFieldDoesNotExistError(
-                    source_field,
-                    user.__class__.__name__
+                    source_field, user.__class__.__name__
                 )
 
             mfa = create_mfa_method_command(
@@ -121,7 +157,7 @@ class MFAMethodActivationView(APIView):
             )
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
-        return get_mfa_handler(mfa_method=mfa).dispatch_message()
+        return get_mfa_handler(mfa_method=mfa).dispatch_message(request=request)
 
 
 class MFAMethodConfirmActivationView(APIView):
@@ -228,7 +264,7 @@ class MFAMethodRequestCodeView(APIView):
                     user_id=request.user.id
                 )
             mfa = mfa_model.objects.get_by_name(user_id=request.user.id, name=method)
-            return get_mfa_handler(mfa_method=mfa).dispatch_message()
+            return get_mfa_handler(mfa_method=mfa).dispatch_message(request=request)
         except MFAValidationError as cause:
             return ErrorResponse(error=cause)
 

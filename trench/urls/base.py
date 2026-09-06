@@ -14,6 +14,7 @@ from trench.views import (
     MFAMethodDeactivationView,
     MFAMethodRequestCodeView,
     MFAPrimaryMethodChangeView,
+    MFASecondStepRequestCodeFallbackView,
 )
 
 
@@ -39,6 +40,8 @@ urlpatterns = (
         name="mfa-regenerate-codes",
     ),
     path("code/request/", MFAMethodRequestCodeView.as_view(), name="mfa-request-code"),
+    path("code/fallback/request/", MFASecondStepRequestCodeFallbackView.as_view(),
+         name="mfa-fallback-request-code"),
     path("mfa/config/", MFAConfigView.as_view(), name="mfa-config-info"),
     path(
         "mfa/user-active-methods/",

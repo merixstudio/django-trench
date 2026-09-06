@@ -16,13 +16,15 @@ User: AbstractUser = get_user_model()
 
 
 class ApplicationMessageDispatcher(AbstractMessageDispatcher):
-    def dispatch_message(self) -> DispatchResponse:
+
+    def dispatch_message(self, request=None) -> DispatchResponse:
         try:
             qr_link = self._create_qr_link(self._mfa_method.user)
             return SuccessfulDispatchResponse(details=qr_link)
         except Exception as cause:  # pragma: nocover
             logging.error(cause, exc_info=True)  # pragma: nocover
-            return FailedDispatchResponse(details=str(cause))  # pragma: nocover
+            return FailedDispatchResponse(
+                details=str(cause))  # pragma: nocover
 
     def _create_qr_link(self, user: User) -> str:
         return self._get_otp().provisioning_uri(
